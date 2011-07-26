@@ -1,0 +1,209 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+\documentclass[nojss]{jss}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls - journal of statistical software
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\author{Fraser I. Lewis}
+\title{Multidimensional Bayesian regression in \proglang{R}}
+%\VignetteIndexEntry{A vignette for the epiBayesNet package}
+%% for pretty printing and a nice hypersummary also set:
+%% \Plainauthor{, Second Author} %% comma-separated
+\Plaintitle{Multidimensional Bayesian regression in R}
+\Shorttitle{The \pkg{abn} package}
+
+\Abstract{
+  
+  This vignette introduces the \pkg{abn} package of \proglang{R} for identifying and exploring dependencies in multi-dimensional data through the application of additive Bayesian network models. Among the models currently implemented is a multidimensional analogue of logistic regression. Laplace approximations are used to estimate marginal likelihoods for model selection and also to compute marginal posterior densities.      
+ 
+}
+
+
+\Keywords{\proglang{R}, Bayesian Networks, additive models, structure discovery}
+\Plainkeywords{Bayesian Networks, additive models, structure discovery}
+
+\Address{
+  F. I. Lewis\\
+  Vetsuisse Faculty\\
+  University of Zurich\\
+  Winterthurerstrasse 270\\
+  Zurich CH-8057\\
+  Switzerland\\
+  E-mail: \email{fraseriain.lewis@uzh.ch}
+}
+
+%% need no \usepackage{Sweave.sty}
+\SweaveOpts{echo=FALSE,keep.source=TRUE}
+
+\begin{document}
+
+\section{Introduction}
+Bayesian network (BN) modeling (\citeauthor{Buntine1991} \citeyear{Buntine1991}; \citeauthor{HECKERMAN1995} \citeyear{HECKERMAN1995};  \citeauthor{Lauritzen1996} \citeyear{Lauritzen1996}; \citeauthor{Jensen2001} \citeyear{Jensen2001}) is a form of graphical modeling which attempts to separate out indirect from direct association in complex multivariate data, a process typically referred to as structure discovery (\citeauthor{Friedman2003} \citeyear{Friedman2003}). Unlike other widely used multivariate approaches where dimensionality is reduced through exploiting linear combinations of random variables, such as in principal component analysis, graphical modeling does not involve any such dimension reduction. Bayesian networks have been developed for analyzing multinomial, multivariate Gaussian or conditionally Gaussian networks (a mix categorical and Gaussian variables). A number of libraries for fitting such BNs are available from CRAN. These types of BN have been constructed to ensure conjugacy, that is, enable posterior distributions for the model parameters and marginal likelihood to be calculated analytically. The purpose of \pkg{abn} is to provide a library of functions for more flexible BNs which do not rely on conjugacy, which opens up an extremely rich modeling framework but at some considerable additional computational cost. 
+
+This first release of \pkg{abn} includes functionality for fitting non-conjugate BN models which are multi-dimensional analogues of logistic regression, with the caveat that all the variables in the data are binary. Also included are traditional conjugate BN models for multinomial data and a range of heuristic search options for determining locally optimal models.  
+
+The general objective in BN modeling/structure discovery is to perform a model search on the data to identify a locally optimal model, recall that BN models have a vast search space and it is generally impossible to determine a globally optimal model. We consider two different approaches for identifying a ``best'' locally optimal BN model: firstly by conducting a series of heuristic searches and then selecting the best model found (\citeauthor{HECKERMAN1995} \citeyear{HECKERMAN1995}); and secondly by building a summary network using results across many different searches (\citeauthor{Hodges2010} \citeyear{Hodges2010}; \citeauthor{Poon2007} \citeyear{Poon2007}). There are obvious pros and cons to either approach and both are common in the literature and provide a good first exploration of the data. For a general non-technical review of BN modeling applied in biology see \citeauthor{Needham2007} \citeyear{Needham2007}. A case study in applying BN models to epidemiological data using the conjugate BN functionality in \pkg{abn} can be found in \citeauthor{Lewis2011b} \citeyear{Lewis2011b}.
+ 
+\section{Searching and model fitting} \label{sec1}
+The package comes with several simulated data sets for use with the examples in the help files. The data set we use here comprises of ten random variables where each of these is a factor and is binary.
+<<echo=TRUE,print=FALSE>>=
+library(abn)
+data(sim10varadd);
+head(sim10varadd);
+@
+
+We now conduct a single heuristic search using a stepwise hill-climbing algorithm where the search commences from random initial network model. To avoid excessive computation on overly complex models we impose a limit on the maximum number of parents (arcs go from parent to child) which each node can have, this should be large enough so that it does not affect the model search but small enough to sensibly limit the model search space.  It is also possible to further restrict the search space by forbidding certain arcs between variables, this is given as a matrix with one row for each child node and the columns are parents. This must be provided as a numeric matrix where a 1 is for the arc to be banned - the search will not consider any models containing this arc. In the following analyzes we do not ban any arcs.
+<<echo=FALSE,print=FALSE>>=
+options(width=70);
+@
+
+<<echo=TRUE,print=FALSE>>=
+banned<-matrix(     c(0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ##                     
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0, ## 
+                      0,0,0,0,0,0,0,0,0,0  ## 
+                      ),byrow=TRUE,ncol=10);# 10 x 10 matrix
+                      
+rownames(banned)<-names(sim10varadd);# must have rownames set
+colnames(banned)<-names(sim10varadd);# must have colnames set                      
+set.seed(10000);# only random part is the initial choice of network
+myres<-searchabn(data.df=sim10varadd,banned.m=banned, 
+                 hyper.params=list(
+                 mean=c(0,0,0,0,0,0,0,0,0,0,0),
+                 var=c(1000,1000,1000,1000,1000,
+                 1000,1000,1000,1000,1000,1000)),
+                 max.parents=3,init.permuts=10);       
+@
+
+The above analyzes use the default parameter priors of diffuse Gaussian densities with mean zero and variance of 1000. These priors are fixed across all models in the search process and therefore it does not make sense for these to be given as informative during a search, but may be appropriate when fitting a single BN model e.g. using \proglang{fitabn()}. 
+
+\section{Multiple searches}
+To perform many searches then the following code is appropriate which repeats the above single search 1000 times (where this is implemented as a separate function at C rather than R level).
+\begin{verbatim}
+set.seed(10001);
+myres.1<-hillsearchabn(data.df=sim10varadd,banned.m=banned, 
+                 hyper.params=list(
+                 mean=c(0,0,0,0,0,0,0,0,0,0,0),
+                 var=c(1000,1000,1000,1000,1000,
+                 1000,1000,1000,1000,1000,1000)),
+                 max.parents=3,init.permuts=10, num.searches=1000);    
+\end{verbatim}
+Multiple searches make take many hours to run and such a task is ideal for task farming over multiple cpus. In this case using \proglang{R} in batch mode is an obvious solution repeating the above code but using a different seed in each search. Using this approach the search results must then be recombined and any duplicates removed - since it is theoretically possibly for searches to start from the same randomly chosen network. This also applies if running all the searches within a single call to \proglang{hillsearchabn()} as this does not check for duplicate starting networks. Supposing \emph{two} such separate ``parallel'' searches were conducted then the following code could be used to combine the results as if they had been conducted in one call to \proglang{hillsearchabn()} and then also removing duplicates.
+\begin{verbatim}
+all.res<-list();
+all.res$init.score<-c(myres.1$init.score,myres.2$init.score);
+all.res$final.score<-c(myres.1$final.score,myres.2$final.score);
+all.res$init.dag<-c(myres.1$init.dag,myres.2$init.dag);
+all.res$final.dag<-c(myres.1$final.dag,myres.2$final.dag); 
+
+## now remove any duplicate searches
+indexes<-uniquenets(all.res$init.dag);
+
+## create a list of all results  
+all.res.f<-list();
+all.res.f$init.score<-all.res$init.score[indexes];
+all.res.f$final.score<-all.res$final.score[indexes];
+all.res.f$init.dag.<-all.res$init.dag[indexes];
+all.res.f$final.dag<-all.res$final.dag[indexes];
+\end{verbatim}
+
+\subsection{Summary and model visualization}
+After conducting many searches then the results can be summarized by either by choosing the best network found or else by computing a consensus network, where the latter is produced by building a network out of all the arcs which appear in at least a minimum proportion of locally optimal networks. To choose the best single network from the results of a call to \proglang{hillsearchabn()} and to write the network structure out to a file in an appropriate format for Graphviz then
+\begin{verbatim}
+best.scores<-which(all.res.f$final.score==max(all.res.f$final.score));
+tographviz(all.res.f$final.dag[[best.scores[1]]],outfile="best1.dot");
+\end{verbatim}
+To view the best single network as a matrix in the \proglang{R} console then simply type\\ {\tt all.res.f\$final.dag[[best.scores[1]]]}, this matrix can then be used with {\tt fitabn()} to fit the corresponding BN model to data. 
+
+Graphviz is probably the best known tool for plotting and visualizing networks and is available for free download (and now with an open source form of license, although not GPL) from www.graphviz.org. There is a graphviz library for \proglang{R} available via the bioconductor project which requires a separate graphviz installation. 
+
+To create a majority consensus network, which comprises of a network constructed of those arcs present in at least 50\% of all locally optimal network, then
+\begin{verbatim}
+## see ?prunenets - a side effect is freq.dist of all arcs
+mypruneddags<-prunenets(all.res.f$final.dag,
+                                 round(0.50*length(all.res.f$final.dag)));
+## a convenience function for use with apply
+myfunc<-function(arg1,threshold,netdata){
+         if(arg1>=round(threshold*length(netdata$final.dag))){
+            return(1);} else {return(0);}}
+
+### build a consensus 50% network/matrix
+con.50<-apply(mypruneddags$arcs.sum,c(1,2),
+              FUN=myfunc,threshold=0.50,
+              netdata=all.res.f);## make reading easier
+tographviz(con.50,outfile="con50.dot");#format for reading into graphviz
+\end{verbatim}
+
+\section{Parameter estimation}
+We now demonstrate how to estimate the marginal parameters in an additive BN using the best network found in the single search at the start of Section \ref{sec1}. In this network we find that, for example, node {\tt X7} has {\tt X3} as a parent, {\tt X5} has {\tt X2} as a parent and {\tt X6} has {\tt X7} as a parent. Each of these corresponds to a local logistic regression with the parent being a ``main effect'' parameter in the classical additive glm sense. As usual we wish to estimate these parameters to see whether are statistically significantly different from zero, and also examine the magnitude of their effect on the log odds of the ``response variable'', e.g. {\tt X7}, {\tt X5} and {\tt X6}. To estimate the marginal densities then the following is sufficient, which estimates the densities at 1000 equally spaced points between 0 and 2, which is sufficient for these parameters and were chosen after examining the densities over various ranges.
+<<echo=TRUE,print=FALSE>>=
+mynetwork<-myres[[length(myres)]];#the best network is the last one
+x7.x3<-getmarginal(sim10varadd,mynetwork,whichnode="X7", whichvar="X3", 
+            hyper.params=list(
+            mean=c(0,0,0,0,0,0,0,0,0,0,0),
+            var=c(1000,1000,1000,1000,1000,
+                  1000,1000,1000,1000,1000,1000)),
+                  post.x=seq(0,2,len=1000), verbose=FALSE);
+                  
+x5.x2<-getmarginal(sim10varadd,mynetwork,whichnode="X5", whichvar="X2", 
+            hyper.params=list(
+            mean=c(0,0,0,0,0,0,0,0,0,0,0),
+            var=c(1000,1000,1000,1000,1000,
+                  1000,1000,1000,1000,1000,1000)),
+                  post.x=seq(0,2,len=1000), verbose=FALSE);
+x6.x7<-getmarginal(sim10varadd,mynetwork,whichnode="X6", whichvar="X7", 
+            hyper.params=list(
+            mean=c(0,0,0,0,0,0,0,0,0,0,0),
+            var=c(1000,1000,1000,1000,1000,
+                  1000,1000,1000,1000,1000,1000)),
+                  post.x=seq(0,2,len=1000), verbose=FALSE);                  
+                  
+@
+
+Figure \ref{fig2}
+\begin{figure}[hbt]
+  \begin{center}
+<<fig=TRUE>>=
+par(mar=c(8.8,8.2,3.1,3.1));
+par(cex.axis=1.5);par(cex.lab=1.5);par(bg="white");par(fg="black");par(col.axis="black");par(col="black");par(col.main="black");
+par(cex.main=1.5);par(col.lab="black");par(las=1);par(xaxs="i");par(yaxs="r");  
+par(mfrow=c(1,1));
+
+plot(x7.x3[,"x"],x7.x3[,"f"],type="n",axes=F,xlab="",ylab="",main="",ylim=c(0,3));
+lines(x7.x3[,"x"],x7.x3[,"f"],col="blue",lwd=3,lty=1);
+lines(x5.x2[,"x"],x5.x2[,"f"],col="brown",lwd=3,lty=1);
+lines(x6.x7[,"x"],x6.x7[,"f"],col="darkgreen",lwd=3,lty=2);
+mtext("logit(X7)=X3, logit(X5)=X2, logit(X6)=X7",1,line=3.5,cex=1.5);
+par(las=3);
+mtext("Density",2,line=5,cex=1.8);par(las=1);
+axis(1,padj=0.1,cex.axis=1.5);axis(2);box(); title("Posterior densities");
+@
+\caption{Marginal posterior distributions for parameters in selected nodes} \label{fig2}
+\end{center}
+\end{figure}
+shows the marginal posterior densities estimated using the Laplace approximation and with the same default diffuse Gaussian priors as used in the model search. The numerical values used to create each density are returned from {\tt getmarginal()} as a two column numerical matrix with the first column the value of the variable (named {\tt x}) and the second column the value of the density $f(x)$, (named {\tt f}), see the {\tt getmarginal()} help page for more details.
+
+\section{Follow-up analyzes via MCMC}
+So far we have considered exploring the model space to find a good locally optimal BN. Such analyzes are ideal for initial exploration of multi-dimensional data to narrow down the possible structural features present. Estimation of the marginal posterior densities as given above is useful for checking whether the marginal likelihood has not been sufficiently parsimonious in the model selection (which can be particularly problematic with small data sets). Generally speaking, however, once a good model has been identified then more detailed modeling may be appropriate, for example by using other forms of priors on individual parameters or introducing other complexities such as random effects into the graphical model to account for grouping effects or other forms of correlation. These are not currently available within the modeling framework in \pkg{abn}, but it is generally straightforward to implement a model identified using the model search capabilities in \pkg{abn} into a graphical model within Gibbs sampler software such as {\tt JAGS} or {\tt WinBUGS}, which then allow almost arbitrary levels of additional complexity. In short, one approach to multivariate analyses is to use BN modeling for initial explorations through performing numerous model searches, and then once a good model has been identified then use MCMC to further refine this.  
+
+\section{Other features and future directions}
+The package also includes model search and fitting routines for conjugate multinomial BN models, whose functions are analogous to those shown above (except without explicit marginal posterior density estimation). Similar models can be fitted using other \proglang{R} packages such as \pkg{deal} or \pkg{bnlearn}. In \pkg{abn} the model space for multinomial BNs can be similarly restricted as above by imposing a limit on the maximum number of parents, and also includes the K2 metric as well as the Bayesian Dirichlet metric, each of which use different parameter priors and therefore give different marginal likelihood estimates.
+
+While the models shown above only include main effects (in the sense of an additive linear model) it is straightforward to include interaction terms by simply adding nodes to the model as additional columns in the model matrix, and as additional columns in the data.frame, so they are treated simply as additional variables. 
+
+Currently the only non-conjugate BN model implemented is the logistic BN model (note that details of a non-Bayesian equivalent are presented in \citeauthor{Rijmen2008} \citeyear{Rijmen2008}), and only for binary data. This is arguably the simplest useful, non-conjugate additive BN model. It is also typically possible to discretize continuous or multinomial data into binary data, at least for exploratory purposes. It is hoped to extend the current functionality to include multinomial variables and then models comprising categorical and (Gaussian) continuous variables. In the longer term including more complex structures such that appropriate for ecological count data, e.g. Poisson and negative binomial distributions, and also models with random effects may be possible.
+
+
+
+
+\bibliography{abn}
+
+
+\end{document}
