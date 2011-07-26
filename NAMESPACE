@@ -1,0 +1,19 @@
+
+
+export("hillsearchbn",
+       "searchbn",
+       "fitbn",
+       "fitabn",
+       "fitbnMulti",
+       "makeintofactors",
+       "makeintobinarymatrix",
+       "trim",
+       "prunenets",
+       "uniquenets",
+       "tographviz",
+       "hillsearchabn",
+       "searchabn",
+       "getmarginal"
+       )   
+
+useDynLib(abn)
