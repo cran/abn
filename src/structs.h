@@ -23,12 +23,14 @@
  ***************************************************************************/
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
 
 typedef struct diskdatamatrix_struct diskdatamatrix;
 
 /** designed to hold integer data and column names **/
 struct datamatrix_struct {
       int **data;/** the observed (multinomial) categories for each variable, each row a data point */
+      double **dataDouble;
       gsl_matrix *datamatrix;
       int numDataPts;/** total number of datapoints**/
       int numVars;/** total number of variables/nodes **/
@@ -37,13 +39,16 @@ struct datamatrix_struct {
      /*double *weights;*//** hold a double value which is the weight of each observed data point */
      /* double *xmin;
       double *xmax;*/
-      int numparams;
+      unsigned int numparams;
       gsl_vector *priormean;
       gsl_vector *priorsd;
+      gsl_vector *priorgamshape;
+	    gsl_vector *priorgamscale;
       gsl_vector *gslvec1;
       gsl_vector *gslvec2;
       /*double relerr;*/
       gsl_vector *Y;
+      const int *vartype;/** vector with 1- binary, 0 - gaussian **/
   
 };
 
@@ -53,15 +58,17 @@ typedef struct datamatrix_struct datamatrix;
 /** designed to hold a network definition **/
 struct network_struct {
       int **defn;/** each row a variable and each col the parents of the variable, indexes from 0*/
-      int numNodes;/** total number of variables/nodes **/
+      unsigned int numNodes;/** total number of variables/nodes **/
       /*char **namesNodes;*//** array of strings denoting node/variable names, in order of data columns */
       double **nodesparameters;/** node->parentcombinationindex->dirichlet param **/
       int **nodesparameters_lookup;/** node->parentcombinationindex->parentcombination **/
       int *numNodeLevels; /** will hold the total number of parent combinations each node has **/
-      int maxparents;/** max number of parents allowed per node */
-      int maxParentCombinations;/** maximum number of parent combination which could occur */
+      unsigned int maxparents;/** max number of parents allowed per node */
+      unsigned int maxParentCombinations;/** maximum number of parent combination which could occur */
       double networkScore;
       int **banlist;
+      int **retainlist;
+      int **startlist;/** set a fixed - non-random - starting network */
 };
 
 typedef struct network_struct network;
@@ -107,13 +114,28 @@ struct fnparams
        gsl_matrix *X;
   gsl_matrix *mattmp1;
   gsl_matrix *mattmp2;
+  gsl_matrix *mattmp3;
+  gsl_matrix *mattmp4;
 	 gsl_vector *priormean;
 	 gsl_vector *priorsd;
+	 gsl_vector *priorgamshape;
+	 gsl_vector *priorgamscale;
 	 gsl_vector *betafull;
+	 gsl_vector *dgvaluesfull;
 	 double betafixed;
 	 int betaindex;
 	 gsl_vector *dgvalues;
 	 gsl_matrix *hessgvalues;
+	 gsl_vector *beta;
+	 gsl_permutation *perm;
 	 
 	};
+
+struct database
+{ int **knownnodes;
+  double *knownscores;
+   int length;/** num rows in array */
+   size_t numentries;/** the number of actual entires out of the total length */
+   int nodecacheexceeded;/** used to hold some diagnostic information = number of times nodecache called */    
+    int overflownumentries;/** used to hold some diagnostic information = number of times nodecache called */        };
 	

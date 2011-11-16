@@ -1,0 +1,69 @@
+\begin{thebibliography}{9}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Buntine(1991)}]{Buntine1991}
+Buntine W (1991).
+\newblock \enquote{Theory refinement on Bayesian networks.}
+\newblock In \emph{Proceedings of Seventh Conference on Uncertainty in
+  Artificial Intelligence}, pp. 52--60. Morgan Kaufmann, Los Angeles, CA, USA.
+
+\bibitem[{Friedman and Koller(2003)}]{Friedman2003}
+Friedman N, Koller D (2003).
+\newblock \enquote{Being Bayesian about network structure. A Bayesian approach
+  to structure discovery in Bayesian networks.}
+\newblock \emph{Machine Learning}, \textbf{50}(1-2), 95--125.
+
+\bibitem[{Heckerman \emph{et~al.}(1995)Heckerman, Geiger, and
+  Chickering}]{HECKERMAN1995}
+Heckerman D, Geiger D, Chickering DM (1995).
+\newblock \enquote{Learning Bayesian Networks - The Combination of Knowledge
+  And Statistical-Data.}
+\newblock \emph{Machine Learning}, \textbf{20}(3), 197--243.
+
+\bibitem[{Hodges \emph{et~al.}(2010)Hodges, Dai, Xiang, Woolf, Xi, and
+  He}]{Hodges2010}
+Hodges AP, Dai D, Xiang Z, Woolf P, Xi C, He Y (2010).
+\newblock \enquote{Bayesian Network Expansion Identifies New ROS and Biofilm
+  Regulators.}
+\newblock \emph{PLoS ONE}, \textbf{5}(3), e9513--.
+
+\bibitem[{Jensen(2001)}]{Jensen2001}
+Jensen FV (2001).
+\newblock \emph{Bayesian Network and Decision Graphs}.
+\newblock Springer-Verlag, New York.
+
+\bibitem[{Lauritzen(1996)}]{Lauritzen1996}
+Lauritzen SL (1996).
+\newblock \emph{Graphical Models}.
+\newblock Oxford Univ Press.
+
+\bibitem[{Lewis \emph{et~al.}(2011)Lewis, Brulisauer, and Gunn}]{Lewis2011b}
+Lewis FI, Brulisauer F, Gunn GJ (2011).
+\newblock \enquote{Structure discovery in Bayesian networks: An analytical tool
+  for analysing complex animal health data.}
+\newblock \emph{Preventive Veterinary Medicine}, \textbf{100}(2), 109--115.
+\newblock \doi{10.1016/j.prevetmed.2011.02.003}.
+
+\bibitem[{Needham \emph{et~al.}(2007)Needham, Bradford, Bulpitt, and
+  Westhead}]{Needham2007}
+Needham CJ, Bradford JR, Bulpitt AJ, Westhead DR (2007).
+\newblock \enquote{A Primer on Learning in Bayesian Networks for Computational
+  Biology.}
+\newblock \emph{PLoS Comput Biol}, \textbf{3}(8), e129.
+\newblock \doi{10.1371/journal.pcbi.0030129}.
+
+\bibitem[{Poon \emph{et~al.}(2007)Poon, Lewis, Pond, and Frost}]{Poon2007}
+Poon AFY, Lewis FI, Pond SLK, Frost SDW (2007).
+\newblock \enquote{Evolutionary interactions between N-linked glycosylation
+  sites in the HIV-1 envelope.}
+\newblock \emph{Plos Computational Biology}, \textbf{3}(1), 110--119.
+
+\end{thebibliography}

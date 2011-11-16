@@ -8,15 +8,19 @@
 #include "utility_fns.h"
 #include "network.h"
 #include <R_ext/Utils.h>
+#include "scorereuse.h"
+#include <time.h>
+#include <gsl/gsl_errno.h>
 
 #define DEBUG_12
 
 SEXP hillsearchfornetwork(SEXP R_obsdata, SEXP R_dag,SEXP R_useK2,SEXP R_maxparents,SEXP R_priorpernode, SEXP R_numVarLevels, 
-                      SEXP R_nopermuts, SEXP R_shuffle, SEXP R_labels, SEXP R_nosearches)
+                      SEXP R_nopermuts, SEXP R_shuffle, SEXP R_labels, SEXP R_nosearches, SEXP R_dag_retain, SEXP R_dag_start,SEXP R_db_size, 
+		      SEXP R_localdb, SEXP R_timing, SEXP R_enforce_db_size)
 {
 /** ****************/
 /** declarations **/
-unsigned int numObs,numNodes,i,maxparents,nopermuts;
+unsigned int /*numObs,numNodes,*/i,maxparents,nopermuts,db_size,enforce_db_size;
 unsigned int useK2;
 double priordatapernode;
 datamatrix obsdata;
@@ -25,6 +29,9 @@ unsigned int nosearches;
 unsigned int first;
 int iter=0;
 unsigned int maxlinkspossible;
+struct database prevNodes;/** this will store scores for previous nodes for re-use */
+clock_t start=0; clock_t end=0;
+double elapsed;
 /** end of declarations*/
 /** *******************/
 /*GetRNGstate();*/
@@ -39,14 +46,18 @@ useK2=asInteger(R_useK2);
 priordatapernode=asReal(R_priorpernode);
 nopermuts=asInteger(R_nopermuts);
 nosearches=asInteger(R_nosearches);
+db_size=asInteger(R_db_size);
+enforce_db_size=asInteger(R_enforce_db_size);
 SEXP listresults;
 SEXP scorevector;
-double lognetworkscore,bestlognetworkscore;
+double lognetworkscore/*,bestlognetworkscore*/;
 SEXP ans;
 int networkindex=0;
-int verbose=0;
+/*int verbose=0;*/
 cycle cyclestore;
 storage nodescore;
+int timingon=asInteger(R_timing);/** whether to turn on timing output or not **/
+int localdb=asInteger(R_localdb);/** whether to reset the search database at the start of each search **/
 /** end of argument parsing **/
 
 /** *******************************************************************************
@@ -73,9 +84,14 @@ build_init_dag(&dag,&obsdata,maxparents);
 maxlinkspossible=((dag.numNodes*dag.numNodes)-dag.numNodes);/** used in generate_random_dag()*/
 /** all this does is to set internally set dag->banlist[child][parent] etc **/
 setbanlist(&dag,R_dag);/** create banned links in initial search graph construction **/
+/** NOW for new part - retain list - these arcs must be kept in every new model found */
+setretainlist(&dag,R_dag_retain);/** note - sets dag->retainlist*/
+/*setstartlist(&dag,R_dag_start);*//** note - sets dag->startlist*/
 
 build_init_dag(&dag_scratch, &obsdata,maxparents);/** create a second dag - a working copy for adding arcs etc **/
 setbanlist(&dag_scratch,R_dag);/** create banned links in working copy - **/
+setretainlist(&dag_scratch,R_dag_retain);
+/*setstartlist(&dag_scratch,R_dag_start);*/
 
 build_init_dag(&dag_opt1, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best add arc etc **/
 build_init_dag(&dag_opt2, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best removed arc etc **/
@@ -86,11 +102,14 @@ build_init_dag(&dag_best, &obsdata,maxparents); /** simply used to hold the best
 init_network_score(&nodescore,&dag);/** initilise storage for network score **/
 init_random_dag(&nodescore,&dag);/** initilise storage for random dag **/
 init_hascycle(&cyclestore,&dag); /** initialise storage but needs to be passed down through generate_random_dag etc */
+init_nodedatabase(&prevNodes,&dag, db_size,1);/** memory allocation */
 
 for(i=0;i<nosearches;i++){/**out loop for random re-start hill climber */
+if(timingon){start = clock();}  
+if(localdb){init_nodedatabase(&prevNodes,&dag, db_size,0);}/** resets the database but leave memory alone **/
 Rprintf("search number...%d\n",i);
-generate_random_dag(&cyclestore,&nodescore,&dag,nopermuts,maxparents,R_shuffle,i*maxlinkspossible); /** replace the dag->defn with a new structure **/ 
-calc_network_Score(&nodescore,&dag,&obsdata,priordatapernode, useK2,0,R_labels);/** 0 is to turn off printing out parameters for each node */
+generate_random_dag(&cyclestore,&nodescore,&dag,nopermuts,maxparents,R_shuffle,i*maxlinkspossible,i, R_dag_start); /** replace the dag->defn with a new structure **/ 
+calc_network_Score_reuse(&nodescore,&dag,&obsdata,priordatapernode, useK2,0,R_labels,&prevNodes,enforce_db_size);/** 0 is to turn off printing out parameters for each node */
 
 Rprintf("initial network: (log) network score = %f\n",dag.networkScore);
 
@@ -115,7 +134,7 @@ lognetworkscore=dag.networkScore;/** start off with score of the random starting
                                 &dag_opt1,
                                 &dag_opt2,
                                 &dag_opt3,
-                                maxparents,&obsdata, priordatapernode,useK2,0,R_labels);/** &dag will have new best network*/
+                                maxparents,&obsdata, priordatapernode,useK2,0,R_labels,&prevNodes,enforce_db_size);/** &dag will have new best network*/
                 R_CheckUserInterrupt();/** allow an interupt from R console */ 
                 /** got a better network then update score and structure, if not do nothing and while() will terminate */
                 if(dag.networkScore>lognetworkscore){
@@ -133,8 +152,15 @@ Rprintf("best network: (log) network score = %f\n",dag_best.networkScore);
                            store_results(listresults,&dag_best,networkindex++,ans,0);
           UNPROTECT(1);                 
           
-   } /** END OF outer for loop **/
-        
+if(timingon){end = clock();
+ elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+ Rprintf("CPU time:%10.6f\n",elapsed);}
+ 
+} /** END OF outer for loop **/
+
+/** some diagnostic messages */
+ if(prevNodes.nodecacheexceeded){Rprintf("Note: db.size of %u exceeded. Increasing this may be more efficient\n",prevNodes.length);}        
+
 /*UNPROTECT(nosearches*2+1+1); */
 UNPROTECT(1);
 

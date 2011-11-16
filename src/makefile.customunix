@@ -1,0 +1,76 @@
+# use "gcc" to compile source files.
+CC = gcc
+# the linker is also "gcc". It might be something else with other compilers.
+LD = gcc 
+# Compiler flags go here.
+CFLAGS = -I/usr/local/lib64/R/include -I/usr/include -I. -I/usr/local/include -Wall -pedantic -O3 -ffloat-store -std=gnu9x -fPIC 
+#CFLAGS = -I"C:/PROGRA~1/R/R-213~1.0/include" -I"C:/Program Files/GSL_test2"/include -Wall -pedantic -O3 -ffloat-store -std=gnu9x  
+# Linker flags go here. Currently there aren't any, but if we'll switch to
+# code optimization, we might add "-s" here to strip debug info and symbols.
+#LDFLAGS = -L/usr/lib/R/lib/ -lm -ldl -lR -L/opt/local/lib 
+#LDFLAGS = -shared -s -static-libgcc  -lm -lgsl -lgslcblas 
+#LDFLAGS = -L/PROGRA~1/GnuWin32/bin -lgsl -lgslcblas -lm
+#LDFLAGS = -shared -L/usr/lib/debug/usr/lib -lgsl -lgslcblas -lprofiler -g 
+LDFLAGS = -shared -L/usr/lib/debug/usr/lib -lgsl -lgslcblas 
+#LDFLAGS =  -shared -L"C:/Program Files/GSL_test2/lib" -lm -lgsl -lgslcblas -shared -L"C:/PROGRA~1/R/R-213~1.0/bin/x64" -lR
+# use this command to erase files.
+RM = /bin/rm -f
+# list of generated object files.
+OBJS =  fitnetwork.o fitnetwork_additive.o  fitnetwork_multi.o hillsearchfornetwork.o laplace.o network.o searchfornetwork.o utility_fns.o network_laplace.o laplace_marginals.o getmarginals_additive.o hillsearchfornetwork_additive.o searchfornetwork_additive.o scorereuse.o
+
+# program executable file name.
+PROG = abn.so
+
+# top-level rule, to compile everything.
+all: $(PROG)
+
+# rule to link the program - NEW NOTE: $(LDFLAGS) must come last with gcc 4.4 onwards
+$(PROG): $(OBJS)
+	$(LD) $(OBJS) -o $(PROG) $(LDFLAGS)
+
+fitnetwork.o: fitnetwork.c 
+	$(CC) $(CFLAGS) -c fitnetwork.c
+
+fitnetwork_additive.o: fitnetwork_additive.c 
+	$(CC) $(CFLAGS) -c fitnetwork_additive.c
+
+searchfornetwork_additive.o: searchfornetwork_additive.c 
+	$(CC) $(CFLAGS) -c searchfornetwork_additive.c
+
+hillsearchfornetwork_additive.o: hillsearchfornetwork_additive.c 
+	$(CC) $(CFLAGS) -c hillsearchfornetwork_additive.c
+
+getmarginals_additive.o: getmarginals_additive.c 
+	$(CC) $(CFLAGS) -c getmarginals_additive.c
+
+fitnetwork_multi.o: fitnetwork_multi.c 
+	$(CC) $(CFLAGS) -c fitnetwork_multi.c
+
+hillsearchfornetwork.o: hillsearchfornetwork.c 
+	$(CC) $(CFLAGS) -c hillsearchfornetwork.c
+
+laplace.o: laplace.c 
+	$(CC) $(CFLAGS) -c laplace.c
+
+laplace_marginals.o: laplace_marginals.c 
+	$(CC) $(CFLAGS) -c laplace_marginals.c
+
+network.o: network.c 
+	$(CC) $(CFLAGS) -c network.c
+	
+searchfornetwork.o: searchfornetwork.c 
+	$(CC) $(CFLAGS) -c searchfornetwork.c
+
+utility_fns.o: utility_fns.c 
+	$(CC) $(CFLAGS) -c utility_fns.c
+
+network_laplace.o: network_laplace.c 
+	$(CC) $(CFLAGS) -c network_laplace.c
+
+scorereuse.o: scorereuse.c 
+	$(CC) $(CFLAGS) -c scorereuse.c
+
+# rule for cleaning re-compilable files.
+clean:
+	$(RM) $(PROG) $(OBJS)
+

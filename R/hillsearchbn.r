@@ -24,20 +24,32 @@
 ##    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ######################################################################
 
-hillsearchbn <- function(data.df,banned.m,prior.obs.per.node=NULL,useK2=FALSE,max.parents=NULL,init.permuts=0,num.searches=1) {
+hillsearchbn <- function(data.df,banned.m,retain.m,start.m,prior.obs.per.node=NULL,useK2=FALSE,max.parents=NULL,init.permuts=0,num.searches=1,db.size=10000,localdb=TRUE,timing=TRUE,
+                         enforce.db.size=TRUE) {
     
     obsdata<-makeintofactors(data.df);
-    tmp<-makeintobinarymatrix(banned.m);
-    dag<-tmp$dag;
+    dag<-makeintobinarymatrix(banned.m,ban=TRUE)$dag;
+    dag.retain<-makeintobinarymatrix(retain.m,ban=FALSE)$dag;
+    if(!is.list(start.m)){stop("start.m must be a list");}
+    if(length(start.m)!=num.searches){stop("start.m must same length as num.searches");}
+    dag.start<-list();
+    for(i in 1:num.searches){dag.start[[i]]<-makeintobinarymatrix(start.m[[i]],ban=FALSE)$dag;} #get a list of validated matrices
+    db.size<-as.integer(db.size);
     maxparents<-max(max.parents,1);## if a fully independent DAG then 1 is a dummy value required for memory allocation
-    maxparents<-as.integer(maxparents); 
+    maxparents<-as.integer(maxparents);
+    if(max(apply(retain.m,1,sum))>maxparents){stop("retain.m is inconsistent with max.parents");} 
     if(!is.logical(useK2)){stop("useK2 must be either TRUE or FALSE");}
     if(useK2){loc.useK2<-1;## use K2
     } else {loc.useK2<-0;  ## use BDeu
             if(is.numeric(prior.obs.per.node) && prior.obs.per.node>0.0){
               } else {stop("invalid prior.obs.per.node - must be numeric and strictly positive");}
             }
-
+    if(!is.logical(timing)){stop("timing must be either TRUE or FALSE");}
+    if(timing){loc.timing<-1;## turn on timing output
+    } else {loc.timing<-0;}
+    if(!is.logical(localdb)){stop("localdb must be either TRUE or FALSE");}
+    if(localdb){loc.localdb<-1;## turn on timing output
+    } else {loc.localdb<-0;}
     ## create a list containing the names of all the nodes and the levels in each node -NOT USED but keeps network_score() happy
     loc.labels<-list(names=names(obsdata));
     for(i in 1:(dim(obsdata)[2])){loc.labels[[i+1]]<-levels(as.factor(obsdata[,i]));} #use data.df since obsdata HAS NOT LEVELS set
@@ -55,8 +67,13 @@ hillsearchbn <- function(data.df,banned.m,prior.obs.per.node=NULL,useK2=FALSE,ma
     shuffle<-as.vector(store);## turn into one long array
     shuffle<-as.integer(shuffle);## e.g. shuffle[1:maxlinks] is first shuffle, shuffle[maxlinks+1:2*maxlinks] is second etc
     
+    if(!is.logical(enforce.db.size)){stop("enforce.db.size must be either TRUE or FALSE");}
+    if(enforce.db.size){loc.enforce.db.size<-1;} else {loc.enforce.db.size<-0;}
+    loc.enforce.db.size<-as.integer(loc.enforce.db.size);
+    
     ## call to C
-    res <- .Call("hillsearchfornetwork",obsdata,dag,loc.useK2,maxparents,prior.obs.per.node,numVarLevels,nopermuts,shuffle, loc.labels, nosearches
+    res <- .Call("hillsearchfornetwork",obsdata,dag,loc.useK2,maxparents,prior.obs.per.node,numVarLevels,nopermuts,shuffle, loc.labels, nosearches,
+                                        dag.retain,dag.start,db.size,loc.localdb,loc.timing,loc.enforce.db.size
                ,PACKAGE="abn" ## uncomment to load as package not shlib
               )
     ## results format is res[[1]] is a vector of network scores in order: init score1, final score1, init score2, final score2,....etc

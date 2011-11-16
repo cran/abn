@@ -42,40 +42,8 @@ uniquenets(dags.list)
 
 
 \examples{
-data(sim10var);## 10 categorical variables
 
-##  a matrix of arcs to be banned from the search process
-## - do not ban any arcs - empty matrix
-dagbanned.df<-matrix(c(0,0,0,0,0,0,0,0,0,0, ## var1
-                       0,0,0,0,0,0,0,0,0,0, ## var2
-                       0,0,0,0,0,0,0,0,0,0, ## var3
-                       0,0,0,0,0,0,0,0,0,0, ## var4
-                       0,0,0,0,0,0,0,0,0,0, ## var5
-                       0,0,0,0,0,0,0,0,0,0, ## var6
-                       0,0,0,0,0,0,0,0,0,0, ## var7
-                       0,0,0,0,0,0,0,0,0,0, ## var8
-                       0,0,0,0,0,0,0,0,0,0, ## var9
-                       0,0,0,0,0,0,0,0,0,0),## var10
-                       byrow=TRUE,ncol=10);
-
-colnames(dagbanned.df)<-names(sim10var);# must set names
-rownames(dagbanned.df)<-names(sim10var);# must set names
-## run the search - init.permuts=0 - this is for illustration only 
-## as this forces each search to use the same empty network
-## and hence the results of each search will be identical
-## only consider networks with 3 or less parents per node
-\dontrun{K2.search<-hillsearchbn(data.df=sim10var,banned.m=dagbanned.df,
-        prior.obs.per.node=NULL,useK2=TRUE,max.parents=3,init.permuts=0,
-        num.searches=2);}
-
-## now find out how many unique searches
-## - two random starting networks could theoretically be the same
-\dontrun{indexes<-uniquenets(K2.search$init.dag);} 
-## only keep results from distinct searches
-\dontrun{K2.search$init.score<-K2.search$init.score[indexes];}
-\dontrun{K2.search$final.score<-K2.search$final.score[indexes];}
-\dontrun{K2.search$init.dag<-K2.search$init.dag[indexes];}
-\dontrun{K2.search$final.dag<-K2.search$final.dag[indexes];}
+## See abn vignette for examples 
 
 }
 

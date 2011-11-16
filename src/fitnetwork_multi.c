@@ -15,7 +15,7 @@ SEXP fitnetwork_multi(SEXP R_obsdata, SEXP R_dag_list,SEXP R_useK2,SEXP R_maxpar
 {
 /** ****************/
 /** declarations **/
-unsigned int numObs,numNodes,i,maxparents,numdags;
+unsigned int /*numObs,numNodes,*/i,maxparents,numdags;
 unsigned int useK2, verbose;
 double priordatapernode;
 datamatrix obsdata;

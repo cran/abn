@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include "structs.h"        
 #include "network.h"
+#include "scorereuse.h"
 
 #define DEBUG_dagdefn_no
 #define DEBUG_LEARN_NODE_no
 #define DEBUG_dagbanlist_no
 #define STRINGLENGTH 1000
+
 
 void build_init_dag(network *dag,datamatrix *obsdata,int maxparents){
 /** build and initialise a matrix which holds the definitions for each node in the network, all nodes are assumed independent initially */
@@ -21,10 +23,10 @@ void build_init_dag(network *dag,datamatrix *obsdata,int maxparents){
     etc
 */
 
-int **model_defn,*model_defnA, **model_banlist, *model_banlistA;
+int **model_defn,*model_defnA, **model_banlist, *model_banlistA,**model_retainlist, *model_retainlistA,**model_startlist, *model_startlistA;
 int i,j;
 int *numvarlevels=obsdata->numVarlevels;/** hold the number categories for each variable in the data **/
-int *topKLevels=(int*) R_alloc (maxparents,sizeof(int));/** will hold the number of levels in the top maxparents number of variables **/ 
+unsigned int *topKLevels=(unsigned int*) R_alloc (maxparents,sizeof(unsigned int));/** will hold the number of levels in the top maxparents number of variables **/ 
 int totalMaxParentCombinations=1;
 double **nodesparameters,*dirichletparms;
 int **nodesparameters_lookup,*parentcomb;
@@ -35,6 +37,13 @@ model_defn=(int **)R_alloc( (obsdata->numVars),sizeof(int*));/** each row is a v
 
 model_banlist=(int **)R_alloc( (obsdata->numVars),sizeof(int*));/** each row is a variable **/ 
 	for(i=0;i< obsdata->numVars;i++){model_banlistA=(int *)R_alloc( obsdata->numVars,sizeof(int)); model_banlist[i]=model_banlistA;}
+
+model_retainlist=(int **)R_alloc( (obsdata->numVars),sizeof(int*));/** each row is a variable **/ 
+	for(i=0;i< obsdata->numVars;i++){model_retainlistA=(int *)R_alloc( obsdata->numVars,sizeof(int)); model_retainlist[i]=model_retainlistA;}
+
+model_startlist=(int **)R_alloc( (obsdata->numVars),sizeof(int*));/** each row is a variable **/ 
+	for(i=0;i< obsdata->numVars;i++){model_startlistA=(int *)R_alloc( obsdata->numVars,sizeof(int)); model_startlist[i]=model_startlistA;}
+
 
 /** now create an initially null network of independent nodes**/
 for(i=0;i<obsdata->numVars;i++){for(j=0;j<obsdata->numVars;j++){model_defn[i][j]=0;}}
@@ -52,7 +61,8 @@ dag->numNodes=obsdata->numVars;
 dag->numNodeLevels=nodeparentcombs;/** array of the total number of combinations of parent which each node has **/
 dag->maxparents=maxparents;
 dag->banlist=model_banlist;
-
+dag->retainlist=model_retainlist;
+dag->startlist=model_startlist;
 /** have got the network definition so now create storage for model parameters at each potential node*/
 /** create a 2d array with X rows where X is the max. number of parent combinations possible given
     maxparents and the number of levels each variable could have **/
@@ -115,7 +125,7 @@ dag->nodesparameters_lookup=nodesparameters_lookup;
 /** *************************************************************************************/
 void get_dag(network *dag,SEXP R_dag){
 
-int i,j;
+unsigned int i,j;
 
 /** copy contents of R_dag into array - NOTE that as R_dag is an R MATRIX it is single dimension and just needs to be unrolled */
 /** dag->defn memory allocated in build_init_dag() */
@@ -131,7 +141,7 @@ for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){Rprintf("%u ",dag->def
 /** *************************************************************************************/
 void get_dag_list(network *dag,SEXP R_dag_list,unsigned int index){
 
-int i,j;
+unsigned int i,j;
 /** copy contents of R_dag into array - NOTE that as R_dag is an R MATRIX it is single dimension and just needs to be unrolled */
 /** dag->defn memory allocated in build_init_dag() */
 for(j=0;j<dag->numNodes;j++){for(i=0;i<dag->numNodes;i++){dag->defn[i][j]=INTEGER(VECTOR_ELT(R_dag_list,index))[i+j*dag->numNodes];}} 
@@ -147,7 +157,7 @@ for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){Rprintf("%u ",dag->def
 /** **************************************************************************************************/
 void init_hascycle(cycle *cyclestore,network *dag){
 
-unsigned int i,j;
+unsigned int i;
 unsigned int numnodes=dag->numNodes;
 unsigned int *isactive, *incomingedges;
 unsigned int **graph,*graphtmp;
@@ -237,6 +247,31 @@ void calc_network_Score(storage *nodescore,network *dag,datamatrix *obsdata, dou
  
 }
 
+/** *************************************************************************************************/
+/**  helps clarity in main() and checks to see whether the current node has previous been calculated */
+/** *************************************************************************************************/
+void calc_network_Score_reuse(storage *nodescore,network *dag,datamatrix *obsdata, double priordatapernode, int useK2, int verbose, SEXP R_labels,
+                              struct database *prevNodes, int enforce_db_size)
+{
+ int i;
+ int numnodes=dag->numNodes;
+ double lognetworkscore=0.0;
+ double curnodescore=0.0;
+ for(i=0;i<numnodes;i++){
+                         if(nodescoreisknown(dag,i,&curnodescore,prevNodes)){/** have previous calculated this node during search **/
+                                                                 lognetworkscore+=curnodescore;
+                         } else {/** not previously calculated so need to calculate this node */
+                                 curnodescore=calc_node_Score(nodescore,dag,obsdata,i,priordatapernode, useK2, verbose, R_labels);
+                                 /*Rprintf("nodescore=%f\n",curnodescore);*/ 
+                                 storenodescore(dag,i,curnodescore,prevNodes, enforce_db_size); 
+                                 lognetworkscore+=curnodescore;
+                                 }
+                         }
+ dag->networkScore=lognetworkscore;
+ 
+}
+
+
 /** ***************************************************************************/
 void init_network_score(storage *nodescore,network *dag){
 
@@ -258,9 +293,9 @@ double calc_node_Score(storage *nodescore,network *dag,datamatrix *obsdata,int n
 {
 /** learn a single node - this code is esily validated against R lib deal**/
 
-int totalparentcombs=0;
-int i,j,k;
-int numparents=0;
+unsigned int totalparentcombs=0;
+unsigned int i,j,k;
+unsigned int numparents=0;
 /*static int *parentindexes;*//** store the indexes in the network definition which are parents of the current node */
 /*static int first=1;*/
 int **parentcombs=dag->nodesparameters_lookup;/** will hold all parent combinations as indexes from 0,...k**/
@@ -490,7 +525,43 @@ for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){Rprintf("%u ",dag->ban
 #endif
 
 }
+/** *************************************************************************************/
+/** read in a DAG definition from an R matrix and copy into C array in network struct **/
+/** *************************************************************************************/
+void setretainlist(network *dag,SEXP R_dag){
 
+int i,j;
+
+/** copy contents of R_dag into array - NOTE that as R_dag is an R MATRIX it is single dimension and just needs to be unrolled */
+/** dag->banlist memory allocated in build_init_dag() */
+for(j=0;j<dag->numNodes;j++){for(i=0;i<dag->numNodes;i++){dag->retainlist[i][j]=INTEGER(R_dag)[i+j*dag->numNodes];}} 
+
+#ifdef DEBUG_dagretainlist   
+for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){Rprintf("%u ",dag->retainlist[i][j]);} Rprintf("\n");}    
+#endif
+
+}
+/** *************************************************************************************/
+/** read in a DAG definition from an R matrix and copy into C array in network struct **/
+/** *************************************************************************************/
+#ifdef OLD
+void setstartlist(network *dag,SEXP R_dag){
+
+int i,j;
+
+/** this needs some work - copy a list of matrices INTEGER(R_dag)[i+j*dag->numNodes] becomes 
+    INTEGER(VECTOR_ELT(R_dag,k)) for the kth matrix in the list**/
+
+/** copy contents of R_dag into array - NOTE that as R_dag is an R MATRIX it is single dimension and just needs to be unrolled */
+/** dag->banlist memory allocated in build_init_dag() */
+for(j=0;j<dag->numNodes;j++){for(i=0;i<dag->numNodes;i++){dag->startlist[i][j]=INTEGER(R_dag)[i+j*dag->numNodes];}} 
+
+#ifdef DEBUG_dagstartlist   
+for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){Rprintf("%u ",dag->startlist[i][j]);} Rprintf("\n");}    
+#endif
+
+}
+#endif
 /** *************************************************************************************************/
 /** *************************************************************************************************/
 void init_random_dag(storage *nodescore,network *dag){
@@ -511,7 +582,8 @@ nodescore->indexes=indexes;
 /** generate a random network from which to start a hill climbing search */
 /** do this but always starting with a null network and randomly add arcs, checking for cycle each time **/
 /** *************************************************************************************************/
-void generate_random_dag(cycle *cyclestore,storage *nodescore,network *dag,unsigned nopermuts, unsigned int maxparents, SEXP R_shuffle, unsigned int offset)
+void generate_random_dag(cycle *cyclestore,storage *nodescore,network *dag,unsigned nopermuts, unsigned int maxparents, SEXP R_shuffle, unsigned int offset,
+                         unsigned int searchnum, SEXP R_dag_start)
 {
  /** nopermuts is the number of links to add to the null network **/
 /*static unsigned int **order,*ordertmp;
@@ -531,7 +603,7 @@ if(first){order=(unsigned int **)malloc( maxlinkspossible*sizeof(unsigned int*))
 
 
 
-nullnetworkdefn(dag);/** start off with a null graph */
+nullnetworkdefn(dag,cyclestore, searchnum, R_dag_start);/** start off with a graph comprising of the given start graph */
 
 row=0;
 for(i=0;i<dag->numNodes;i++){
@@ -560,8 +632,9 @@ if(nolinks<nopermuts){Rprintf("warning: not all init.permuts arcs can be added i
 /** **************************************************************************************************/
 /** single step in hill-climbing search **************************************************************/
 /** **************************************************************************************************/
-void hill_climb_iter(storage *nodescore,cycle *cyclestore,network *dag_orig, network *dag_scratch,network *dag_opt1,network *dag_opt2, network *dag_opt3, unsigned int maxparents, 
-                    datamatrix *obsdata, double priordatapernode, int useK2, int verbose, SEXP R_labels)
+void hill_climb_iter(storage *nodescore,cycle *cyclestore,network *dag_orig, network *dag_scratch,network *dag_opt1,
+		     network *dag_opt2, network *dag_opt3, unsigned int maxparents, datamatrix *obsdata, double priordatapernode,
+		     int useK2, int verbose, SEXP R_labels, struct database *prevNodes, int enforce_db_size)
 {
  /** take a passed network and find network score for all the networks which add one, remove one, reverse one link **/
  /** iterate through each child and add a single link **/
@@ -581,7 +654,7 @@ dag_opt3->networkScore=-HUGE_VAL;
                            copynetworkdefn(dag_orig,dag_scratch); /** this could be streamlined since to re-copies full matrix **/        
                            if(add_arc(cyclestore,dag_scratch,i,j,maxparents)){ /** add an arc IF IT DOES NOT CREATE A CYCLE **/                        
                               /** adding arc was successful so get networkscore **/
-                              calc_network_Score(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels);
+                              calc_network_Score_reuse(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels,prevNodes,enforce_db_size);
 			      curscore=dag_scratch->networkScore;   
                               if(curscore>bestscore){bestscore=curscore;
                                                      copynetworkdefn(dag_scratch,dag_opt1);/** replace current graph with new best graph */
@@ -603,7 +676,7 @@ dag_opt3->networkScore=-HUGE_VAL;
                            copynetworkdefn(dag_orig,dag_scratch);        
                            if(remove_arc(dag_scratch,i,j)){ /** remove arc **/                        
                               /** remove arc was successful so get networkscore **/
-                             calc_network_Score(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels);
+                             calc_network_Score_reuse(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels,prevNodes,enforce_db_size);
 			      curscore=dag_scratch->networkScore;
 				if(curscore>bestscore){bestscore=curscore;
                                                      copynetworkdefn(dag_scratch,dag_opt2);/** replace current graph with new best graph */
@@ -624,7 +697,7 @@ dag_opt3->networkScore=-HUGE_VAL;
                            copynetworkdefn(dag_orig,dag_scratch);         
                            if(reverse_arc(cyclestore,dag_scratch,i,j,maxparents)){ /** reverse an arc **/                        
                               /** reversing arc was successful so get networkscore **/
-                              calc_network_Score(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels);
+                              calc_network_Score_reuse(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels,prevNodes,enforce_db_size);
 			      curscore=dag_scratch->networkScore;
 				if(curscore>bestscore){bestscore=curscore;
                                                      copynetworkdefn(dag_scratch,dag_opt3);/** replace current graph with new best graph */
@@ -660,13 +733,17 @@ if(   dag_opt3->networkScore > dag_opt1->networkScore &&
   /** at the end of this dag has the new best network in it **/
 } 
 /** *************************************************************************************************/
-/** try and make this inline since its a v.small function but helps clarity make DAG null/indep  */
+/** set initial DAG to the retain list - which must be provided even if its just a matrix of zeros  */
 /** *************************************************************************************************/
-void nullnetworkdefn(network *dag)
+void nullnetworkdefn(network *dag,cycle *cyclestore, unsigned int searchnum, SEXP R_dag_start)
 {
+ /** copy a matrix - dag - passed from R and set this each to dag->defn **/
  int i,j;
- for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){dag->defn[i][j]=0;}}
- 
+ /*for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){dag->defn[i][j]=dag->startlist[i][j];}}*/
+ for(i=0;i<dag->numNodes;i++){for(j=0;j<dag->numNodes;j++){dag->defn[i][j]=INTEGER(VECTOR_ELT(R_dag_start,searchnum))[i+j*dag->numNodes];}}   
+ /*INTEGER(VECTOR_ELT(R_dag,k)) kth entry in a list*/
+ /** check if this is acyclic **/
+ if(hascycle(cyclestore,dag)){error("The model definition in matrix start.m contains a cycle - all graphs must be acyclic");}
 }
 
 /** *************************************************************************************************/
@@ -697,7 +774,7 @@ return(dag->defn[child][parent]); /** 1 if could add link, 0 if otherwise (due t
 /** *************************************************************************************************/
  unsigned int remove_arc(network *dag, unsigned int child, unsigned int parent)
 {
- if(dag->defn[child][parent]){/** if arc currently in the graph **/
+ if(dag->defn[child][parent] && !dag->retainlist[child][parent]){/** if arc currently in the graph and NOT in retain list**/
             dag->defn[child][parent]=0; /** set to zero **/
             return(1);/** successfully removed the arc **/
  } else {return(0);} /** no arc to remove **/
@@ -716,6 +793,7 @@ unsigned int reverse_arc(cycle *cyclestore,network *dag, unsigned int child, uns
  if(    dag->defn[child][parent] /** link is present */
      && !dag->defn[parent][child] /** reverse link is not present */
      && !dag->banlist[parent][child] /** reverse link is not banned */
+     && !dag->retainlist[child][parent] /** current link is not in retain list */
     ){
               for(i=0;i<numnodes;i++){numparents+=dag->defn[parent][i];} /** check that reversed link will not already have maxparents **/
               if(numparents<maxparents){dag->defn[parent][child]=1;

@@ -3,15 +3,19 @@
 # PKG_CPPFLAGS=-IF:/MinGW/usr/local/include
 
 # lines below supplied by Brian Ripley and Uwe Ligges
+#ifeq "$(WIN)" "64"
+#PKG_LIBS = -L$(LIB64_GSL)/lib -lgsl
+#else
+#PKG_LIBS = -L$(LIB32_GSL)/lib -lgsl
+#endif
+#
+#ifeq "$(WIN)" "64"
+#    PKG_CPPFLAGS=-I$(LIB64_GSL)/include
+#     else
+#     PKG_CPPFLAGS=-I$(LIB32_GSL)/include
+#     endif
 
-ifeq "$(WIN)" "64"
-PKG_LIBS = -L$(LIB64_GSL)/lib -lgsl
-else
-PKG_LIBS = -L$(LIB32_GSL)/lib -lgsl
-endif
-
-ifeq "$(WIN)" "64"
-     PKG_CPPFLAGS=-I$(LIB64_GSL)/include
-     else
-     PKG_CPPFLAGS=-I$(LIB32_GSL)/include
-     endif
+# following line from Prof. B.D. Ripley 6th Sept. via email due to upgrade for gsl_1.15
+PKG_LIBS=-L$(LIB_GSL)/lib -lgsl -lgslcblas
+# the next line is a guess - using same form and update line from B.D.R.
+PKG_CPPFLAGS=-I$(LIB_GSL)/include

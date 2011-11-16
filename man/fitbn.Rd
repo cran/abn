@@ -18,8 +18,7 @@
 \description{Fits a Bayesian network to discrete data calculating the network score and parameter estimates.}
 
 \usage{
-fitbn (data.df, dag.m, prior.obs.per.node=NULL, useK2=FALSE,
-       verbose=FALSE)
+fitbn (data.df, dag.m, prior.obs.per.node=NULL, useK2=FALSE, verbose=FALSE)
 
 }
 
@@ -57,26 +56,33 @@ Lewis, F. I., Brulisauer, F. and Gunn, G. J. (2011). Structure discovery in Baye
 
 
 \examples{
-data(sim10var);## 10 categorical variables
 
-## manually create a network structure to be fitted to the data 
-dag.df<-matrix(c(0,0,0,0,0,0,0,0,0,0, ## var1
-                 0,0,0,0,1,0,0,0,0,0, ## var2<-var5
-                 0,0,0,0,1,0,0,0,0,0, ## var3<-var5
-                 0,0,0,0,0,0,0,0,0,0, ## var4
-                 0,0,0,0,0,0,0,0,0,0, ## var5
-                 1,0,0,0,0,0,0,0,0,0, ## var6<-var1
-                 0,1,0,0,0,0,0,0,0,0, ## var7<-var2
-                 1,0,1,0,0,0,0,0,0,0, ## var8<-var1:var3
-                 0,0,0,0,1,0,0,0,0,0, ## var9<-var5
-                 0,0,0,1,0,0,0,0,0,0),## var10<-var4
-                      byrow=TRUE,ncol=10);
-
-colnames(dag.df)<-names(sim10var);# must set names
-rownames(dag.df)<-names(sim10var);# must set names
-## fit DAG to data using K2 metric - this will warn about coercion to factors
-fitbn(data.df=sim10var,dag.m=dag.df, prior.obs.per.node=10,useK2=TRUE);
-
+## fit DAG to categorical data using K2 metric 
+bin.nodes<-c(1,3,4,6,9,10,11,12,15,18,19,20,21,26,27,28,32); 
+var33.cat<-var33[,bin.nodes];#categorical nodes only
+mydag<-matrix(c(
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v1
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v3
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v4  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v6  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v9  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v10  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v11  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v12  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v15  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v18 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v19
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v20 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v21 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v26 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v27 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v28 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  #v32 
+              ),byrow=TRUE,ncol=17); 
+colnames(mydag)<-rownames(mydag)<-names(var33.cat);#set names
+## now fit the model defined in mydag - full independence model
+fitbn (data.df=var33.cat, dag.m=mydag,useK2=TRUE);
+# this returns the network score goodness of fit = log marginal likelihood
 
 }
 

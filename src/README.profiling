@@ -1,0 +1,6 @@
+## install pprof - google performance tools google-pprof
+## 1. link with -lprofiler in LDFLAGS
+## 2. export LD_PRELOAD="/usr/lib/libprofiler.so.0"
+## 3. CPUPROFILE=/tmp/rprof.log R CMD BATCH --vanilla ../../profile.R out.R
+
+google-pprof --cum --gv /usr/local/lib64/R/bin/R /tmp/rprof.log
