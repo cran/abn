@@ -7,24 +7,29 @@
 #include "structs.h"
 #include "utility_fns.h"
 #include "network.h"
+#include "network_laplace.h"
 
 #include "laplace.h"
 #include "laplace_marginals.h"
-
+#include <gsl/gsl_errno.h>
 #define DEBUG_12
 
-SEXP getmarginals_additive(SEXP R_obsdata, SEXP R_dag,SEXP R_priors_mean, SEXP R_priors_sd,
-			 SEXP R_maxparents,SEXP R_numVarLevels, SEXP R_labels, SEXP R_verbose, SEXP R_posterior, SEXP R_numvariates,
-       SEXP R_whichnode, SEXP R_whichvariable)
+SEXP getmarginals_additive(SEXP R_obsdata, SEXP R_dag,SEXP R_priors_mean, SEXP R_priors_sd, SEXP R_priors_gamshape,SEXP R_priors_gamscale,
+			                     SEXP R_maxparents, SEXP R_verbose, SEXP R_vartype,
+                           SEXP R_posterior, SEXP R_numvariates,SEXP R_whichnode, SEXP R_whichvariable, SEXP R_whichgaus, SEXP R_maxiters, SEXP R_epsabs)
 {
 /** ****************/
 /** declarations **/
 unsigned int i,j,maxparents;
 unsigned int verbose;
-unsigned int marginals, numvariates,whichnode,whichvariable;
+unsigned int /*marginals,*/ numvariates,whichnode,whichvariable,whichgaus;
 datamatrix obsdata, designmatrix;
-const double *priormean=REAL(R_priors_mean);/*Rprintf("priormean=%f\n",priormean[0]);*/
-const double *priorsd=REAL(R_priors_sd);/*Rprintf("priorsd=%f\n",priorsd[0]);*/
+const double *priormean=REAL(R_priors_mean);/*Rprintf("priormean=%f\n",priormean[0],priormean[5]);*/
+const double *priorsd=REAL(R_priors_sd);/*Rprintf("priorsd=%f %f\n",priorsd[0],priorsd[5]);*/
+const double *priorgamshape=REAL(R_priors_gamshape);  /*Rprintf("priorgamshape=%f %f\n",priorgamshape[0],priorgamshape[1]);*/
+const double *priorgamscale=REAL(R_priors_gamscale);  /*Rprintf("priorgamscale=%f %f\n",priorgamscale[0],priorgamscale[1]);*/
+const int *vartype=INTEGER(R_vartype);
+/*Rprintf("vartype: ");for(i=0;i<LENGTH(R_vartype);i++){Rprintf("%d ",vartype[i]);} Rprintf("\n");*/
 network dag;
 cycle cyclestore;
 storage nodescore;
@@ -39,7 +44,11 @@ verbose=asInteger(R_verbose);
 numvariates=asInteger(R_numvariates);/** number of points at which to evaluate the posterior distibution **/
 whichnode=asInteger(R_whichnode); 
 whichvariable=asInteger(R_whichvariable);
-/*Rprintf("got %d %d\n",whichnode,whichvariable);*/
+whichgaus=asInteger(R_whichgaus);
+const int maxiters=asInteger(R_maxiters);
+const double epsabs=asReal(R_epsabs);
+
+/*Rprintf("got %d %d %d\n",whichnode,whichvariable, whichgaus);*/
 SEXP listresults;
 SEXP tmplistentry;
 /** end of argument parsing **/
@@ -65,12 +74,11 @@ for(i=0;i<2;i++){
  STEP 1. convert data.frame in R into C data structure for us with BGM functions */
 
 /** convert integer data.frame into datamatrix structure for passing to C function */
-df_to_dm(R_obsdata,&obsdata, R_numVarLevels);
-/** checked 21/05 - seems to work fine */
+df_to_dm_mixed(R_obsdata,&obsdata, vartype);
 
 /** initalise network structure - storage for network definition and all (hyper)parameters, 
      this covers any valid network with <=max.parents **/
-build_init_dag(&dag,&obsdata,maxparents);
+build_init_dag_mixed(&dag,&obsdata,maxparents);
 
 /** all this does is to set internally set dag->defn[child][parent] etc **/
 get_dag(&dag,R_dag);
@@ -81,16 +89,19 @@ init_hascycle(&cyclestore,&dag);
 if(hascycle(&cyclestore,&dag)){error("network definition is not acyclic!\n");}
 
 init_network_score(&nodescore,&dag);
-
 /*calc_network_Score(&nodescore,&dag,&obsdata,priordatapernode, useK2,verbose, R_labels);*/
 /** An R MATRIX it is single dimension and just needs to be unrolled */
 posterior=gsl_matrix_alloc(numvariates,2);
+
+gsl_set_error_handler_off();/*Rprintf("Note: turning off GSL Error handler\n");*/
+
 for(j=0;j<2;j++){for(i=0;i<numvariates;i++){gsl_matrix_set(posterior,i,j,REAL(R_posterior)[i+j*numvariates]);}} 
 
 /*for(i=0;i<numvariates;i++){Rprintf("%f %f\n",gsl_matrix_get(posterior,i,0),gsl_matrix_get(posterior,i,1));} */
 
-calc_network_Marginals_laplace(&nodescore,&dag,&obsdata,verbose,&designmatrix, R_labels,priormean,priorsd,whichnode,whichvariable,posterior);
-  
+calc_network_Marginals_laplace(&nodescore,&dag,&obsdata,verbose,&designmatrix,priormean,priorsd,priorgamshape,priorgamscale,
+                               whichnode,whichvariable,whichgaus,posterior,maxiters,epsabs);
+                                 
 /** Roll back into an R MATRIX */
 for(j=0;j<2;j++){for(i=0;i<numvariates;i++){REAL(VECTOR_ELT(listresults,j))[i]=gsl_matrix_get(posterior,i,j);}} 
 
@@ -108,6 +119,7 @@ for(i=(len-1);i>=(len-5)+1-1;i--){Rprintf("%d\n",x[i]);}
   */      
         /** set up memory storage for any network which has each node with <=maxparents **/
 
+gsl_set_error_handler (NULL);/** restore the error handler*/
 
 UNPROTECT(1);
 /*PutRNGstate();*/

@@ -44,7 +44,7 @@ makeintofactors<-function(data.df){
 ##    1 - 00010010011001
 ##    2 - 01010100001000
 ##    etc
-makeintobinarymatrix<-function(dag.df){
+makeintobinarymatrix<-function(dag.df,ban){
         if(!is.matrix(dag.df)){stop("DAG must be a matrix");}
         if(is.null(colnames(dag.df)) || is.null(rownames(dag.df))){stop("must have both row and column names set in DAG");}
         for(i in 1:dim(dag.df)[1]){##for each variable
@@ -52,7 +52,7 @@ makeintobinarymatrix<-function(dag.df){
                 stop("DAG definition invalid\n");}}
         if(dim(dag.df)[1]!=dim(dag.df)[2]){stop("matrix must be square");}
         for(i in 1:dim(dag.df)[1]){##for each variable
-                                      if(dag.df[i,i]!=0){stop("child cannot be its own parent - diagonal entries must be zero");}}
+                                      if(dag.df[i,i]!=0 && !ban){stop("child cannot be its own parent - diagonal entries must be zero");}}
         ##end of checks so now coerce 
         local.df<-matrix(integer(dim(dag.df)[1]*dim(dag.df)[2]),ncol=dim(dag.df)[2]);
          for(i in 1:dim(dag.df)[1]){##for each variable   

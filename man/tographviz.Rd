@@ -18,18 +18,18 @@
 \description{Given a matrix defining a DAG create a text file suitable for plotting with graphviz}
 
 
-\usage{tographviz(dag,outfile)
+\usage{tographviz(dag,data.df,outfile)
 
 }
 
 %- maybe also `usage' for other objects documented here.
 \arguments{
   \item{dag}{a matrix defining a DAG}
+  \item{data.df}{a data frame containing the data used for learning the network}
   \item{outfile}{a character string giving the filename which will contain the graphviz graph}
 }
 
-\details{Graphviz - \url{www.graphviz.org} is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG so this can be plotted using graphviz. Graphviz is available as an R package, Rgraphviz, through the Bioconductor project \url{http://www.bioconductor.org/} }  
-
+\details{Graphviz - \url{www.graphviz.org} is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG so this can be plotted using graphviz. Graphviz is available as an R package, Rgraphviz, through the Bioconductor project \url{http://www.bioconductor.org/} (and requires a working installation of graphviz). The data.df argument is used to determine which nodes are binary and which are gaussian, where the former will appear as squares in the resulting graphviz network diagram and the latter as ovals. There are many other shapes possible for nodes  and numerous other visual enhancements - see graphviz documentation - which can be added by editing the raw outfile produced. For full manual editing, particularly of the layout, one easy solution is to convert a postscript graph into a vector format using pstoedit \url{www.pstoedit.net} and edit using a vector drawing tool like xfig.} 
 
 
 \value{nothing is returned}
@@ -40,24 +40,8 @@
 }
 
 \examples{
-dag<-matrix(c(0,0,0,0,0,0,0,0,0,0, ## var1
-                 0,0,0,0,1,0,0,0,0,0, ## var2<-var5
-                 0,0,0,0,1,0,0,0,0,0, ## var3<-var5
-                 0,0,0,0,0,0,0,0,0,0, ## var4
-                 0,0,0,0,0,0,0,0,0,0, ## var5
-                 1,0,0,0,0,0,0,0,0,0, ## var6<-var1
-                 0,1,0,0,0,0,0,0,0,0, ## var7<-var2
-                 1,0,1,0,0,0,0,0,0,0, ## var8<-var1:var3
-                 0,0,0,0,1,0,0,0,0,0, ## var9<-var5
-                 0,0,0,1,0,0,0,0,0,0),## var10<-var4
-                      byrow=TRUE,ncol=10);
 
-colnames(dag)<-c("var1","var2","var3","var4","var5",
-                 "var6","var7","var8","var9","var10");
-rownames(dag)<-colnames(dag);
-\dontrun{tographviz(dag,outfile="mygraph.dot");}
-\dontrun{system("dot -Tps -o mygraph.ps mygraph.dot");}
-## dot is part of graphviz on unix
+## see abn vignette for examples
 
 }
 

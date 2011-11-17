@@ -7,24 +7,33 @@
 #include "structs.h"
 #include "utility_fns.h"
 #include "network.h"
+#include "network_laplace.h"
 #include <R_ext/Utils.h>
 #include "laplace.h"
 #include "searchfornetwork_additive.h"
+#include "scorereuse.h"
+#include <gsl/gsl_errno.h>
 
 #define DEBUG_12
 
-SEXP searchfornetwork_additive(SEXP R_obsdata, SEXP R_dag,SEXP R_maxparents, SEXP R_priors_mean, SEXP R_priors_sd, SEXP R_numVarLevels, 
-                      SEXP R_nopermuts, SEXP R_shuffle, SEXP R_labels)
+SEXP searchfornetwork_additive(SEXP R_obsdata, SEXP R_dag,SEXP R_maxparents, SEXP R_priors_mean, SEXP R_priors_sd, SEXP R_priors_gamshape,SEXP R_priors_gamscale,
+                               SEXP R_vartype,SEXP R_nopermuts, SEXP R_shuffle, SEXP R_dag_retain, SEXP R_dag_start,SEXP R_db_size, SEXP R_maxiters, SEXP R_epsabs,
+                               SEXP R_errorverbose, SEXP R_enforce_db_size)
 {
 /** ****************/
 /** declarations **/
-unsigned int i,maxparents,nopermuts;/*,numObs,numNodes*/;
+unsigned int i,maxparents,nopermuts,db_size,enforce_db_size;/*,numObs,numNodes*/;
 datamatrix obsdata, designmatrix;
 network dag,dag_scratch,dag_opt1,dag_opt2,dag_opt3,dag_best;
 const double *priormean=REAL(R_priors_mean);/*Rprintf("priormean=%f\n",priormean[0]);*/
 const double *priorsd=REAL(R_priors_sd);/*Rprintf("priorsd=%f\n",priorsd[0]);*/
+const double *priorgamshape=REAL(R_priors_gamshape);  /*Rprintf("priorgamshape=%f %f\n",priorgamshape[0],priorgamshape[1]);*/
+const double *priorgamscale=REAL(R_priors_gamscale);  /*Rprintf("priorgamscale=%f %f\n",priorgamscale[0],priorgamscale[1]);*/
+const int *vartype=INTEGER(R_vartype);
 unsigned int first;
 int iter=0;
+struct database prevNodes;/** this will store scores for previous nodes for re-use */
+
 /** end of declarations*/
 /** *******************/
 /*GetRNGstate();*/
@@ -36,14 +45,18 @@ numObs=LENGTH(VECTOR_ELT(R_obsdata,0));
 obsdata.numVars=numNodes;*/
 maxparents=asInteger(R_maxparents);
 nopermuts=asInteger(R_nopermuts);
-SEXP listresults;
+db_size=asInteger(R_db_size);
+SEXP listresults=0;
 SEXP tmplistentry;
 double lognetworkscore;/*,bestlognetworkscore;*/
 SEXP ans;
 int listsize=0;
-int verbose=0;
+int errverbose=asInteger(R_errorverbose);
 cycle cyclestore;
 storage nodescore;
+const int maxiters=asInteger(R_maxiters);
+const double epsabs=asReal(R_epsabs);
+enforce_db_size=asInteger(R_enforce_db_size);
 /** end of argument parsing **/
 
 /** *******************************************************************************
@@ -57,27 +70,35 @@ STEP 0. - create R storage for sending results back                             
  STEP 1. convert data.frame in R into C data structure for us with BGM functions */
 
 /** convert integer data.frame into datamatrix structure for passing to C function */
-df_to_dm(R_obsdata,&obsdata, R_numVarLevels);
+df_to_dm_mixed(R_obsdata,&obsdata, vartype);
 /** checked 21/05 - seems to work fine */
 
 /** initalise network structure - storage for network definition and all (hyper)parameters, 
      this covers any valid network with <=max.parents **/
-build_init_dag(&dag,&obsdata,maxparents);
+build_init_dag_mixed(&dag,&obsdata,maxparents);
 /** all this does is to set internally set dag->banlist[child][parent] etc **/
 setbanlist(&dag,R_dag);/** create banned links in initial search graph construction - default is not banned arcs**/
+/** NOW for new part - retain list - these arcs must be kept in every new model found */
+setretainlist(&dag,R_dag_retain);/** note - sets dag->retainlist*/
+/*setstartlist(&dag,R_dag_start);*//** note - sets dag->startlist*/
 
-build_init_dag(&dag_scratch, &obsdata,maxparents);/** create a second dag - a working copy for adding arcs etc **/
+build_init_dag_mixed(&dag_scratch, &obsdata,maxparents);/** create a second dag - a working copy for adding arcs etc **/
 setbanlist(&dag_scratch,R_dag);/** create banned links in working copy - again default is no banned arcs**/
+setretainlist(&dag_scratch,R_dag_retain);
+/*setstartlist(&dag_scratch,R_dag_start);*//** note - sets dag->startlist*/
 
-build_init_dag(&dag_opt1, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best add arc etc **/
-build_init_dag(&dag_opt2, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best removed arc etc **/
-build_init_dag(&dag_opt3, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best reversed arc etc **/
+build_init_dag_mixed(&dag_opt1, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best add arc etc **/
+build_init_dag_mixed(&dag_opt2, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best removed arc etc **/
+build_init_dag_mixed(&dag_opt3, &obsdata,maxparents);/** create a working copy local to hill_climb_iter for holding best reversed arc etc **/
 
-build_init_dag(&dag_best, &obsdata,maxparents); /** simply used to hold the best network found */
+build_init_dag_mixed(&dag_best, &obsdata,maxparents); /** simply used to hold the best network found */
 
-init_network_score(&nodescore,&dag);/** initilise storage for network score **/
+init_network_score_mixed(&nodescore,&dag);/** initilise storage for network score **/
 init_random_dag(&nodescore,&dag);/** initilise storage for random dag **/
 init_hascycle(&cyclestore,&dag); /** initialise storage but needs to be passed down through generate_random_dag etc */
+init_nodedatabase(&prevNodes,&dag,db_size,1);/** memory allocation */
+
+gsl_set_error_handler_off();/*Rprintf("Note: turning off GSL Error handler\n");*/
 
 for(i=0;i<2;i++){/** This is used to run the search TWICE - inefficient but easiest way to deal with R memory allocation
                      since the number of steps taken in the stepwise search are not known in advance and so the list length
@@ -86,13 +107,15 @@ for(i=0;i<2;i++){/** This is used to run the search TWICE - inefficient but easi
                      repeat search this time starting off the making the necessary R allocations. Inefficient but search a single
                      network does not take long anyway. The if(i==1) are just the storage bits*/
 
-if(i==1){verbose=1;} /** this just turns on some output to STDOUT in hill_climb_iter **/
+/*if(i==1){verbose=1;}*/ /** this just turns on some output to STDOUT in hill_climb_iter **/
 
 /** THIS PART NEED TO ADJUST *******/
-generate_random_dag(&cyclestore,&nodescore,&dag,nopermuts,maxparents,R_shuffle,0); /** replace the dag->defn with a new structure **/ 
-/*calc_network_Score(&dag,&obsdata,priordatapernode, useK2,0,R_labels);*//** 0 is to turn off printing out parameters for each node */
-/*calc_network_Score(&nodescore,&dag,&obsdata,priordatapernode, useK2,0,R_labels);*/
-calc_network_Score_laplace(&nodescore,&dag,&obsdata,0,&designmatrix, R_labels,priormean,priorsd);
+generate_random_dag(&cyclestore,&nodescore,&dag,nopermuts,maxparents,R_shuffle,0,0,R_dag_start); /** replace the dag->defn with a new structure **/ 
+
+/** note - don't need to stop errverbose output on first (or second) iteration as it will only be produced on the first iteration as the nodes will be stored
+    and so the calc_node...() which contains the errverbose statement will not be called again */
+calc_network_Score_laplace_reuse(&nodescore,&dag,&obsdata,0,&designmatrix, priormean,priorsd,priorgamshape,priorgamscale,&prevNodes,maxiters,epsabs,errverbose,enforce_db_size); 
+/*calc_network_Score_laplace(&nodescore,&dag,&obsdata,verbose,&designmatrix, priormean,priorsd,priorgamshape,priorgamscale);  */
 
 if(i==1){Rprintf("initial network: (log) network score = %f\n",dag.networkScore);
          /** now arrange the R memory structures **/
@@ -113,7 +136,6 @@ if(i==1){/** creates an R matrix which will contain the network structure of the
          /** we have now stored the structure and network score of the initial network */
          }
 
-
 /** now for the actual search process */
 lognetworkscore=dag.networkScore;/** start off with score of the random starting network */
            first=1;iter=1;
@@ -125,7 +147,7 @@ lognetworkscore=dag.networkScore;/** start off with score of the random starting
                                 &dag_opt1,
                                 &dag_opt2,
                                 &dag_opt3,
-                                maxparents,&obsdata,&designmatrix, priormean,priorsd,0,R_labels);/** &dag will have new best network*/
+                                maxparents,&obsdata,&designmatrix, priormean,priorsd,priorgamshape,priorgamscale,0,&prevNodes,maxiters,epsabs,errverbose,enforce_db_size);/** &dag will have new best network*/
                 R_CheckUserInterrupt();/** allow an interupt from R console */ 
                 /** got a better network then update score and structure, if not do nothing and while() will terminate */
                 if(dag.networkScore>lognetworkscore){
@@ -143,7 +165,12 @@ lognetworkscore=dag.networkScore;/** start off with score of the random starting
           listsize=iter+1;/** used to set length of R outer list - checked and this works so dont change */
                    
    } /** END OF outer for loop which runs the search twice **/
-       
+
+/** some diagnostic messages */
+ if(prevNodes.nodecacheexceeded){Rprintf("Note: db.size of %u exceeded. %u calls to db after limit reached (n.b. the same nodes may be called multiple times)\n",prevNodes.length,prevNodes.overflownumentries);}       
+
+gsl_set_error_handler (NULL);/** restore the error handler*/
+
 /*UNPROTECT(listsize+1);*/
 UNPROTECT(1);
 
@@ -162,8 +189,10 @@ return(listresults);
 /** **************************************************************************************************/
 /** single step in hill-climbing search **************************************************************/
 /** **************************************************************************************************/
-void hill_climb_iter_additive(storage *nodescore,cycle *cyclestore,network *dag_orig, network *dag_scratch,network *dag_opt1,network *dag_opt2, network *dag_opt3, unsigned int maxparents, 
-                    datamatrix *obsdata, datamatrix *designmatrix, const double *priormean, const double *priorsd, int verbose, SEXP R_labels)
+void hill_climb_iter_additive(storage *nodescore,cycle *cyclestore,network *dag_orig, network *dag_scratch,network *dag_opt1,network *dag_opt2, network *dag_opt3, 
+                              unsigned int maxparents, datamatrix *obsdata, datamatrix *designmatrix, const double *priormean, const double *priorsd,
+                              const double *priorgamshape, const double *priorgamscale, int verbose,struct database *prevNodes,const int maxiters, const double epsabs,
+                              const int errverbose, int enforce_db_size)
 {
  /** take a passed network and find network score for all the networks which add one, remove one, reverse one link **/
  /** iterate through each child and add a single link **/
@@ -184,7 +213,9 @@ dag_opt3->networkScore=-HUGE_VAL;
                            if(add_arc(cyclestore,dag_scratch,i,j,maxparents)){ /** add an arc IF IT DOES NOT CREATE A CYCLE **/                        
                               /** adding arc was successful so get networkscore **/
                               /*calc_network_Score(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels);*/
-			      calc_network_Score_laplace(nodescore,dag_scratch,obsdata,verbose,designmatrix, R_labels,priormean,priorsd);
+			      /*calc_network_Score_laplace(nodescore,dag_scratch,obsdata,verbose,designmatrix, priormean,priorsd); */
+			      calc_network_Score_laplace_reuse(nodescore,dag_scratch,obsdata,verbose,designmatrix, priormean,priorsd,priorgamshape,priorgamscale,prevNodes,
+                                             maxiters,epsabs,errverbose,enforce_db_size);
 			      curscore=dag_scratch->networkScore;   
                               if(curscore>bestscore){bestscore=curscore;
                                                      copynetworkdefn(dag_scratch,dag_opt1);/** replace current graph with new best graph */
@@ -207,7 +238,8 @@ dag_opt3->networkScore=-HUGE_VAL;
                            if(remove_arc(dag_scratch,i,j)){ /** remove arc **/                        
                               /** remove arc was successful so get networkscore **/
                              /*calc_network_Score(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels);*/
-			     calc_network_Score_laplace(nodescore,dag_scratch,obsdata,verbose,designmatrix, R_labels,priormean,priorsd);
+			     calc_network_Score_laplace_reuse(nodescore,dag_scratch,obsdata,verbose,designmatrix, priormean,priorsd,priorgamshape,priorgamscale,prevNodes,
+                                            maxiters,epsabs,errverbose,enforce_db_size);
 			      curscore=dag_scratch->networkScore;
 				if(curscore>bestscore){bestscore=curscore;
                                                      copynetworkdefn(dag_scratch,dag_opt2);/** replace current graph with new best graph */
@@ -229,7 +261,8 @@ dag_opt3->networkScore=-HUGE_VAL;
                            if(reverse_arc(cyclestore,dag_scratch,i,j,maxparents)){ /** reverse an arc **/                        
                               /** reversing arc was successful so get networkscore **/
                               /*calc_network_Score(nodescore,dag_scratch,obsdata,priordatapernode, useK2, 0, R_labels);*/
-			      calc_network_Score_laplace(nodescore,dag_scratch,obsdata,verbose,designmatrix, R_labels,priormean,priorsd);
+			      calc_network_Score_laplace_reuse(nodescore,dag_scratch,obsdata,verbose,designmatrix, priormean,priorsd,priorgamshape,priorgamscale,prevNodes,
+                                             maxiters,epsabs,errverbose,enforce_db_size);
 			      curscore=dag_scratch->networkScore;
 				if(curscore>bestscore){bestscore=curscore;
                                                      copynetworkdefn(dag_scratch,dag_opt3);/** replace current graph with new best graph */

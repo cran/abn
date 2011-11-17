@@ -24,12 +24,15 @@
 ##    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ######################################################################
 
-tographviz<-function(dag,outfile){
+tographviz<-function(dag,data.df,outfile){
             if(!is.matrix(dag)){stop("must be a matrix");}
             if(is.null(rownames(dag)) || is.null(colnames(dag))){stop("names must be set");}
             ## create header part
             cat("digraph dag {","\n\n",file=outfile,append=FALSE);
-            cat(paste("\"",colnames(dag),"\"",collapse=";\n",sep=""),file=outfile,append=TRUE);
+            for(i in 1:length(colnames(dag))){
+                                 if(is.factor(data.df[,i])){cat(paste("\"",colnames(dag)[i],"\"[shape=square];\n",sep=""),file=outfile,append=TRUE);
+                       } else {cat(paste("\"",colnames(dag)[i],"\"[shape=oval];\n",sep=""),file=outfile,append=TRUE);}
+            }
             cat("\n\n\n",file=outfile,append=TRUE)
     
     for(i in colnames(dag)){##for each variable

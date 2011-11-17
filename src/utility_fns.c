@@ -47,6 +47,35 @@ obsdata->numDataPts=numDataPts;/** total number of case/observations */
 /** **********************************************************************************************/
 /** **********************************************************************************************/
 /** **********************************************************************************/
+/** convert integer data.frame into datamatrix structure for passing to C function */
+void df_to_dm_mixed(SEXP R_obsdata,datamatrix *obsdata, const int *vartype)
+{
+int numDataPts,numVars,i,j;
+numVars=LENGTH(R_obsdata);/** number of columns in data.frame */
+numDataPts=LENGTH(VECTOR_ELT(R_obsdata,0));
+double **data, *tmpdata;
+
+
+/** create a copy of R_data.frame into 2-d C array of ints - note: each CASE is an array NOT each variable */ 
+data=(double **)R_alloc( (numDataPts),sizeof(double*));/** number of ROWS*/
+	for(i=0;i<numDataPts;i++){tmpdata=(double *)R_alloc( numVars,sizeof(double)); data[i]=tmpdata;} 
+
+  for(i=0;i<numDataPts;i++){/** for each CASE/observation **/
+     for(j=0;j<numVars;j++){/** for each variable **/
+                             data[i][j]=REAL(VECTOR_ELT(R_obsdata,j))[i];/** copy data.frame cell entry into C 2-d array entry **/
+                             
+                              }
+     }
+ 
+obsdata->dataDouble=data;/** original observed data */
+obsdata->numVars=numVars;/** total number of variables */
+obsdata->numDataPts=numDataPts;/** total number of case/observations */
+obsdata->vartype=vartype;
+
+}
+/** **********************************************************************************************/
+/** **********************************************************************************************/
+/** **********************************************************************************/
 void store_results(SEXP R_listresults,network *dag, int iter, SEXP ans, int verbose){
 
 int *rans;

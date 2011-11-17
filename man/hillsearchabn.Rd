@@ -13,15 +13,19 @@
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Repeated searches for locally optimal additive Bayesian Networks}
+\title{Repeated searches for locally optimal additive Bayesian Networks for continuous and/or binary data}
 
 \description{Implements repeated local stepwise hill-climbing heuristic}
 
 \usage{
-hillsearchabn (data.df,banned.m,hyper.params=list("mean"=c(0),
-              "var"=c(1000)), 
-              max.parents=NULL,init.permuts=0,num.searches=1)
-
+hillsearchabn (data.df,banned.m,retain.m,start.m,
+                 hyper.params=list("mean"=c(0),
+                                   "sd"=c(sqrt(1000)),
+                                   "shape"=c(0.001),
+                                   "scale"=c(1/0.001)),
+               max.parents=NULL,init.permuts=0,num.searches=1,db.size=10000,
+               localdb=TRUE,timing=TRUE,max.iters=100,epsabs=1e-7,
+               error.verbose=FALSE,enforce.db.size=TRUE)
 }
 
 %- maybe also `usage' for other objects documented here.
@@ -29,17 +33,27 @@ hillsearchabn (data.df,banned.m,hyper.params=list("mean"=c(0),
   \item{data.df}{a data frame containing the data used for learning the network}
   \item{banned.m}{a matrix defining which arcs are to be banned in the network 
                   search, see details}
- \item{hyper.params}{prior mean and var in Gaussian prior distribution for regression coefficients on logit scale, see details}
+  \item{retain.m}{a matrix defining which arcs are to be banned in the network 
+                  search, see details}
+\item{start.m}{a list of a matrices defining starting DAGs, see details}
+ \item{hyper.params}{prior means and standard deviations in Gaussian prior distribution for regression coefficients, see details}
   \item{max.parents}{maximum number of parents allowed per node in the network search,
                      applies to all nodes}
   \item{init.permuts}{number of permutations applied to an initially empty network from
                       which the search heuristic then commences, see details.}
   \item{num.searches}{number of times to run the individual local search} 
+  \item{db.size}{the number of individual node score to store so they do not need to be re-calculated during network score calculations.}
+\item{localdb}{logical, should the node cache be reset after each individual search - optimal choice is data dependent}
+\item{timing}{logical, output elapsed CPU time taken during each individual search.}
+\item{max.iters}{maximum number of iterations used to find root in Laplace approximation}
+ \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
+\item{error.verbose}{logical, if TRUE then extra information is printed to the terminal about any numerical convergence issues in the Laplace approximation}
+\item{enforce.db.size}{logical, if TRUE then if the db.size is exceeded then the search is killed off}
 }
 
 \details{
   This runs same search as in \code{searchabn} but repeated num.searches times to produce
-  a collection of locally optimal networks. It is structurally similar to \code{hillsearchbn}.
+  a collection of locally optimal networks. 
 
 }
 
@@ -66,31 +80,67 @@ hillsearchabn (data.df,banned.m,hyper.params=list("mean"=c(0),
 
 
 \examples{
-data(sim10var);## 10 categorical variables
+mydag<-matrix(c(
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#1
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#2  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#3  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#4  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#5  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#6  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#7  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#8  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#9  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#10 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#11 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#12 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#13 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#14 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#15 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#16 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#17 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#18 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#19 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#20 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#21 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#22 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#23 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#24 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#25 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#26 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#27 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#28 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#29 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#30
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#31
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#32 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 #33
+                                               ),byrow=TRUE,ncol=33); 
+colnames(mydag)<-rownames(mydag)<-names(var33);#set names
+## create empty DAGs
+banned<-matrix(rep(0,dim(var33)[2]^2),ncol=dim(var33)[2]);
+colnames(banned)<-rownames(banned)<-names(var33);#set names
+retain<-matrix(rep(0,dim(var33)[2]^2),ncol=dim(var33)[2]);
+colnames(retain)<-rownames(retain)<-names(var33);#set names
+start<-matrix(rep(0,dim(var33)[2]^2),ncol=dim(var33)[2]);
+colnames(start)<-rownames(start)<-names(var33);#set names
 
-##  a matrix of arcs to be banned from the search process 
-##  - do not ban any arcs - empty matrix
-banned<-matrix(c(      0,0,0,0,0,0,0,0,0,0, ## X1
-                       0,0,0,0,0,0,0,0,0,0, ## X2
-                       0,0,0,0,0,0,0,0,0,0, ## X3
-                       0,0,0,0,0,0,0,0,0,0, ## X4
-                       0,0,0,0,0,0,0,0,0,0, ## X5
-                       0,0,0,0,0,0,0,0,0,0, ## X6
-                       0,0,0,0,0,0,0,0,0,0, ## X7
-                       0,0,0,0,0,0,0,0,0,0, ## X8
-                       0,0,0,0,0,0,0,0,0,0, ## X9
-                       0,0,0,0,0,0,0,0,0,0),## X10
-                       byrow=TRUE,ncol=10);
-colnames(banned)<-names(sim10varadd);# must set names
-rownames(banned)<-names(sim10varadd);# must set names
+set.seed(10000);## only affects init.permuts
+start.list<-list();
+n.searches<-2;#example only - must be *much* larger in practice
+for(i in 1:n.searches){start.list[[i]]<-retain;} ## empty networks
+myres<-hillsearchabn(data.df=var33,banned.m=banned,retain.m=retain,
+                     start.m=start.list,
+                     hyper.params=list(
+                     mean=rep(0,dim(var33)[2]+1),
+                     sd=rep(sqrt(1000),dim(var33)[2]+1), 
+                     shape=rep(0.001,16),## 16 Gaussian nodes
+                     scale=rep(1/0.001,16)## 16 Gaussian nodes
+                     ),
+                     max.parents=2, 
+                     num.searches=n.searches,
+                     init.permuts=20,db.size=20000,
+                     localdb=TRUE,timing=TRUE);
 
-## run the search 
-## only consider networks with 3 or less parents per node
-\dontrun{myres<-hillsearchabn(data.df=sim10varadd,banned.m=banned, 
-                 hyper.params=list(
-                 mean=c(0,0,0,0,0,0,0,0,0,0,0),
-                 var=c(100,100,100,100,100,100,100,100,100,100,100)),
-                 max.parents=3,init.permuts=0, num.searches=2);}
 
 }
 

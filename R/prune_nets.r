@@ -30,13 +30,13 @@ prunenets<-function(dags.list,threshold.freq){
             tot<-matrix(rep(0,numvars*numvars),ncol=numvars);## this will contain the total freq of each arc
             for(i in 1:length(dags.list)){tot<-tot+dags.list[[i]];}
             ## step 2. prune each network             
-            trimmed<-dags.list;## a copy just to avoid addition mallocing - hopefully. Each entry is overwritten
-            for(i in 1:length(dags.list)){
-            best<-dags.list[[i]];
-            best2<-best*tot;## this removes from tot any arcs which were not in best (NOTE: best is contained in tot)
-            best.trimmed<-apply(best2,c(1,2),FUN=trim,threshold=threshold.freq); 
-            trimmed[[i]]<-best.trimmed;
-            }
-            return(list(arcs.sum=tot,dags=trimmed)); 
+            #trimmed<-dags.list;## a copy just to avoid addition mallocing - hopefully. Each entry is overwritten
+            #for(i in 1:length(dags.list)){
+            #best<-dags.list[[i]];
+            #best2<-best*tot;## this removes from tot any arcs which were not in best (NOTE: best is contained in tot)
+            #best.trimmed<-apply(best2,c(1,2),FUN=trim,threshold=threshold.freq); 
+            #trimmed[[i]]<-best.trimmed;
+            #}
+            return(list(arcs.sum=tot));#,dags=trimmed)); 
 }
 

@@ -23,7 +23,7 @@
 \usage{
 
 makeintofactors(data.df)
-makeintobinarymatrix(dag.df)
+makeintobinarymatrix(dag.df,ban)
 trim(val,threshold) 
 }
 

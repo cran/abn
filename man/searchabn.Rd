@@ -13,15 +13,19 @@
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Search for a locally optimal additive Bayesian Network}
+\title{Search for a locally optimal additive Bayesian network model for continuous and/or binary data}
 
 \description{Implements a local stepwise hill-climbing heuristic searching from an initial random DAG}
 
 
 \usage{
-searchabn (data.df,banned.m,
-           hyper.params=list("mean"=c(0),"var"=c(1000)),
-           max.parents=NULL,init.permuts=0)
+searchabn (data.df,banned.m,retain.m,start.m,
+                     hyper.params=list("mean"=c(0),
+                                       "sd"=c(sqrt(1000)),
+                                       "shape"=c(0.001),
+                                       "scale"=c(1/0.001)),
+           max.parents=NULL,init.permuts=0,db.size=10000,max.iters=100,epsabs=1e-7,
+          error.verbose=FALSE,enforce.db.size=TRUE)
 
 }
 
@@ -29,16 +33,20 @@ searchabn (data.df,banned.m,
 \arguments{
   \item{data.df}{a data frame containing the data used for learning each network}
   \item{banned.m}{a matrix defining which arcs are to be banned in the network search, see details}
-  \item{hyper.params}{prior mean and var in Gaussian prior distribution for regression coefficients on logit scale, see details}
+  \item{retain.m}{a matrix defining which arcs are to be banned in the network search, see details}
+  \item{start.m}{a matrix defining which arcs are to be banned in the network search, see details} 
+  \item{hyper.params}{prior means and standard deviations in Gaussian prior distribution for regression coefficients, see details}
   \item{max.parents}{maximum number of parents allowed per node in the network search, applies to all nodes}
   \item{init.permuts}{number of permutations applied to an initially empty network from which the search heuristic then commences, see details.} 
-}
+  \item{db.size}{the number of individual node score to store so they do not need to be re-calculated during network score calculations.}
+  \item{max.iters}{maximum number of iterations used to find root in Laplace approximation}
+  \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
+  \item{error.verbose}{logical, if TRUE then extra information is printed to the terminal about any numerical convergence issues in the Laplace approximation}
+  \item{enforce.db.size}{logical, if TRUE then if the db.size is exceeded then the search is killed off}
+ }
 
 \details{
-  The procedure starts with a randomly constructed DAG created by adding arcs to an initially empty network, the number of arcs added is set by init.permuts subject to i) that a cycle is not created; ii) that no node has more than max.parents parents; and iii) the arc is not prohibited by being in banned.m. The prior is explained in \code{fitabn}. At each stage in the search the current DAG is permuted by i) adding an arc; ii) removing an arc; and iii) reversing an arc; where these permutations are all subject to the previous three constraints. The search progresses to the permuted network with the maximum score (provided that it is greater than that of the current DAG, else the search terminates).  
-
-  In the banned arcs definition, banned.m, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format.  
-
+ The procedure starts with the DAG given in start.m and randomly adds arcs to this, the number of which is set by init.permuts subject to i) that a cycle is not created; ii) that no node has more than max.parents parents; and iii) the arc is not prohibited by being in banned.m. The choice of K2 or BDeu metric is explained in \code{fitbn}. A each stage in the search the current DAG is permuted by i) adding an arc; ii) removing an arc; and iii) reversing an arc; where these permutations are all subject to the previous three constraints in addition that no arcs in retain.m can be removed. The search progresses to the permuted network with the maximum score (provided that it is greater than that of the current DAG, else the search terminates). Note that only minimal checks are done on start.m and retain.m to check for inconsistencies and retain.m should be included in start.m. See \code{fitbn} and dag.m for the format of the matrices start.m, banned.m and retain.m.  The hyper.parameters are explained in \code{fitabn}.
 }
 
 
@@ -58,39 +66,40 @@ Further information about \bold{abn} can be found at:\cr
 \seealso{\code{\link{fitbn}}, \code{\link{hillsearchbn}}}
 
 \examples{
-data(sim10varadd);## 10 categorical variables
-
-##  a matrix of arcs to be banned from the search process
-# - do not ban any arcs - empty matrix
-banned<-matrix(c(      0,0,0,0,0,0,0,0,0,0, ## X1
-                       0,0,0,0,0,0,0,0,0,0, ## X2
-                       0,0,0,0,0,0,0,0,0,0, ## X3
-                       0,0,0,0,0,0,0,0,0,0, ## X4
-                       0,0,0,0,0,0,0,0,0,0, ## X5
-                       0,0,0,0,0,0,0,0,0,0, ## X6
-                       0,0,0,0,0,0,0,0,0,0, ## X7
-                       0,0,0,0,0,0,0,0,0,0, ## X8
-                       0,0,0,0,0,0,0,0,0,0, ## X9
-                       0,0,0,0,0,0,0,0,0,0),## X10
-                       byrow=TRUE,ncol=10);
-
-colnames(banned)<-names(sim10varadd);# must set names
-rownames(banned)<-names(sim10varadd);# must set names
-
-## run the search - init.permuts=0 set the search to start
-## from an empty network
-## only consider networks with 3 or less parents per node
-\dontrun{myres<-searchabn(data.df=sim10varadd,banned.m=banned, 
-                 hyper.params=list(
-                 mean=c(0,0,0,0,0,0,0,0,0,0,0),
-                 var=c(100,100,100,100,100,100,100,100,100,100,100)),
-                 max.parents=3,init.permuts=0);}
-
-## get the score of the network from which the search started
-\dontrun{print(myres$scores[1]);}## or myres[[1]][1]
-## get the DAG of the network from which the search started
-\dontrun{print(myres$iter1);}## or myres[[2]]
-
+cts.nodes<-c(2,5,7,8,13,14,16,17,22,23,24,25,29,30,31,33);
+var33.cts<-var33[,cts.nodes];#drop categorical nodes
+mydag<-matrix(c(
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v2
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v5  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v7  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v8 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v13  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v14  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v16  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v17  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v22 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v23
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v24 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v25 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v29 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v30 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v31 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  #v33 
+              ),byrow=TRUE,ncol=16); 
+colnames(mydag)<-rownames(mydag)<-names(var33.cts);#set names
+banned.cts<-matrix(rep(0,dim(var33.cts)[2]^2),ncol=dim(var33.cts)[2]);
+colnames(banned.cts)<-rownames(banned.cts)<-names(var33.cts);#set names
+retain.cts<-matrix(rep(0,dim(var33.cts)[2]^2),ncol=dim(var33.cts)[2]);
+colnames(retain.cts)<-rownames(retain.cts)<-names(var33.cts);#set names
+start.cts<-matrix(rep(0,dim(var33.cts)[2]^2),ncol=dim(var33.cts)[2]);
+colnames(start.cts)<-rownames(start.cts)<-names(var33.cts);#set names
+#
+myres.add<-searchabn(data.df=var33.cts,
+                 banned.m=banned.cts,
+                 retain.m=retain.cts,
+                 start.m=start.cts,
+                 max.parents=2, 
+                 init.permuts=0,db.size=1000,error.verbose=TRUE);
 }
 
 \keyword{models}

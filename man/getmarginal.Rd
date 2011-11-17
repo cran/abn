@@ -19,18 +19,24 @@
 
 \usage{
 getmarginal(data.df,dag.m,whichnode=NULL, whichvar="constant", 
-                  hyper.params=list("mean"=c(0),"var"=c(1000)),
-                        verbose=FALSE,post.x=seq(-0.1,0.1,len=100))
+                        hyper.params=list("mean"=c(0),
+                                          "sd"=c(sqrt(1000)),
+                                          "shape"=c(0.001),
+                                          "scale"=c(1/0.001)),
+            verbose=FALSE,post.x=seq(-0.1,0.1,len=100),max.iters=100,epsabs=1e-7)
 }
 %- maybe also `usage' for other objects documented here.
 \arguments{
   \item{data.df}{a data frame containing the data used for learning the network, will be coerced to factors if necessary}
   \item{dag.m}{a matrix defining the network structure, a directed acyclic graph, see details for format. Note that colnames and rownames must be set}
   \item{whichnode}{the name of the node - response variable}
-  \item{whichvar}{the name of the explanatory variable in whichnode whose posterior density is required. For the intercept term use ``constant''}
-  \item{hyper.params}{prior mean and var in Gaussian prior distribution for regression coefficients on logit scale, see details}
+  \item{whichvar}{the name of the explanatory variable in whichnode whose posterior density is required. For the intercept term use ``constant'', for the precision parameter for a Gaussian node use ``precision''}
+  \item{hyper.params}{prior means and standard deviations in Gaussian prior distribution for regression coefficients, see details}
   \item{verbose}{logical, if TRUE then extra information is printed to the terminal} 
   \item{post.x}{the set of points in the domain at which to evaluate the posterior density}
+  \item{max.iters}{maximum number of iterations used to find root in Laplace approximation}
+  \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
+
 }
 
 \details{
@@ -59,37 +65,84 @@ Journal of the American Statistical Association, Vol. 81, No. 393, pp. 82-86.
 \seealso{\code{\link{fitabn}}}
 
 \examples{
-data(sim10varadd);
-##  a matrix of arcs to be banned from the search process
-# - do not ban any arcs - empty matrix
-mymodel.dag<-matrix(c( 0,0,0,0,0,0,0,0,0,0, ## X1
-                       0,0,0,0,1,0,0,0,0,0, ## X2|X5
-                       0,0,0,0,0,0,0,0,0,0, ## X3
-                       0,0,0,0,0,0,0,0,0,0, ## X4
-                       0,0,0,0,0,0,0,0,0,0, ## X5
-                       1,0,0,0,0,0,1,0,1,0, ## X6|X1:X7:X9
-                       0,0,1,0,0,0,0,0,0,0, ## X7|X3
-                       0,0,0,0,0,0,0,0,0,0, ## X8
-                       0,0,0,0,0,0,0,0,0,0, ## X9
-                       0,0,0,0,0,0,1,0,0,0),## X10|X7
-                       byrow=TRUE,ncol=10);
-
-colnames(mymodel.dag)<-names(sim10varadd);# must set names
-rownames(mymodel.dag)<-names(sim10varadd);# must set names
-## parameter for node X6 baseline/intercept coefficient
-\dontrun{getmarginal(sim10varadd,mymodel.dag,whichnode="X6",
-                whichvar="constant",hyper.params=list(
-                mean=c(0,0,0,0,0,0,0,0,0,0,0),
-                var=c(100,100,100,100,100,100,100,100,100,100,100)),
-                verbose=FALSE);
-}
-## parameter for node X6 coefficient for effect X1
-\dontrun{getmarginal(sim10varadd,mymodel.dag,whichnode="X6",
-                whichvar="X1",hyper.params=list(
-                mean=c(0,0,0,0,0,0,0,0,0,0,0),
-                var=c(100,100,100,100,100,100,100,100,100,100,100)),
-                verbose=FALSE);
-}
+#specific a DAG model
+mydag<-matrix(c(
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#1
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#2  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#3  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#4  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#5  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#6  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#7  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#8  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#9  
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#10 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#11 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#12 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#13 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#14 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#15 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#16 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#17 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#18 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#19 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#20 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#21 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#22 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#23 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#24 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#25 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#26 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#27 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#28 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#29 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#30
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#31
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,#32 
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 #33
+                                               ),byrow=TRUE,ncol=33); 
+colnames(mydag)<-rownames(mydag)<-names(var33);#set names
+## now fit the model defined in mydag - full independence
+# define a model with many independencies
+mydag[2,1]<-1;
+mydag[4,3]<-1;
+mydag[6,4]<-1; mydag[6,7]<-1;
+mydag[5,6]<-1;
+mydag[7,8]<-1;  
+mydag[8,9]<-1;
+mydag[9,10]<-1;
+mydag[11,10]<-1; mydag[11,12]<-1; mydag[11,19]<-1;
+mydag[14,13]<-1;
+mydag[17,16]<-1;mydag[17,20]<-1;
+mydag[15,14]<-1; mydag[15,21]<-1;
+mydag[18,20]<-1;
+mydag[19,20]<-1;
+mydag[21,20]<-1;
+mydag[22,21]<-1;
+mydag[23,21]<-1;
+mydag[24,23]<-1;
+mydag[25,23]<-1; mydag[25,26]<-1;
+mydag[26,20]<-1;
+mydag[33,31]<-1;
+mydag[33,31]<-1;
+mydag[32,21]<-1; mydag[32,31]<-1;mydag[32,29]<-1;    
+mydag[30,29]<-1;
+mydag[28,27]<-1; mydag[28,29]<-1;mydag[28,31]<-1;
+marg1<-getmarginal(data.df=var33,
+                   dag.m=mydag,
+                   whichnode="v33",
+                   whichvar="constant",#this is the intercept
+                    hyper.params=list(
+                     mean=rep(0,dim(var33)[2]+1),
+                     sd=rep(sqrt(1000),dim(var33)[2]+1), 
+                     shape=rep(0.001,16),## 16 Gaussian nodes
+                     scale=rep(1/0.001,16)## 16 Gaussian nodes
+                     ),
+                     post.x=seq(from=-1.5,to=-0.5,len=1000),
+                     verbose=TRUE);
+cum.marg<-cumsum(marg1[,"f"])/sum(marg1[,"f"])
+marg<-cbind(marg1,cum.marg);
+marg[which(marg[,3]>0.5)[1]];#approx.median
 
 }
 

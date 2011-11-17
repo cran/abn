@@ -18,8 +18,9 @@
 \description{Implements repeated local stepwise hill-climbing heuristic}
 
 \usage{
-hillsearchbn (data.df, banned.m, prior.obs.per.node=NULL, useK2=FALSE,
-              max.parents=NULL,init.permuts=0,num.searches=1)
+hillsearchbn (data.df,banned.m,retain.m,start.m,prior.obs.per.node=NULL,
+              useK2=FALSE,max.parents=NULL,init.permuts=0,num.searches=1,
+              db.size=10000,localdb=TRUE,timing=TRUE,enforce.db.size=TRUE)
 
 }
 
@@ -28,6 +29,9 @@ hillsearchbn (data.df, banned.m, prior.obs.per.node=NULL, useK2=FALSE,
   \item{data.df}{a data frame containing the data used for learning the network}
   \item{banned.m}{a matrix defining which arcs are to be banned in the network 
                   search, see details}
+  \item{retain.m}{a matrix defining which arcs are to be banned in the network 
+                  search, see details} 
+  \item{start.m}{a matrix defining which arcs are to be banned in the network search, see details}               
   \item{prior.obs.per.node}{imaginary database size, see details}
   \item{useK2}{logical, choose either K2 metric or BDeu metric, if FALSE BDeu metric
                is used, see details}
@@ -35,12 +39,16 @@ hillsearchbn (data.df, banned.m, prior.obs.per.node=NULL, useK2=FALSE,
                      applies to all nodes}
   \item{init.permuts}{number of permutations applied to an initially empty network from
                       which the search heuristic then commences, see details.}
-  \item{num.searches}{number of times to run the individual local search} 
+  \item{num.searches}{number of times to run the individual local search}
+  \item{db.size}{the number of individual node score to store so they do not need to be re-calculated during network score calculations.}
+\item{localdb}{should the node cache be reset after each individual search - optimal choice is data dependent}
+\item{timing}{output elapsed CPU time taken during each individual search}
+\item{enforce.db.size}{logical, if TRUE then if the db.size is exceeded then the search is killed off}
 }
 
 \details{
   This runs same search as in \code{searchbn} but repeated num.searches times to produce
-  a collection of locally optimal networks.
+  a collection of locally optimal networks. See vignette for more details.
 
 }
 
@@ -68,30 +76,44 @@ Further information about \bold{abn} can be found at:\cr
 
 
 \examples{
-data(sim10var);## 10 categorical variables
-
-##  a matrix of arcs to be banned from the search process 
-##  - do not ban any arcs - empty matrix
-dagbanned.df<-matrix(c(0,0,0,0,0,0,0,0,0,0, ## var1
-                       0,0,0,0,0,0,0,0,0,0, ## var2
-                       0,0,0,0,0,0,0,0,0,0, ## var3
-                       0,0,0,0,0,0,0,0,0,0, ## var4
-                       0,0,0,0,0,0,0,0,0,0, ## var5
-                       0,0,0,0,0,0,0,0,0,0, ## var6
-                       0,0,0,0,0,0,0,0,0,0, ## var7
-                       0,0,0,0,0,0,0,0,0,0, ## var8
-                       0,0,0,0,0,0,0,0,0,0, ## var9
-                       0,0,0,0,0,0,0,0,0,0),## var10
-                       byrow=TRUE,ncol=10);
-
-colnames(dagbanned.df)<-names(sim10var);# must set names
-rownames(dagbanned.df)<-names(sim10var);# must set names
-
-## run the search 
-## only consider networks with 3 or less parents per node
-\dontrun{K2.search<-hillsearchbn(data.df=sim10var,banned.m=dagbanned.df, 
-         prior.obs.per.node=NULL, useK2=TRUE,max.parents=3,init.permuts=4,
-         num.searches=2);}
+bin.nodes<-c(1,3,4,6,9,10,11,12,15,18,19,20,21,26,27,28,32); 
+var33.cat<-var33[,bin.nodes];#categorical nodes only
+mydag<-matrix(c(
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v1
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v3
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v4  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v6  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v9  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v10  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v11  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v12  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v15  
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v18 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v19
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v20 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v21 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v26 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v27 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, #v28 
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  #v32 
+              ),byrow=TRUE,ncol=17); 
+colnames(mydag)<-rownames(mydag)<-names(var33.cat);#set names
+## create empty DAGs
+banned.cat<-matrix(rep(0,dim(var33.cat)[2]^2),ncol=dim(var33.cat)[2]);
+colnames(banned.cat)<-rownames(banned.cat)<-names(var33.cat);#set names
+retain.cat<-matrix(rep(0,dim(var33.cat)[2]^2),ncol=dim(var33.cat)[2]);
+colnames(retain.cat)<-rownames(retain.cat)<-names(var33.cat);#set names
+start.cat<-matrix(rep(0,dim(var33.cat)[2]^2),ncol=dim(var33.cat)[2]);
+colnames(start.cat)<-rownames(start.cat)<-names(var33.cat);#set names
+set.seed(10000);## only affects init.permuts
+start.list<-list();
+n.searches<-2;#example only - must be *much* larger in practice
+for(i in 1:n.searches){start.list[[i]]<-retain.cat;} ## empty networks
+myres<-hillsearchbn(data.df=var33.cat,
+                banned.m=banned.cat,
+                retain.m=retain.cat,
+                start.m=start.list,
+                useK2=TRUE,max.parents=2,init.permuts=0,num.searches=2);
 
 }
 

@@ -43,39 +43,9 @@ prunenets(dags.list,threshold.freq)
 
 
 \examples{
-data(sim10var);## 10 categorical variables
 
-##  a matrix of arcs to be banned from the search process
-## - do not ban any arcs - empty matrix
-dagbanned.df<-matrix(c(0,0,0,0,0,0,0,0,0,0, ## var1
-                       0,0,0,0,0,0,0,0,0,0, ## var2
-                       0,0,0,0,0,0,0,0,0,0, ## var3
-                       0,0,0,0,0,0,0,0,0,0, ## var4
-                       0,0,0,0,0,0,0,0,0,0, ## var5
-                       0,0,0,0,0,0,0,0,0,0, ## var6
-                       0,0,0,0,0,0,0,0,0,0, ## var7
-                       0,0,0,0,0,0,0,0,0,0, ## var8
-                       0,0,0,0,0,0,0,0,0,0, ## var9
-                       0,0,0,0,0,0,0,0,0,0),## var10
-                       byrow=TRUE,ncol=10);
-                       
-colnames(dagbanned.df)<-names(sim10var);# must set names
-rownames(dagbanned.df)<-names(sim10var);# must set names
-## run the search 
-## only consider networks with 3 or less parents per node
-## - only use first 100 observations for speed
-\dontrun{K2.search<-hillsearchbn(data.df=sim10var[1:100,],
-         banned.m=dagbanned.df,
-         prior.obs.per.node=NULL,useK2=TRUE,max.parents=3,init.permuts=4,
-         num.searches=200);}
-## now prune each of the 200 locally optimal networks (note - note checked
-##  for unique searches!)
-\dontrun{prunned<-prunenets(K2.search$final.dag,
-         round(0.5*length(K2.search$final.dag)));}#50% threshold for pruning
-\dontrun{print(prunned$arcs.sum);}## the total support for each arc 
-##in all the locally optimal networks found
-\dontrun{print(prunned$dags[[1]]);}
-#the first locally optimal network after pruning
+## see abn vignette for examples 
+
 }
 
 \keyword{models}
