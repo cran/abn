@@ -7,12 +7,16 @@ export("hillsearchbn",
        "makeintofactors",
        "makeintobinarymatrix",
        "trim",
-       "prunenets",
+       "arcfreq",
        "uniquenets",
        "tographviz",
        "hillsearchabn",
        "searchabn",
-       "getmarginal"
+       "getmarginal",
+       "allnodesbn",
+       "allnodesabn",
+       "getposteriorfeaturesbn",
+       "findmostprobablebn"
        )   
 
 useDynLib(abn)

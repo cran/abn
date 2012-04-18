@@ -28,7 +28,7 @@ uniquenets(dags.list)
   \item{dags.list}{a list of matrices where each matrix defines a valid DAG}
 }
 
-\details{In the network structure definition, dags.list, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format.  
+\details{In the network structure - DAG - definition each row represents a node in the network, and the columns in each row define the parents for that particular node.  
 
 }
 

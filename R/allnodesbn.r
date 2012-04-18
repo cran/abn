@@ -24,12 +24,12 @@
 ##    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ######################################################################
 
-fitbn <- function(data.df,dag.m,prior.obs.per.node=NULL,useK2=FALSE, verbose=FALSE) {
+allnodesbn <- function(data.df,prior.obs.per.node=NULL,useK2=FALSE,max.parents=NULL, all.nodes=TRUE, which.nodes=NULL, verbose=FALSE) {
     
     obsdata<-makeintofactors(data.df);## need to make into integers
-    tmp<-makeintobinarymatrix(dag.m); ## cohersion to ints and simple sanity checks
-    dag<-tmp$dag;
-    maxparents<-max(tmp$maxparents,1);## if a fully independent DAG then 1 is a dummy value required for memory allocation
+    
+    maxparents<-max(max.parents,1);## if a fully independent DAG then 1 is a dummy value required for memory allocation
+    if(maxparents>=dim(data.df)[2]){stop("max.parents must be strictly less than the number of nodes in the network!");}
     maxparents<-as.integer(maxparents); 
     if(!is.logical(useK2)){stop("useK2 must be either TRUE or FALSE");}
     if(useK2){loc.useK2<-1;## use K2
@@ -44,15 +44,23 @@ fitbn <- function(data.df,dag.m,prior.obs.per.node=NULL,useK2=FALSE, verbose=FAL
     if(min(numVarLevels)==1){#cat("Error in ",names(data.df)[which(min(numVarLevels)==1)],"\n");
                              stop("variables must have at least TWO categories - ",names(data.df)[which(numVarLevels==1)],"- does not\n");}
     prior.obs.per.node<-as.double(prior.obs.per.node);## coerce just in case
-    ## create a list containing the names of all the nodes and the levels in each node
-    loc.labels<-list(names=names(obsdata));
-    for(i in 1:(dim(obsdata)[2])){loc.labels[[i+1]]<-levels(as.factor(obsdata[,i]));} #use data.df since obsdata HAS NOT LEVELS set
-    names(loc.labels)[2:length(loc.labels)]<-names(obsdata);
+
+    ## which.nodes to consider - to allow computation to be split over different cpus if need be
+    if(!is.logical(all.nodes)){stop("all.nodes must be either TRUE or FALSE");} 
+    if(all.nodes){which.nodes<-1:dim(data.df)[2];## all nodes
+    } else { if(min(which.nodes)<1 || max(which.nodes)> dim(data.df)[2]){stop("which.nodes is invalid!");}}
+    which.nodes<-as.integer(which.nodes); 
+    
     ## call to C
-    res <- .Call("fitnetwork",obsdata,dag,loc.useK2,maxparents,prior.obs.per.node,numVarLevels,loc.labels,loc.verbose
+    res <- .Call("allnodesbn",obsdata,loc.useK2,maxparents,prior.obs.per.node,numVarLevels,loc.verbose,which.nodes
                ,PACKAGE="abn" ## uncomment to load as package not shlib
               )
-    return(unlist(res));
+    res[[2]]<-matrix(res[[2]],ncol=dim(data.df)[2],byrow=TRUE);## need to tranform long vector into matrix of parent combinations 
+    names(res)<-c("node","parents","nodescore","restricted.parents");
+    return(res);
+    ## res[[1]] is a vector of node indexes (from 1 not zero)
+    ## res[[2]] is a matrix where each row is a parent combination for the node in res[[1]]
+    ## res[[3]] is the score for the parent combination in res[[2]]
 }
    
 

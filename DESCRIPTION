@@ -1,14 +1,31 @@
 Package: abn
-Version: 0.5-1
-Date: 2011-11-16
-Title: Additive Bayesian Networks
+Version: 0.7
+Date: 2012-04-18
+Title: Data Modelling with Additive Bayesian Networks
 Author: Fraser Lewis <fraseriain.lewis@uzh.ch>
 SystemRequirements: Gnu Scientific Library version >= 1.12
 Maintainer: Fraser Lewis <fraseriain.lewis@uzh.ch>
-Description: A graphical modelling formulation is used to construct Bayesian regression models for analyses of multivariate data. The models comprise of directed acyclic graphs where each node in the graph comprises a generalized linear model, and a greedy search heuristic is used to identify high scoring models that attempt to identify relationships between all variables in the data. Currently implemented are models for data comprising of categorical (Binomial with logit link) and/or continuous (Gaussian with identity link) variables. Laplace approximations are used to estimate marginal likelihoods and compute marginal posterior densities. 
+Description: This library provides computational routines to help
+        determine optimal Bayesian Network models for a given data set,
+        where these models are used to identify all statistical
+        dependencies present in messy, complex data. The usual term
+        used to describe this model selection process is structure
+        discovery, or more generally, data mining. Currently, a
+        standard heuristic search and order based exact search are
+        implemented, across two different types of Bayesian Network
+        model: i) the classical (conjugate) contingency formulation for
+        observations comprising of binary or multinomial variables; and
+        ii) an additive formulation where each node in the network is
+        modelled by a generalised linear regression model and this
+        formulation applies to observations comprising of binary and/or
+        Gaussian variables, where a logistic link function is used in
+        the former. The additive formulation is analogous to searching
+        for the most appropriate multidimensional Bayesian regression
+        model of the data.
 License: GPL (>= 2)
 LazyData: true
-URL: http://www.vetepi.uzh.ch
-Packaged: 2011-11-16 12:54:51 UTC; fraser
+BuildVignettes: no
+URL: http://www.vetepi.uzh.ch/research/bgm.html
+Packaged: 2012-04-19 05:41:34 UTC; fraser
 Repository: CRAN
-Date/Publication: 2011-11-17 11:25:37
+Date/Publication: 2012-07-11 10:54:30
