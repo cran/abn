@@ -26,7 +26,7 @@
 
 searchabn <- function(data.df,banned.m,retain.m,start.m,
                      hyper.params=list("mean"=c(0),"sd"=c(sqrt(1000)),"shape"=c(0.001),"scale"=c(1/0.001)), max.parents=NULL,init.permuts=0,
-                     db.size=10000,max.iters=100,epsabs=1e-7,error.verbose=FALSE,enforce.db.size=TRUE) {
+                     db.size=10000,max.iters=100,epsabs=1e-7,error.verbose=FALSE,enforce.db.size=TRUE,std=TRUE) {
     
     #need to find categorical variables and continuous - Gaussian
     get.factors<-NULL; 
@@ -42,7 +42,7 @@ searchabn <- function(data.df,banned.m,retain.m,start.m,
     var.types<-as.integer(var.types);#1-cat, 0-numeric
     
     if(length(get.factors)>0){#have some categorical variables so some coersion to factors then integers needed
-    data.df.cat<-data.df[,get.factors];
+    data.df.cat<-as.data.frame(data.df[,get.factors]);names(data.df.cat)<-names(data.df)[get.factors];
     obsdata.cat<-makeintofactors(data.df.cat);## need to make into integers
     numVarLevels<-as.integer(apply(obsdata.cat,2,max));## get vector of number of levels in each variables
     if( length(which(numVarLevels!=2)) ){#cat("Error in ",names(data.df)[which(min(numVarLevels)==1)],"\n");
@@ -50,8 +50,10 @@ searchabn <- function(data.df,banned.m,retain.m,start.m,
     }   
     
     if(length(get.gaussian)>0){
-                               obsdata.cts<-data.df[,get.gaussian];
-                               for(i in 1:dim(obsdata.cts)[2]){obsdata.cts[,i]<-as.double(obsdata.cts[,i]);}
+                               obsdata.cts<-as.data.frame(data.df[,get.gaussian]);names(obsdata.cts)<-names(data.df)[get.gaussian];
+                               for(i in 1:dim(obsdata.cts)[2]){if(std){# std. gaus vars to mean zero and sd=1
+                                                               obsdata.cts[,i]<- (obsdata.cts[,i]-mean(obsdata.cts[,i]))/sd(obsdata.cts[,i]);}
+                                                               obsdata.cts[,i]<-as.double(obsdata.cts[,i]);}
     }
     
     #now put all the data back into a single data frame
@@ -89,24 +91,28 @@ searchabn <- function(data.df,banned.m,retain.m,start.m,
     ## coerce list into two vectors, one for means and one for **standard deviation** 
     prior.mean<-as.double(hyper.params$mean);      
     if(length(prior.mean)!=dim(data.df)[2]+1){prior.mean<-as.double(rep(0.0,dim(data.df)[2]+1));
-                                              warning("using prior mean of 0.0 for each variable");}  
+                                             # warning("using prior mean of 0.0 for each variable");
+                                             }  
     prior.sd  <-as.double(hyper.params$sd);
     if(length(prior.sd)!=dim(data.df)[2]+1){prior.sd<-as.double(rep(sqrt(1000.0),dim(data.df)[2]+1));
-                                            warning("using prior sd of sqrt(1000) for each variable");}
+                                             # warning("using prior sd of sqrt(1000) for each variable");
+                                             }
     
-    if(is.null(hyper.params$shape)){hyper.params$shape=0.001;}
+    #if(is.null(hyper.params$shape)){hyper.params$shape=0.001;}
     prior.gamma.shape<-hyper.params$shape;
     if(length(get.gaussian)>0 && length(prior.gamma.shape)!=length(get.gaussian)){prior.gamma.shape<-as.double(rep(0.001,length(get.gaussian)));
-    warning("using 0.001 as prior shape for each gaussian variable in data.frame");} 
+    #warning("using 0.001 as prior shape for each gaussian variable in data.frame");
+    } 
     
-    if(is.null(hyper.params$scale)){hyper.params$scale=1/0.001;} 
+    #if(is.null(hyper.params$scale)){hyper.params$scale=1/0.001;} 
     prior.gamma.scale<-hyper.params$scale;
     if(length(get.gaussian)>0 && length(prior.gamma.scale)!=length(get.gaussian)){prior.gamma.scale<-as.double(rep(1/0.001,length(get.gaussian)));
-    warning("using 1/0.001 as prior scale for each gaussian variable in data.frame");}
+    #warning("using 1/0.001 as prior scale for each gaussian variable in data.frame");
+    }
     max.iters<-as.integer(max.iters);
     epsabs<-as.double(epsabs);
     
-    if(!is.logical(error.verbose)){stop("erorr.verbose must be either TRUE or FALSE");}
+    if(!is.logical(error.verbose)){stop("error.verbose must be either TRUE or FALSE");}
     if(error.verbose){loc.error.verbose<-1;} else {loc.error.verbose<-0;}
     loc.error.verbose<-as.integer(loc.error.verbose);
     

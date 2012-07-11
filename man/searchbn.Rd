@@ -53,7 +53,7 @@ searchbn (data.df,banned.m,retain.m,start.m,prior.obs.per.node=NULL,
 Lewis, F. I., Brulisauer, F. and Gunn, G. J. (2011). Structure discovery in Bayesian networks: An analytical tool for analysing complex animal health data Preventive Veterinary Medicine,  100, 109-115.
 
 Further information about \bold{abn} can be found at:\cr
-  \url{http://www.vetepi.uzh.ch/}
+  \url{http://www.vetepi.uzh.ch/research/bgm.html}
 }
 
 \author{

@@ -27,7 +27,7 @@
 getmarginal <- function(data.df,dag.m,whichnode=NULL, whichvar="constant", 
                         hyper.params=list("mean"=c(0),"sd"=c(sqrt(1000)),"shape"=c(0.001),"scale"=c(1/0.001)),
                         verbose=FALSE,post.x=seq(-0.1,0.1,len=100),
-                        max.iters=100,epsabs=1e-7) {
+                        max.iters=100,epsabs=1e-7,std=TRUE) {
     
     #need to find categorical variables and continuous - Gaussian
     get.factors<-NULL; 
@@ -51,8 +51,10 @@ getmarginal <- function(data.df,dag.m,whichnode=NULL, whichvar="constant",
     }   
     
     if(length(get.gaussian)>0){
-                               obsdata.cts<-data.df[,get.gaussian];
-                               for(i in 1:dim(obsdata.cts)[2]){obsdata.cts[,i]<-as.double(obsdata.cts[,i]);}
+                               obsdata.cts<-as.data.frame(data.df[,get.gaussian]);names(obsdata.cts)<-names(data.df)[get.gaussian];### NOTE as.data.frame() is NEW
+                               for(i in 1:dim(obsdata.cts)[2]){if(std){# std. gaus vars to mean zero and sd=1
+                                                               obsdata.cts[,i]<- (obsdata.cts[,i]-mean(obsdata.cts[,i]))/sd(obsdata.cts[,i]);}
+                                                               obsdata.cts[,i]<-as.double(obsdata.cts[,i]);}
     }
     
     #now put all the data back into a single data frame
@@ -100,22 +102,27 @@ getmarginal <- function(data.df,dag.m,whichnode=NULL, whichvar="constant",
     ## coerce list into two vectors, one for means and one for **standard deviation** 
     prior.mean<-hyper.params$mean;
     if(length(prior.mean)!=dim(data.df)[2]+1){prior.mean<-as.double(rep(0.0,dim(data.df)[2]+1));}      
-    if(length(prior.mean)!=dim(data.df)[2]+1){stop("need prior mean for each variable in data.frame");}
+    #if(length(prior.mean)!=dim(data.df)[2]+1){stop("need prior mean for each variable in data.frame");}
     
     prior.sd  <-(hyper.params$sd);
     if(length(prior.sd)!=dim(data.df)[2]+1){prior.sd<-as.double(rep(sqrt(1000.0),dim(data.df)[2]+1));}      
-    if(length(prior.sd)!=dim(data.df)[2]+1){stop("need prior mean for each variable in data.frame");}
+    #if(length(prior.sd)!=dim(data.df)[2]+1){stop("need prior mean for each variable in data.frame");}
     
     prior.gamma.shape<-hyper.params$shape;
     if(length(get.gaussian)>0 && length(prior.gamma.shape)!=length(get.gaussian)){prior.gamma.shape<-as.double(rep(0.001,length(get.gaussian)));}  
     prior.gamma.scale<-hyper.params$scale;
     if(length(get.gaussian)>0 && length(prior.gamma.scale)!=length(get.gaussian)){prior.gamma.scale<-as.double(rep(1/0.001,length(get.gaussian)));}
     
+    ## new part 31-jan-2012. To fix bug if only passed a discrete model R croaks about REAL() applied to non-numbers if prior.gamma.shape and prior.gamma.scale 
+    ##        are not set to something. Use a dummy of zero.
+    if(length(get.gaussian)==0){prior.gamma.shape<-0.0;prior.gamma.scale<-0.0;}
+
     max.iters<-as.integer(max.iters);
     epsabs<-as.double(epsabs);
     ## call to C
         res <- .Call("getmarginals_additive",obsdata,dag,prior.mean,prior.sd,prior.gamma.shape,prior.gamma.scale,maxparents,loc.verbose,var.types, 
                                        loc.matrix.posterior, loc.numvariates, loc.whichnode-1, loc.whichvariable-1,loc.whichgaus-1,max.iters,epsabs
+
                ,PACKAGE="abn" ## uncomment to load as package not shlib
               )
     res<-matrix(unlist(res),ncol=2);colnames(res)<-c("x","f");

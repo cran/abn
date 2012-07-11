@@ -16,7 +16,7 @@ LDFLAGS = -shared -L/usr/lib/debug/usr/lib -lgsl -lgslcblas
 # use this command to erase files.
 RM = /bin/rm -f
 # list of generated object files.
-OBJS =  fitnetwork.o fitnetwork_additive.o  fitnetwork_multi.o hillsearchfornetwork.o laplace.o network.o searchfornetwork.o utility_fns.o network_laplace.o laplace_marginals.o getmarginals_additive.o hillsearchfornetwork_additive.o searchfornetwork_additive.o scorereuse.o
+OBJS =  fitnetwork.o fitnetwork_additive.o  fitnetwork_multi.o hillsearchfornetwork.o laplace.o network.o searchfornetwork.o utility_fns.o network_laplace.o laplace_marginals.o getmarginals_additive.o hillsearchfornetwork_additive.o searchfornetwork_additive.o scorereuse.o allnodesbn.o allnodesbn_additive.o getposterior_features.o mobius.o getposterior_features_max.o
 
 # program executable file name.
 PROG = abn.so
@@ -69,6 +69,21 @@ network_laplace.o: network_laplace.c
 
 scorereuse.o: scorereuse.c 
 	$(CC) $(CFLAGS) -c scorereuse.c
+
+allnodesbn.o: allnodesbn.c 
+	$(CC) $(CFLAGS) -c allnodesbn.c
+
+allnodesbn_additive.o: allnodesbn_additive.c 
+	$(CC) $(CFLAGS) -c allnodesbn_additive.c
+
+getposterior_features.o: getposterior_features.c 
+	$(CC) $(CFLAGS) -c getposterior_features.c
+
+mobius.o: mobius.c 
+	$(CC) $(CFLAGS) -c mobius.c
+
+getposterior_features_max.o: getposterior_features_max.c 
+	$(CC) $(CFLAGS) -c getposterior_features_max.c
 
 # rule for cleaning re-compilable files.
 clean:

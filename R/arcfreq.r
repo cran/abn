@@ -24,7 +24,7 @@
 ##    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ######################################################################
 
-prunenets<-function(dags.list,threshold.freq){
+arcfreq<-function(dags.list){
             ## step 1. get the number of times each individual arc appears
             numvars<-dim(dags.list[[1]])[1];
             tot<-matrix(rep(0,numvars*numvars),ncol=numvars);## this will contain the total freq of each arc
@@ -37,6 +37,6 @@ prunenets<-function(dags.list,threshold.freq){
             #best.trimmed<-apply(best2,c(1,2),FUN=trim,threshold=threshold.freq); 
             #trimmed[[i]]<-best.trimmed;
             #}
-            return(list(arcs.sum=tot));#,dags=trimmed)); 
+            return(tot);#,dags=trimmed)); 
 }
 

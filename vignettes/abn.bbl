@@ -1,4 +1,4 @@
-\begin{thebibliography}{9}
+\begin{thebibliography}{11}
 \newcommand{\enquote}[1]{``#1''}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
@@ -14,6 +14,14 @@ Buntine W (1991).
 \newblock \enquote{Theory refinement on Bayesian networks.}
 \newblock In \emph{Proceedings of Seventh Conference on Uncertainty in
   Artificial Intelligence}, pp. 52--60. Morgan Kaufmann, Los Angeles, CA, USA.
+
+\bibitem[{Friedman \emph{et~al.}(1999)Friedman, Goldszmidt, and
+  Wyner}]{Friedman1999}
+Friedman N, Goldszmidt M, Wyner A (1999).
+\newblock \enquote{Data analysis with {Bayesian networks}: A bootstrap
+  approach.}
+\newblock In \emph{Proc. Fifteenth Conference on Uncertainty in Artificial
+  Intelligence (UAI'99) (pp.206-215). San Francisco: Morgan Kaufmann}.
 
 \bibitem[{Friedman and Koller(2003)}]{Friedman2003}
 Friedman N, Koller D (2003).
@@ -39,6 +47,12 @@ Hodges AP, Dai D, Xiang Z, Woolf P, Xi C, He Y (2010).
 Jensen FV (2001).
 \newblock \emph{Bayesian Network and Decision Graphs}.
 \newblock Springer-Verlag, New York.
+
+\bibitem[{Koivisto and Sood(2004)}]{Koivisto2004}
+Koivisto M, Sood K (2004).
+\newblock \enquote{Exact {Bayesian} structure discovery in {Bayesian}
+  networks.}
+\newblock \emph{Journal of Machine Learning Research}, \textbf{5}, 549--573.
 
 \bibitem[{Lauritzen(1996)}]{Lauritzen1996}
 Lauritzen SL (1996).

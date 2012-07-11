@@ -24,8 +24,8 @@ searchabn (data.df,banned.m,retain.m,start.m,
                                        "sd"=c(sqrt(1000)),
                                        "shape"=c(0.001),
                                        "scale"=c(1/0.001)),
-           max.parents=NULL,init.permuts=0,db.size=10000,max.iters=100,epsabs=1e-7,
-          error.verbose=FALSE,enforce.db.size=TRUE)
+           max.parents=NULL,init.permuts=0,db.size=10000,max.iters=100,
+           epsabs=1e-7,error.verbose=FALSE,enforce.db.size=TRUE,std=TRUE)
 
 }
 
@@ -43,7 +43,8 @@ searchabn (data.df,banned.m,retain.m,start.m,
   \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
   \item{error.verbose}{logical, if TRUE then extra information is printed to the terminal about any numerical convergence issues in the Laplace approximation}
   \item{enforce.db.size}{logical, if TRUE then if the db.size is exceeded then the search is killed off}
- }
+  \item{std}{logical, if TRUE then each variable which is not a factor is standardised to zero mean and standard deviation one} 
+}
 
 \details{
  The procedure starts with the DAG given in start.m and randomly adds arcs to this, the number of which is set by init.permuts subject to i) that a cycle is not created; ii) that no node has more than max.parents parents; and iii) the arc is not prohibited by being in banned.m. The choice of K2 or BDeu metric is explained in \code{fitbn}. A each stage in the search the current DAG is permuted by i) adding an arc; ii) removing an arc; and iii) reversing an arc; where these permutations are all subject to the previous three constraints in addition that no arcs in retain.m can be removed. The search progresses to the permuted network with the maximum score (provided that it is greater than that of the current DAG, else the search terminates). Note that only minimal checks are done on start.m and retain.m to check for inconsistencies and retain.m should be included in start.m. See \code{fitbn} and dag.m for the format of the matrices start.m, banned.m and retain.m.  The hyper.parameters are explained in \code{fitabn}.
@@ -56,7 +57,7 @@ searchabn (data.df,banned.m,retain.m,start.m,
 \references{Heckerman, D. and Geiger, D. and Chickering, D. M. (1995). Learning Bayesian Networks - The Combination of Knowledge and Statistical-Data, Machine Learning, 20 (3), 197-243.
 
 Further information about \bold{abn} can be found at:\cr
-  \url{http://www.vetepi.uzh.ch/}
+  \url{http://www.vetepi.uzh.ch/research/bgm.html}
 }
 
 \author{

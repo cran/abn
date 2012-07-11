@@ -23,7 +23,8 @@ getmarginal(data.df,dag.m,whichnode=NULL, whichvar="constant",
                                           "sd"=c(sqrt(1000)),
                                           "shape"=c(0.001),
                                           "scale"=c(1/0.001)),
-            verbose=FALSE,post.x=seq(-0.1,0.1,len=100),max.iters=100,epsabs=1e-7)
+            verbose=FALSE,post.x=seq(-0.1,0.1,len=100),max.iters=100,
+            epsabs=1e-7,std=TRUE)
 }
 %- maybe also `usage' for other objects documented here.
 \arguments{
@@ -36,15 +37,14 @@ getmarginal(data.df,dag.m,whichnode=NULL, whichvar="constant",
   \item{post.x}{the set of points in the domain at which to evaluate the posterior density}
   \item{max.iters}{maximum number of iterations used to find root in Laplace approximation}
   \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
-
+\item{std}{logical, if TRUE then each variable which is not a factor is standardised to zero mean and standard deviation one} 
 }
 
 \details{
-  The procedure \code{getmarginal} estimates the posterior density for a regression coefficient within an additive Bayesian network model and is similar to \code{fitabn} but extracts the posterior density rather than the log marginal likelihood. 
+  The procedure \code{getmarginal} estimates the posterior density for a regression coefficient within an additive Bayesian network model and is similar to \code{fitabn} but extracts the posterior density rather than the log marginal likelihood. The user must supply sensible values for post.x, e.g. a range which is sufficient to include both left and right tail of the density. As fixed grid is used and so using excessively wide ranges will be inefficient or result in very poor accuracy. Sensible values for post.x can easily be found by some trial and error, and will generally be close to the origin due to the use of a logit link or the standardization of Gaussian variables. 
   
   In the network structure definition, dag.m, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format.
-
-Note that currently all variables must be binary.   
+  
 
 }
 
@@ -56,7 +56,7 @@ Journal of the American Statistical Association, Vol. 81, No. 393, pp. 82-86.
 
 
   Further information about \bold{abn} can be found at:\cr
-  \url{http://www.vetepi.uzh.ch/}.}
+  \url{http://www.vetepi.uzh.ch/research/bgm.html}}
 
 \author{
   Fraser Lewis \email{fraseriain.lewis@uzh.ch}

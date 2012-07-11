@@ -22,18 +22,20 @@ fitabn (data.df,dag.m,hyper.params=list("mean"=c(0),
                                         "sd"=c(sqrt(1000)),
                                         "shape"=c(0.001),
                                         "scale"=c(1/0.001)),
-        max.iters=100,epsabs=1e-7, verbose=FALSE,error.verbose=FALSE)
+        max.iters=100,epsabs=1e-7, verbose=FALSE,error.verbose=FALSE,
+        std=TRUE)
 }
     
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{data.df}{a data frame containing the data used for learning the network, will be coerced to factors if necessary}
+  \item{data.df}{a data frame containing the data used for learning the network, binary variables must be declares as factors}
   \item{dag.m}{a matrix defining the network structure, a directed acyclic graph, see details for format. Note that colnames and rownames must be set}
   \item{hyper.params}{prior means and standard deviations in Gaussian prior distribution for regression coefficients, see details}
   \item{max.iters}{maximum number of iterations used to find root in Laplace approximation}
   \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
   \item{verbose}{logical, if TRUE then extra information is printed to the terminal}
  \item{error.verbose}{logical, if TRUE then extra information is printed to the terminal about any numerical convergence issues in the Laplace approximation}
+ \item{std}{logical, if TRUE then each variable which is not a factor is standardised to zero mean and standard deviation one}
 }
 
 \details{
@@ -52,7 +54,7 @@ Journal of the American Statistical Association, Vol. 81, No. 393, pp. 82-86.
 Rijmen, F. (2008). Bayesian networks with a logistic regression model for the conditional probabilities. International Journal of Approximate Reasoning, Vol 48, No. 2, pp. 656-666
 
   Further information about \bold{abn} can be found at:\cr
-  \url{http://www.vetepi.uzh.ch/}}
+  \url{http://www.vetepi.uzh.ch/research/bgm.html}}
 
 \author{
   Fraser Lewis \email{fraseriain.lewis@uzh.ch}

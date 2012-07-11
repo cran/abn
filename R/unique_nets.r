@@ -37,3 +37,4 @@ uniquenets<-function(dags.list){  ## pass a list of matrices and return a vector
  }
  return(unq.indexes);
 }
+

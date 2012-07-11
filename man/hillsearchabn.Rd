@@ -25,7 +25,7 @@ hillsearchabn (data.df,banned.m,retain.m,start.m,
                                    "scale"=c(1/0.001)),
                max.parents=NULL,init.permuts=0,num.searches=1,db.size=10000,
                localdb=TRUE,timing=TRUE,max.iters=100,epsabs=1e-7,
-               error.verbose=FALSE,enforce.db.size=TRUE)
+               error.verbose=FALSE,enforce.db.size=TRUE,std=TRUE)
 }
 
 %- maybe also `usage' for other objects documented here.
@@ -49,7 +49,8 @@ hillsearchabn (data.df,banned.m,retain.m,start.m,
  \item{epsabs}{minimum absolute error of root estimate in Laplace approximation}
 \item{error.verbose}{logical, if TRUE then extra information is printed to the terminal about any numerical convergence issues in the Laplace approximation}
 \item{enforce.db.size}{logical, if TRUE then if the db.size is exceeded then the search is killed off}
-}
+\item{std}{logical, if TRUE then each variable which is not a factor is standardised to zero mean and standard deviation one}
+ }
 
 \details{
   This runs same search as in \code{searchabn} but repeated num.searches times to produce
@@ -69,7 +70,7 @@ hillsearchabn (data.df,banned.m,retain.m,start.m,
             - The Combination of Knowledge and Statistical-Data, Machine Learning, 20 (3), 197-243.
 
  Further information about \bold{abn} can be found at:\cr
-  \url{http://www.vetepi.uzh.ch/}
+  \url{http://www.vetepi.uzh.ch/research/bgm.html}
 }
 
 \author{
