@@ -1,22 +1,17 @@
 
 
-export("hillsearchbn",
-       "searchbn",
-       "fitbn",
-       "fitabn",
-       "makeintofactors",
-       "makeintobinarymatrix",
-       "trim",
-       "arcfreq",
-       "uniquenets",
+export(
        "tographviz",
-       "hillsearchabn",
-       "searchabn",
-       "getmarginal",
-       "allnodesbn",
-       "allnodesabn",
-       "getposteriorfeaturesbn",
-       "findmostprobablebn"
-       )   
+       "check.data",
+       "check.dag",
+       "calc.node.mlik.inla",
+       "calc.node.mlik.inla.mixed",
+       "fitabn",
+       "fitabn.inla",
+       "buildscorecache",
+       "buildscorecache.inla",
+       "mostprobable",
+       "search.hillclimber"     
+        )   
 
 useDynLib(abn)

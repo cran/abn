@@ -1,0 +1,84 @@
+# use "gcc" to compile source files.
+CC = gcc
+# the linker is also "gcc". It might be something else with other compilers.
+LD = gcc 
+# Compiler flags go here.
+CFLAGS = -I/home/fraser/R/lib64/R/include -I/home/fraser/gsl/include -Wall -pedantic -O3 -fPIC 
+#CFLAGS = -I/usr/local/lib64/R/include -I/usr/include -I. -I/usr/local/include -Wall -pedantic -O3 -ffloat-store -std=gnu9x -fPIC -fopenmp -fstack-protector-all 
+#-fstack-protector-all make multithread run in one thread if is crashing the stack!
+#CFLAGS = -I"C:/PROGRA~1/R/R-213~1.0/include" -I"C:/Program Files/GSL_test2"/include -Wall -pedantic -O3 -ffloat-store -std=gnu9x  
+# Linker flags go here. Currently there aren't any, but if we'll switch to
+# code optimization, we might add "-s" here to strip debug info and symbols.
+#LDFLAGS = -L/usr/lib/R/lib/ -lm -ldl -lR -L/opt/local/lib 
+#LDFLAGS = -shared -s -static-libgcc  -lm -lgsl -lgslcblas 
+#LDFLAGS = -L/PROGRA~1/GnuWin32/bin -lgsl -lgslcblas -lm
+#LDFLAGS = -shared -L/usr/lib/debug/usr/lib -lgsl -lgslcblas -lprofiler -g 
+LDFLAGS = -shared  -L/home/fraser/gsl/lib -lgsl -lgslcblas 
+#LDFLAGS = -shared  
+#LDFLAGS =  -shared -L"C:/Program Files/GSL_test2/lib" -lm -lgsl -lgslcblas -shared -L"C:/PROGRA~1/R/R-213~1.0/bin/x64" -lR
+# use this command to erase files.
+RM = /bin/rm -f
+# list of generated object files.
+OBJS =  utility.o cycles.o buildcachematrix.o searchhill.o fitabn.o network_score.o node_binomial.o node_gaussian.o node_poisson.o node_binomial_rv_inner.o fitnodes.o fitabn_marginals.o mostprobable.o mobius.o node_binomial_rv_Rsupp.o node_binomial_marginals_rv_Rsupp.o
+
+# program executable file name.
+PROG = abn.so
+
+# top-level rule, to compile everything.
+all: $(PROG)
+
+# rule to link the program - NEW NOTE: $(LDFLAGS) must come last with gcc 4.4 onwards
+$(PROG): $(OBJS)
+	$(LD) $(OBJS) -o $(PROG) $(LDFLAGS)
+
+utility.o: utility.c structs.h
+	$(CC) $(CFLAGS) -c utility.c
+
+cycles.o: cycles.c structs.h
+	$(CC) $(CFLAGS) -c cycles.c
+
+buildcachematrix.o: buildcachematrix.c structs.h
+	$(CC) $(CFLAGS) -c buildcachematrix.c
+
+fitabn.o: fitabn.c structs.h
+	$(CC) $(CFLAGS) -c fitabn.c
+
+searchhill.o: searchhill.c structs.h
+	$(CC) $(CFLAGS) -c searchhill.c
+
+network_score.o: network_score.c structs.h
+	$(CC) $(CFLAGS) -c network_score.c
+
+node_binomial.o: node_binomial.c structs.h
+	$(CC) $(CFLAGS) -c node_binomial.c
+
+node_gaussian.o: node_gaussian.c structs.h
+	$(CC) $(CFLAGS) -c node_gaussian.c
+
+node_poisson.o: node_poisson.c structs.h
+	$(CC) $(CFLAGS) -c node_poisson.c
+
+fitnodes.o: fitnodes.c structs.h
+	$(CC) $(CFLAGS) -c fitnodes.c
+
+fitabn_marginals.o: fitabn_marginals.c structs.h
+	$(CC) $(CFLAGS) -c fitabn_marginals.c
+
+mostprobable.o: mostprobable.c structs.h
+	$(CC) $(CFLAGS) -c mostprobable.c
+
+mobius.o: mobius.c structs.h
+	$(CC) $(CFLAGS) -c mobius.c
+
+node_binomial_rv_inner.o: node_binomial_rv_inner.c structs.h
+	$(CC) $(CFLAGS) -c node_binomial_rv_inner.c
+
+node_binomial_rv_Rsupp.o: node_binomial_rv_Rsupp.c structs.h
+	$(CC) $(CFLAGS) -c node_binomial_rv_Rsupp.c
+
+node_binomial_marginals_rv_Rsupp.o: node_binomial_marginals_rv_Rsupp.c structs.h
+	$(CC) $(CFLAGS) -c node_binomial_marginals_rv_Rsupp.c
+# rule for cleaning re-compilable files.
+clean:
+	$(RM) $(PROG) $(OBJS)
+
