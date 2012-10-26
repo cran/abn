@@ -553,7 +553,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="src/laplace.c"
+ac_unique_file="src/buildcachematrix.c"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 GSL_LIBS

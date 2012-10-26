@@ -24,13 +24,52 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+/** designed to hold a network definition **/
+struct network_struct {
+      int **defn;/** each row a variable and each col the parents of the variable, indexes from 0*/
+      int *locationInCache;/** gives the "rows" in the cache which make up this DAG **/
+      unsigned int numNodes;/** total number of variables/nodes **/
+      double *nodeScores;/** array of individual scores **/
+      int *nodeScoresErrCode;
+      double *hessianError;
+      double networkScore;/** log marginal likelihood */
+      int *varType;/** holds the type of distribution **/
+      int maxparents;/** **/
+      gsl_matrix *modes;/** will hold the parameter points estimates from the laplace approx **/
+      int *groupedVars;/** indexes of nodes with random effects */
+};
+
+typedef struct network_struct network;
+
+/** designed to hold a network definition **/
+struct cycle_struct {
+     unsigned int *isactive;
+     unsigned int *incomingedges;
+     unsigned int **graph;
+     
+};
+
+typedef struct cycle_struct cycle;
+
+/** designed to hold a network definition **/
+struct cache_struct {
+      int ***defn;/** each row a variable and each col the parents of the variable, indexes from 0*/
+      unsigned int numVars;/** total number of variables in a complete DAG**/
+      unsigned int numRows;/** total number of different parent combinations **/
+      int *numparcombs;/** number of parent combinations per node - number of rows e.g. j in  defn[i][j][k] */
+      double **nodeScores;/** hold the score for each parent combination for each node */
+};
+
+typedef struct cache_struct cache;
+
+
+
 
 typedef struct diskdatamatrix_struct diskdatamatrix;
 
 /** designed to hold integer data and column names **/
 struct datamatrix_struct {
-      int **data;/** the observed (multinomial) categories for each variable, each row a data point */
-      double **dataDouble;
+      double **defn;
       gsl_matrix *datamatrix;
       int numDataPts;/** total number of datapoints**/
       int numVars;/** total number of variables/nodes **/
@@ -48,57 +87,15 @@ struct datamatrix_struct {
       gsl_vector *gslvec2;
       /*double relerr;*/
       gsl_vector *Y;
-      const int *vartype;/** vector with 1- binary, 0 - gaussian **/
+      int *groupIDs;
+      int numUnqGrps;
+      gsl_matrix **array_of_designs;
+      gsl_vector **array_of_Y;
+      gsl_matrix *datamatrix_noRV;
   
 };
 
 typedef struct datamatrix_struct datamatrix;
-
-
-/** designed to hold a network definition **/
-struct network_struct {
-      int **defn;/** each row a variable and each col the parents of the variable, indexes from 0*/
-      unsigned int numNodes;/** total number of variables/nodes **/
-      /*char **namesNodes;*//** array of strings denoting node/variable names, in order of data columns */
-      double **nodesparameters;/** node->parentcombinationindex->dirichlet param **/
-      int **nodesparameters_lookup;/** node->parentcombinationindex->parentcombination **/
-      int *numNodeLevels; /** will hold the total number of parent combinations each node has **/
-      unsigned int maxparents;/** max number of parents allowed per node */
-      unsigned int maxParentCombinations;/** maximum number of parent combination which could occur */
-      double networkScore;
-      int **banlist;
-      int **retainlist;
-      int **startlist;/** set a fixed - non-random - starting network */
-};
-
-typedef struct network_struct network;
-
-
-/** designed to hold a network definition **/
-struct cycle_struct {
-     unsigned int *isactive;
-     unsigned int *incomingedges;
-     unsigned int **graph;
-     
-};
-
-typedef struct cycle_struct cycle;
-
-/** designed to hold a network definition **/
-struct storage_struct {
-     int *parentindexes;
-     double *n_ij;
-     int *multipliers;/** note this is from crossmultiply() **/
-     unsigned int **order;/** from generate_random_dag() */
-     unsigned int *indexes;/** from generate_random_dag() */
-
-};
-
-typedef struct storage_struct storage;
-
- struct rparams 
-     {double a; 
-      double b;};
 
 struct fnparams
        {
@@ -126,16 +123,24 @@ struct fnparams
 	 int betaindex;
 	 gsl_vector *dgvalues;
 	 gsl_matrix *hessgvalues;
+	 gsl_matrix *hessgvalues3pt;
 	 gsl_vector *beta;
+	 gsl_vector *betastatic;
 	 gsl_permutation *perm;
-	 
-	};
-
-struct database
-{ int **knownnodes;
-  double *knownscores;
-   int length;/** num rows in array */
-   size_t numentries;/** the number of actual entires out of the total length */
-   int nodecacheexceeded;/** used to hold some diagnostic information = number of times nodecache called */    
-    int overflownumentries;/** used to hold some diagnostic information = number of times nodecache called */        };
+	 double inits_adj;
+	 double gvalue;
+	 datamatrix *designdata;
+	 gsl_vector *betaincTau;
+	 gsl_vector *betaincTau_bu;
+	 int fixed_index;
+	 int fixed_index2;
+	 double epsabs_inner;
+	 int maxiters_inner;
+	 int verbose;
+	 double finitestepsize;
+	 int nDim;
+	 int mDim;
+	 double logscore;
+	 double logscore3pt;
 	
+	};

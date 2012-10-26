@@ -1,5 +1,5 @@
 
-AC_INIT([src/laplace.c])
+AC_INIT([src/buildcachematrix.c])
 
 # This derives from the gsl package on CRAN by Robin K. S. Hankin
 # 
