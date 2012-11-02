@@ -120,7 +120,8 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
       
     /** ******************** END of FIRST TRY for a root using hybridsj  *******************************************************/
    if(status!=GSL_SUCCESS){/** try other solver **/
-    /*Rprintf("binary: using hybridsj failed so re-trying with unscaled hybridj\n");*/ 
+     
+    /*Rprintf("binary: using hybridsj failed so re-trying with unscaled hybridj\n"); */
     iter=0; 
     T = gsl_multiroot_fdfsolver_hybridj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams);
@@ -159,8 +160,9 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
 		     for(i=0;i<dag->numNodes+1;i++){/** roll myBeta into dag->modes into the appropriate columns**/
 		       if(gsl_matrix_get(dag->modes,nodeid,i)!=DBL_MAX){
 			 gsl_matrix_set(dag->modes,nodeid,i,gsl_vector_get(myBeta,index++));}} 
-                  /* for(i=0;i<dag->numNodes;i++){Rprintf("%e ",gsl_matrix_get(dag->modes,nodeid,i));}Rprintf("\n");*/
-		   
+                 /* for(i=0;i<dag->numNodes+1;i++){Rprintf("%e ",gsl_matrix_get(dag->modes,nodeid,i));}Rprintf("\n");
+		  for(i=0;i<myBeta->size;i++){Rprintf("%e ",gsl_vector_get(myBeta,i));}Rprintf("\n");
+		   */
 		   }
       
   /** we now have all the individual parts so put it together to the laplace approx */
@@ -185,7 +187,7 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
      /*if(gsl_isnan(mydet)){Rprintf("no det - binary node at node %d\n",nodeid+1);logscore= -DBL_MAX; *//** is nan so return default mlik error value */
      /*} else {*/ /** all is ok so now compute the actual laplace value */
        
-     logscore= -n*gvalue-0.5*mydet+(m/2)*log((2*M_PI)/n);/*}*/ /** this is the final value */
+     logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/*}*/ /** this is the final value */
      if(gsl_isnan(logscore)){logscore= R_NaN;
                            dag->nodeScoresErrCode[nodeid]=2;}
      /*}*/
@@ -368,7 +370,10 @@ void calc_binary_marginal(network *dag, datamatrix *obsdata, int nodeid,  int ve
       /*mode=denom_modes[paramid];*/
       j=0;
       for(i=0;i<designmatrix->numparams;i++){if(i!= paramid){gsl_vector_set(myBeta,j++,denom_modes[i]);}} /** use modes as initial values ignoring current mode which is to be marginalised **/ 
-      
+      /* Rprintf("denommodes\n");
+        for(i=0;i<myBeta->size+1;i++){Rprintf("==%f\n",denom_modes[i]);}Rprintf("\n");
+	for(i=0;i<myBeta->size;i++){Rprintf("=%f\n",gsl_vector_get(myBeta,i));}Rprintf("\n");
+	*/
       gparams.betafixed=betafixed;
       gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
      iter=0; 
@@ -384,7 +389,7 @@ void calc_binary_marginal(network *dag, datamatrix *obsdata, int nodeid,  int ve
        while (status == GSL_CONTINUE && iter < maxiters);
        
       if(status == GSL_SUCCESS){gsl_vector_memcpy(myBeta,s->x);}/** copy if success **/
-       
+   
        if(status != GSL_SUCCESS){Rprintf ("Zero finding error: status = %s at x=%f\n", gsl_strerror (status),gparams.betafixed);/*exit(1);*/
        gsl_multiroot_fdfsolver_free(s);/** alloc new solver type */
        T = gsl_multiroot_fdfsolver_hybridj;
@@ -416,10 +421,13 @@ void calc_binary_marginal(network *dag, datamatrix *obsdata, int nodeid,  int ve
       laplace_g_marg(myBeta,&gparams, &gvalue);
       laplace_hessg_marg(myBeta,&gparams, hessgvalue);
       gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
-      logscore= -n*gvalue-0.5*gsl_linalg_LU_lndet(hessgvalue)+(m/2)*log((2*M_PI)/n); /** this is the final value */
-      val=exp(logscore-mlik);
-      /*Rprintf("got betafixed=%f mlik=%f and value=%f\n",betafixed,mlik,val);*/      
-     *posterior=val;
+      logscore= -n*gvalue-0.5*gsl_linalg_LU_lndet(hessgvalue)+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */
+      if(gsl_isnan(logscore)){*posterior= R_NaN;
+      } else {val=exp(logscore-mlik);
+              *posterior=val;}
+      
+      /*Rprintf("got betafixed=%f mlik=%f and value=%f\n",betafixed,mlik,val);   */  
+    
     /*gsl_multiroot_fdfsolver_free(s);*/
     
     
@@ -730,7 +738,7 @@ int laplace_hessg (const gsl_vector *beta, void *params, gsl_matrix *hessgvalues
   /** might still overflow.... */
      for(i=0;i<vectmp1long->size;i++){
            tmp1=gsl_vector_get(vectmp1long,i);/** top line - with x^2 out as common factor */
-           tmp2=-2*log(1+exp(gsl_vector_get(vectmp1long,i)))-log(n);   
+           tmp2=-2.0*log(1+exp(gsl_vector_get(vectmp1long,i)))-log(n);   
             gsl_vector_set(vectmp2long,i,exp(tmp1+tmp2 ));
 	    
 	   if(gsl_isnan(gsl_vector_get(vectmp2long,i))){Rprintf("got nan in hessian\n");
@@ -996,12 +1004,13 @@ int laplace_dg_marg (const gsl_vector *betashort, void *params, gsl_vector *dgva
        bigval=exp(gsl_vector_get(vectmp1long,i));/** might overflow */
        
         /** WARNING - this might overflow - form:  exp(a)/(1+exp(a)) so if a is very large = 1, if very small no problem **/	
-       if( !(bigval==GSL_POSINF || bigval==GSL_NEGINF)){ /** not big enough to overflow **/
+       if( !(bigval==GSL_POSINF)){ /** not big enough to overflow **/
              gsl_vector_set(vectmp2long,i,-bigval/(1+bigval));
        } else {
-	 Rprintf("over/underflow bin rv marg_dg()\n");
+	 
+	 /*Rprintf("over/underflow bin rv marg_dg()= %f\n",bigval);*/
 	 gsl_vector_set(vectmp2long,i,-1.0);} /** set to unity */              
-
+         
      } /** vectmp2long holds exp(X%*%mybeta)/(1+exp(X%*%mybeta) */
 
 /*Rprintf("=%d %d %d %d\n",X->size1, X->size2, beta->size,vectmp2long->size);*/
@@ -1089,7 +1098,7 @@ int laplace_hessg_marg (const gsl_vector *betashort, void *params, gsl_matrix *h
   /** WARNING - this has been changed from code above on 04.09.2012 as it produced an overflow - now algebraically simplified and works in logs where possible and inverts**/
      for(i=0;i<vectmp1long->size;i++){
            tmp1=gsl_vector_get(vectmp1long,i);/** top line - with x^2 out as common factor */
-           tmp2=-2*log(1+exp(gsl_vector_get(vectmp1long,i)))-log(n);   
+           tmp2=-2.0*log(1+exp(gsl_vector_get(vectmp1long,i)))-log(n);   
             gsl_vector_set(vectmp2long,i,exp(tmp1+tmp2 ));
 	    
 	  /* if(gsl_isnan(gsl_vector_get(vectmp2long,i))){Rprintf("got nan\n");error("");}*/

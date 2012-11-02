@@ -188,7 +188,7 @@ void calc_node_Score_pois(network *dag, datamatrix *obsdata, int nodeid,  int ve
      /*if(gsl_isnan(mydet)){Rprintf("no det - poisson node at node %d\n",nodeid+1);logscore= -DBL_MAX;*/ /** is nan so return default mlik error value */
      /*} else {*/ /** all is ok so now compute the actual laplace value */
       
-     logscore= -n*gvalue-0.5*mydet+(m/2)*log((2*M_PI)/n);/*}*/ /** this is the final value */
+     logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/*}*/ /** this is the final value */
          /* }*/
      if(gsl_isnan(logscore)){logscore= R_NaN;
                            dag->nodeScoresErrCode[nodeid]=2;}
@@ -380,7 +380,7 @@ void calc_poisson_marginal(network *dag, datamatrix *obsdata, int nodeid,  int v
       laplace_g_pois_marg(myBeta,&gparams, &gvalue);
       laplace_hessg_pois_marg(myBeta,&gparams, hessgvalue);
       gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
-      logscore= -n*gvalue-0.5*gsl_linalg_LU_lndet(hessgvalue)+(m/2)*log((2*M_PI)/n); /** this is the final value */
+      logscore= -n*gvalue-0.5*gsl_linalg_LU_lndet(hessgvalue)+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */
       val=exp(logscore-mlik);
       /*Rprintf("got betafixed=%f mlik=%f and value=%f\n",betafixed,mlik,val);*/ 
    *posterior=val;
@@ -561,6 +561,7 @@ int laplace_g_pois (const gsl_vector *beta, void *params,double *gvalue)
     
      *gvalue=(-1.0/n)*(term1+term2+term3);
 
+     /** Rprintf("Poisson raw loglike=%f\n", term1);**/
        return GSL_SUCCESS;
      }
 

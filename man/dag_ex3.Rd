@@ -2,7 +2,7 @@
      \docType{data}
      \alias{ex3.dag.data}
      
-     \title{Data set for use with abn library examples}
+     \title{Validation data set for use with abn library examples}
      \description{1000 observations across with 13 binary variables and one grouping variable. Real (anonymised) data of unknown structure. 
      }
      \usage{ex3.dag.data} 

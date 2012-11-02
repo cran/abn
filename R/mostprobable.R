@@ -31,7 +31,12 @@ mostprobable <- function(score.cache=NULL, prior.choice=1) {
     loc.numnodes<-as.integer(dim(score.cache$node.defn)[2]);
     loc.maxparents<-max(apply(score.cache$node.defn,1,sum));## maximum number of parents in any node
     score.cache$children<-as.integer(score.cache$children-1);## since C indexes from 0
-    
+
+    ## check for missing values - check both NA and NaN - should be just the latter but it may be possible 
+    ## I guess for these to switch back and forth between R and C 
+    score.cache$mlik<-ifelse(is.nan(score.cache$mlik),-.Machine$double.xmax,score.cache$mlik);## if node calc gave a NaN
+    score.cache$mlik<-ifelse(is.na(score.cache$mlik),-.Machine$double.xmax,score.cache$mlik);## if node calc gave a NA
+#print(score.cache$mlik);
     if(is.null(data.df)){stop("Must provide data.df - data used in call to mostprobable()");}
 
     ## need the number of combinations per node 

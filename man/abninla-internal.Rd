@@ -4,9 +4,8 @@
 
 \name{abninla-internal}
 
-\alias{check.data}
-\alias{check.dag}
-\alias{calc.node.mlike.inla}
+\alias{calc.node.inla.glm}
+\alias{calc.node.inla.glmm}
 
 \title{abn internal functions}
 
@@ -15,13 +14,15 @@
 }
 
 \usage{
-check.data(data.df=NULL,data.dists=NULL, ntrials.loc=NULL, exposure.loc=NULL, use.inla=NULL,group.var=NULL)
-check.dag(dag.m,data.df, is.ban.matrix,use.inla,group.var)
-tidy.cache(thecache)
+
+calc.node.inla.glm(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
+                         mean.intercept.loc,prec.intercept.loc,mean.loc,prec.loc,loggam.shape.loc,loggam.inv.scale.loc,verbose.loc)
+calc.node.inla.glmm(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
+                         mean.intercept.loc,prec.intercept.loc,mean.loc,prec.loc,loggam.shape.loc,loggam.inv.scale.loc,verbose.loc)
 }
 
 \details{
-check.data() performs basic error checking on data and function arguments, while check.dag() is similar but for the DAG definition and includes a check for cycles. tidy.cache() checks to see if there are any nodes which could not be fitted and then silently removes then from the cache. 
+calc.node.inla.glm() and calc.node.inla.glmm() are internal wrappers to INLA and are called from fitabn().
 
 }
 

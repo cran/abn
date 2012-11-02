@@ -41,22 +41,27 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_deriv.h>
-#include "node_binomial_marginals_rv_Rsupp.h"
-#include "node_binomial_rv_Rsupp.h"
+#include "node_poisson_marginals_rv.h"
+#include "node_poisson_rv.h"
+#include "node_binomial_rv.h"
+#include "node_poisson_rv_inner.h"
+#include <gsl/gsl_sf_log.h>
+#include <gsl/gsl_sf_exp.h>
 #define PRINTGSL1
 #define TEMP1
 
 /** ****************************************************************************************************
  ***** calc an individual logistic regression model 
  *******************************************************************************************************/
-void calc_binary_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose,
+void calc_poisson_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose,
                                 datamatrix *designmatrix, const double priormean, const double priorsd, const double priorgamshape, const double priorgamscale,
                                 const int maxiters, const double epsabs, double epsabs_inner, int maxiters_inner, double finitestepsize, int verbose,
 				double h_guess, double h_epsabs, int maxiters_hessian,
-			       double *denom_modes, int paramid, double betafixed, double mlik, double *posterior){
+			       double *denom_modes, int paramid, double betafixed, double mlik, double *posterior,
+				double max_hessian_error,double myfactor_brent, int maxiters_hessian_brent, double num_intervals_brent){
 
- int i,j,status,actual_status,sss,haveprecision,iter=0;
-  gsl_vector *myBeta,*vectmp1,*vectmp2,*vectmp1long,*vectmp2long,*localbeta,*localbeta2,*dgvalues,*betafull,*finitefactors,*finitestepsize_vec,*nmstepsize;/** this will hold the parameter point estimates + 1 is for precision of rv's */
+ int i,j,status,sss,haveprecision,iter=0;
+  gsl_vector *myBeta,*vectmp1,*vectmp2,*vectmp1long,*vectmp2long,*localbeta,*localbeta2,/* *dgvalues,*/ *betafull,*finitefactors,*finitestepsize_vec,*nmstepsize;/** this will hold the parameter point estimates + 1 is for precision of rv's */
   struct fnparams gparams;/** for passing to the gsl zero finding functions */
   double gvalue;
   gsl_matrix *mattmp2,*mattmp3,*mattmp4,*hessgvalues,*hessgvaluesfull,*hessgvalues3pt,*hessgvaluesfull3pt;
@@ -67,7 +72,11 @@ void calc_binary_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  i
   double val=0.0;double nm_size=0.0;
   const gsl_multimin_fminimizer_type *T;
        gsl_multimin_fminimizer *s;
-     gsl_multimin_function F;  
+     gsl_multimin_function F;
+     double lower,upper,lower_f,upper_f;int found=0; double delta=0.0,new_f_min=0.0;
+   double increLogscale=0.0, best_Error=0.0,best_h=0.0, hessian_Error=0.0;
+  const gsl_min_fminimizer_type *T1;
+  gsl_min_fminimizer *s1;  
  /*const gsl_min_fminimizer_type *T;
   gsl_min_fminimizer *s;
   gsl_function F;*/
@@ -98,7 +107,7 @@ void calc_binary_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  i
   /** note - numparams does NOT include precision term - numpars +1 */
   
 
-  build_designmatrix_rv(dag,obsdata,priormean, priorsd,priorgamshape,priorgamscale,designmatrix,nodeid,0);
+  build_designmatrix_pois_rv(dag,obsdata,priormean, priorsd,priorgamshape,priorgamscale,designmatrix,nodeid,0);
   
   nDim=designmatrix->numparams+1-1;/** +1 for prec -1 for marginal */ 
   lowerbounds=(double *)R_alloc(nDim,sizeof(double*));
@@ -141,7 +150,7 @@ void calc_binary_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  i
   myBeta = gsl_vector_alloc (designmatrix->numparams+1-1);/** inc rv precision : -1 as marginal calc */
   hessgvalues = gsl_matrix_alloc (designmatrix->numparams+1-1,designmatrix->numparams+1-1); /** -1 as marginal calc */ 
   hessgvalues3pt = gsl_matrix_alloc (designmatrix->numparams+1-1,designmatrix->numparams+1-1);
-  dgvalues = gsl_vector_alloc (designmatrix->numparams+1-1);/** inc rv precision : -1 as marginal calc */
+  /*dgvalues = gsl_vector_alloc (designmatrix->numparams+1-1);*//** inc rv precision : -1 as marginal calc */
   
   gparams.designdata=designmatrix;
   
@@ -177,28 +186,29 @@ void calc_binary_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  i
    status=GSL_SUCCESS;
    gparams.betafixed=betafixed;
   
-      Rprintf("evaluating at betafixed=%f\n",gparams.betafixed);
+     /*Rprintf("evaluating marginal at %f\n",gparams.betafixed);*/
      for(i=0;i<finitefactors->size;i++){/** go forwards through the factors so start with SMALLEST STEPSIZE */
    /*Rprintf("step size iteration %d\n",i);*/
      failcode=0;/** reset*/
     gparams.finitestepsize=gsl_vector_get(finitefactors,i)*finitestepsize;
     
-      lbfgsb(nDim, lmm, myBeta->data, lowerbounds, upperbounds, nbd, &gvalue, &g_outer_marg_R,
-                      &rv_dg_outer_marg_R, &failcode, 
+      lbfgsb(nDim, lmm, myBeta->data, lowerbounds, upperbounds, nbd, &gvalue, &g_pois_outer_marg_R,
+                      &rv_dg_pois_outer_marg_R, &failcode, 
 	              &gparams,
 	              factr,
                       pgtol, &fncount, &grcount,
                       maxiters, msg, trace, nREPORT);
+		      
     if(!failcode){dag->nodeScoresErrCode[nodeid]=0;/*bestsize=gparams.finitestepsize;*/break;}
      }	    
 
 if(failcode){Rprintf("%s at node %d\n",msg,nodeid+1);/** notify if there is an error and set final error code **/
 		   } 		
 /*Rprintf("MARGINAL gvalue=%f nodeid=%d\n",gvalue,nodeid+1);*/		
-gparams.finitestepsize=finitestepsize;/** reset */	    
-		    		    
+gparams.finitestepsize=finitestepsize;/** reset */
+/*for(i=0;i<myBeta->size;i++){Rprintf("%f ",gsl_vector_get(myBeta,i));}Rprintf("\n");*/
 /** just re-use as much of existing gparams as possible - so names are meaningless e.g. betafixed is actually gvalue */
-   gparams.betaincTau=betafull;
+   /*gparams.betaincTau=betafull;*/
    gparams.betastatic=myBeta;/** this is important as we are passing the addres of myBeta and so don't want any other function changing this! **/
    gparams.nDim=n;
    gparams.mDim=m;
@@ -208,7 +218,7 @@ gparams.finitestepsize=finitestepsize;/** reset */
    gparams.betafixed=betafixed;
    gparams.gvalue=gvalue;
    
-    F.f = &compute_mlik_nm;
+    F.f = &compute_mlik_pois_marg_nm;
     F.params = &gparams;
     F.n = 1;
    
@@ -244,21 +254,69 @@ gparams.finitestepsize=finitestepsize;/** reset */
     */
          }
        while (status == GSL_CONTINUE && iter < maxiters_hessian);
-       if( (status != GSL_SUCCESS)){actual_status=status;/** copy for use later **/
+       if( (status != GSL_SUCCESS)){/*actual_status=status;*//** copy for use later **/
                                     status=GSL_FAILURE;} /** solution failed to achieve a value below h_epsabs **/                                                               
 	 
     finitestepsize=gsl_vector_get(s->x,0);/** get best fin.diff stepsize **/
     
     /*dag->hessianError[nodeid]= s->fval;*//** get fin.diff error **/
-    
+    hessian_Error=s->fval;
     gsl_multimin_fminimizer_free (s);
     
+ if(hessian_Error>max_hessian_error){Rprintf("Error in mlik = %e > tolerance of %e so continuing optimisation using Brent\n",hessian_Error,max_hessian_error); 
+   
+     /* Rprintf("stepsize after NM= %e\n",finitestepsize);*/
+  
+     T1 = gsl_min_fminimizer_brent;
+     s1 = gsl_min_fminimizer_alloc (T1);
+	 
+      /** must find lower and upper such that f(lower)<f(finitestepsize)<f(upper) **/ 
+      /** use an interval of lower=finitestepsize/FACTOR, upper=finitestepsize*FACTOR and then start at the lower end and travel up until
+      find suitable endpoints - seems to work but not exactly fast!**/
+      best_Error=hessian_Error;/** original error from nelder */
+      best_h=finitestepsize;               /** original stepsize from nelder */
+      found=0;/** flag for found good result */
+      lower=finitestepsize/myfactor_brent;
+      upper=myfactor_brent*finitestepsize;
+      lower_f=compute_mlik_pois_marg_brent(lower, &gparams);/** value at lower point **/
+      upper_f=compute_mlik_pois_marg_brent(upper, &gparams);/** value at higher point **/
+      increLogscale=(gsl_sf_log(upper)-gsl_sf_log(lower))/num_intervals_brent;/** on a log scale */
+      for(delta=gsl_sf_log(lower)+increLogscale;delta<gsl_sf_log(upper);delta+=increLogscale){/** linear increments on a log scale **/
+	R_CheckUserInterrupt();/** allow an interupt from R console */ 
+	/** find a point which has f(x) lower than f(lower) and f(upper) **/
+	 new_f_min=compute_mlik_pois_marg_brent(gsl_sf_exp(delta), &gparams); 
+	 Rprintf("lower=%e, delta=%e, upper=%e\n",lower,gsl_sf_exp(delta),upper);
+        if(lower_f>new_f_min && new_f_min<upper_f  && get_best_stepsize_pois_marg(gsl_sf_exp(delta),lower,upper,maxiters_hessian_brent,&gparams, &compute_mlik_pois_marg_brent,
+	                                                               s1,&finitestepsize,&hessian_Error)<=max_hessian_error){/** have an interval suitable for bracketing **/
+	                                                           /** above is address so can store error withouth rerunning function */
+	  /*finitestepsize=delta;*/
+	  found=1;
+	  status=GSL_SUCCESS;
+	  break;/** break out of delta - so have found new x_min **/
+	} else {/** have not got a good enough error but save the best error and stepsize so far found **/
+	        if(hessian_Error<best_Error){best_Error=hessian_Error;
+	                                                best_h=finitestepsize;}
+	        }
+      } /** end of search for interval and good error **/
+         
+      if(!found){/** have not found a suitably small error but may have found a better error than nelder mead **/
+        
+       /** best_Error will either be the original nelder mean value or better, and best_h is the corresponding stepsize**/
+	                                 hessian_Error=best_Error;
+					 finitestepsize=best_h;
+        /** reset back to nelder-mead estimate **/
+	status=GSL_FAILURE;/** set to failure since we did not achieve the lower error asked for */
+      Rprintf("failed to meet tolerance of %e and using best error estimate found of %e\n",max_hessian_error,hessian_Error);}
 
+    gsl_min_fminimizer_free (s1);
+   
+   } /** end of error being too large **/
+   
        switch(status){  /** choose which type of node we have */
                      case GSL_SUCCESS:{    
 		                     /** successful finite diff so now do final computation with the optimal step size **/
                                      /*Rprintf("search for optimal step size : status = %s at nodeid %d\n", gsl_strerror (status),nodeid+1);*/
-                                     rv_hessg_outer_marg(myBeta,&gparams, hessgvalues,finitestepsize,hessgvalues3pt);/**  start with LARGEST STEPSIZE **/
+                                     rv_hessg_pois_outer_marg(myBeta,&gparams, hessgvalues,finitestepsize,hessgvalues3pt);/**  start with LARGEST STEPSIZE **/
                                     /* Rprintf("HESSIAN MARGINAL using stepsize =%e\n",finitestepsize);
 				     for(i1=0;i1<hessgvalues->size1;i1++){
 				        for(i2=0;i2<hessgvalues->size2;i2++){Rprintf("%e ",gsl_matrix_get(hessgvalues,i1,i2));}Rprintf("\n");}*/
@@ -273,8 +331,8 @@ gparams.finitestepsize=finitestepsize;/** reset */
        
 		     
 		     case GSL_FAILURE: {/** the minimiser did not find a minimum meeting the accuracy requirements and so may be unreliable **/
-		                       Rprintf ("-- ERROR! -- search for optimal step size error: status = %s at nodeid %d\n", gsl_strerror (actual_status),nodeid+1);
-                                       rv_hessg_outer_marg(myBeta,&gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
+		                       Rprintf ("-- ERROR! -- search for optimal step size error: status = %s at nodeid %d\n", gsl_strerror (status),nodeid+1);
+                                       rv_hessg_pois_outer_marg(myBeta,&gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
                                        /*Rprintf("HESSIAN MARGINAL using stepsize =%e\n",finitestepsize);
 				       for(i1=0;i1<hessgvalues->size1;i1++){
 				        for(i2=0;i2<hessgvalues->size2;i2++){Rprintf("%e ",gsl_matrix_get(hessgvalues,i1,i2));}Rprintf("\n");}*/
@@ -303,7 +361,7 @@ gparams.finitestepsize=finitestepsize;/** reset */
    gsl_vector_free(designmatrix->priorgamscale);
    gsl_vector_free(designmatrix->Y);
    gsl_matrix_free(designmatrix->datamatrix_noRV);
-   gsl_vector_free(dgvalues);
+   /*gsl_vector_free(dgvalues);*/
    gsl_vector_free(myBeta); 
    gsl_vector_free(vectmp1);
    gsl_vector_free(vectmp2);
@@ -321,13 +379,18 @@ gparams.finitestepsize=finitestepsize;/** reset */
    gsl_matrix_free(hessgvaluesfull);
    gsl_matrix_free(hessgvaluesfull3pt);
    gsl_permutation_free(perm);
-  
+   gsl_vector_free(finitefactors);
+   gsl_vector_free(finitestepsize_vec);
+   gsl_vector_free(nmstepsize);
+
+
+
 }
 
 /** *************************************************************************************
 *****************************************************************************************
 *****************************************************************************************/ 
-double g_outer_marg_R (int Rn, double *betashortDBL, void *params) /** double g_outer_marg_R(int Rn, double *betaincTauDBL, void *params);*/
+double g_pois_outer_marg_R (int Rn, double *betashortDBL, void *params) /** double g_outer_marg_R(int Rn, double *betaincTauDBL, void *params);*/
 {
   /** betashort is full beta vector (inc precision) bu then minus one term **/
   int i,j;
@@ -386,7 +449,7 @@ const gsl_vector *priormean = designdata->priormean;
        for(j=0;j<designdata->numUnqGrps;j++){/** for each data group **/
 	/*j=0;*/
 	 /*Rprintf("processing group %d\n",j+1);*/
-	  singlegrp=g_inner(betaincTau,designdata,j,epsabs_inner,maxiters_inner,verbose);
+	  singlegrp=g_pois_inner(betaincTau,designdata,j,epsabs_inner,maxiters_inner,verbose);
         
 	if(gsl_isnan(singlegrp)){error("nan in g_inner\n");}
 	  term1+= singlegrp;
@@ -418,14 +481,14 @@ const gsl_vector *priormean = designdata->priormean;
    
 	     
    gval=(-1.0/n)*(term1+term2+term3+term4); 
-   if(gsl_isnan(gval)){error("g_outer_R\n");}
+   if(gsl_isnan(gval)){error("g_pois_outer_R\n");}
  /*Rprintf("gvalue=%10.10f\n",gval);*/
 	return(gval);/** negative since its a minimiser */
 }
 /** *************************************************************************************
 *****************************************************************************************
 *****************************************************************************************/ 
-void rv_dg_outer_marg_R (int Rn, double *betashortDBL, double *dgvalueshortDBL, void *params)/* void rv_dg_outer_marg_R(int n, double *betaDBL, double *dgvaluesDBL,void *params);*/
+void rv_dg_pois_outer_marg_R (int Rn, double *betashortDBL, double *dgvalueshortDBL, void *params)/* void rv_dg_outer_marg_R(int n, double *betaDBL, double *dgvaluesDBL,void *params);*/
 {
   struct fnparams *gparams = ((struct fnparams *) params);
   gsl_vector *betaincTau = ((struct fnparams *) params)->betafull;/** will hold "full beta vector" inc precision **/
@@ -453,7 +516,7 @@ void rv_dg_outer_marg_R (int Rn, double *betashortDBL, double *dgvalueshortDBL, 
    if(gsl_vector_get(betaincTau,betaincTau->size-1)<0.0){error("negative tau in rv_dg_outer_marg_R\n");}
    
    
-       F.function = &g_outer_single;
+       F.function = &g_outer_pois_single;
        F.params = gparams;
   
   j=0;     
@@ -473,7 +536,7 @@ void rv_dg_outer_marg_R (int Rn, double *betashortDBL, double *dgvalueshortDBL, 
   }
   }
   
-  for(i=0;i<Rn;i++){if(gsl_isnan(dgvalueshortDBL[i])){error("nan is rv_dg_outer_marg\n");}}
+  for(i=0;i<Rn;i++){if(gsl_isnan(dgvalueshortDBL[i])){error("nan is rv_dg_pois_outer_marg\n");}}
   /*}*/
    /*if(betafixed>2.34){Rprintf("betaincTau=");for(i=0;i<betaincTau->size;i++){Rprintf("%f ",i,gsl_vector_get(betaincTau,i));}Rprintf("\n");
      for(i=0;i<dgvalueshort->size;i++){Rprintf("deriv=%d %f\n",i,gsl_vector_get(dgvalueshort,i));} 
@@ -485,7 +548,7 @@ void rv_dg_outer_marg_R (int Rn, double *betashortDBL, double *dgvalueshortDBL, 
 /** *************************************************************************************************************************/
 /** *************************************************************************************************************************/
 /** *************************************************************************************************************************/
-int rv_hessg_outer_marg( gsl_vector* betashort, void* params, gsl_matrix* hessgvalueshort,double h, gsl_matrix* hessgvalueshort3pt)
+int rv_hessg_pois_outer_marg( gsl_vector* betashort, void* params, gsl_matrix* hessgvalueshort,double h, gsl_matrix* hessgvalueshort3pt)
 {
   
   struct fnparams *gparams = ((struct fnparams *) params);
@@ -514,12 +577,12 @@ int rv_hessg_outer_marg( gsl_vector* betashort, void* params, gsl_matrix* hessgv
   
   
   gparams->betaincTau=betaincTau;
-  if(gsl_vector_get(betaincTau,betaincTau->size-1)<0.0){Rprintf("negative tau in hess marg %e\n",gsl_vector_get(betaincTau,betaincTau->size-1));error("");}
+  if(gsl_vector_get(betaincTau,betaincTau->size-1)<0.0){Rprintf("negative tau in pois hess marg %e\n",gsl_vector_get(betaincTau,betaincTau->size-1));error("");}
   /*Rprintf("get betaincTau");
   for(i=0;i<gparams->betaincTau->size;i++){Rprintf("%f ",gsl_vector_get(gparams->betaincTau,i));}Rprintf("\n");
   Rprintf("fixed is %d at %f\n",betaindex,betafixed);
   */
-  F.function = &g_outer_single;
+  F.function = &g_outer_pois_single;
   F.params = gparams;
   
   /** diagnonal terms d^2f/dx^2 - finite differences - difference between two */
@@ -568,7 +631,11 @@ int rv_hessg_outer_marg( gsl_vector* betashort, void* params, gsl_matrix* hessgv
    for(j=0;j<hessgvalueshort3pt->size2;j++){
      if(i>=j){gsl_matrix_set(hessgvalueshort3pt,j,i,gsl_matrix_get(hessgvalueshort3pt,i,j));}}}
  
-  
+  /** NOTE: hessian might have nan's if h<=0 **/
+   /*for(i=0;i<hessgvalueshort3pt->size1;i++){
+      for(j=0;j<hessgvalueshort3pt->size1;j++){
+    if(gsl_isnan(gsl_matrix_get(hessgvalueshort3pt,i,j))){Rprintf("h=%f ",h);error("nan is rv_hess_outer_marg\n");}}}
+  */
   return GSL_SUCCESS;
   
 }
@@ -576,7 +643,7 @@ int rv_hessg_outer_marg( gsl_vector* betashort, void* params, gsl_matrix* hessgv
 /** *************************************************************************************************************************/
 /** *************************************************************************************************************************/
 /** *************************************************************************************************************************/
-double compute_mlik_marg(double finitestepsize, void *params)
+double compute_mlik_pois_marg_nm(const gsl_vector *finitestepsize_vec, void *params)
 {
    struct fnparams *gparams = ((struct fnparams *) params);
    gsl_vector *myBeta=gparams->betastatic;
@@ -590,50 +657,7 @@ double compute_mlik_marg(double finitestepsize, void *params)
    int status,sss;
    double mydet;
    double logscore,logscore3pt;
-  
-   /** ***/
-   
-  /** ***/
-  /*Rprintf("got h=%e n=%d m=%d gvalue=%e\n",finitestepsize,n,m,gvalue);*/
-  /*for(i=0;i<myBeta->size;i++){Rprintf("beta= %f ",gsl_vector_get(myBeta,i));}Rprintf("\n");*/
-  
-
-   rv_hessg_outer_marg(myBeta,gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
- 
-   /*for(i=0;i<hessgvalues3pt->size1;i++){for(j=0;j<hessgvalues3pt->size2;j++){Rprintf("%e ",gsl_matrix_get(hessgvalues3pt,i,j));}Rprintf("\n");}*/
-   
-   status=gsl_linalg_LU_decomp(hessgvalues,perm,&sss);
-   mydet=gsl_linalg_LU_lndet(hessgvalues);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
-   logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
-  
-   status=gsl_linalg_LU_decomp(hessgvalues3pt,perm,&sss);
-   mydet=gsl_linalg_LU_lndet(hessgvalues3pt);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
-   logscore3pt= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
-   
-   /*gparams->logscore=logscore;
-   gparams->logscore3pt=logscore3pt;*/
-   /*Rprintf("logscore=%e logscore3pt=%e\n",logscore,logscore3pt);*/
-   return(fabs(logscore-logscore3pt)); 
- 
-}
-/** *************************************************************************************************************************/
-/** *************************************************************************************************************************/
-/** *************************************************************************************************************************/
-double compute_mlik_marg_mn(const gsl_vector *finitestepsize_vec, void *params)
-{
-   struct fnparams *gparams = ((struct fnparams *) params);
-   gsl_vector *myBeta=gparams->betastatic;
-   int n=gparams->nDim;
-   int m=gparams->mDim;
-   gsl_permutation *perm=gparams->perm;
-   gsl_matrix *hessgvalues=gparams->mattmp2;
-   gsl_matrix *hessgvalues3pt=gparams->mattmp3;
-   double gvalue=gparams->gvalue;
-   
-   int status,sss;
-   double mydet;
-   double logscore,logscore3pt;
-   
+   double error_val=0.0;
    /** ***/
    double finitestepsize=gsl_vector_get(finitestepsize_vec,0);
   /** ***/
@@ -642,7 +666,7 @@ double compute_mlik_marg_mn(const gsl_vector *finitestepsize_vec, void *params)
   
 
 
-   rv_hessg_outer_marg(myBeta,gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
+   rv_hessg_pois_outer_marg(myBeta,gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
  
    /*for(i=0;i<hessgvalues3pt->size1;i++){for(j=0;j<hessgvalues3pt->size2;j++){Rprintf("%e ",gsl_matrix_get(hessgvalues3pt,i,j));}Rprintf("\n");}*/
    
@@ -654,9 +678,103 @@ double compute_mlik_marg_mn(const gsl_vector *finitestepsize_vec, void *params)
    mydet=gsl_linalg_LU_lndet(hessgvalues3pt);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
    logscore3pt= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
    
+   error_val=fabs(logscore-logscore3pt);
+   /*Rprintf("error_val=%e\n",error_val);*/
    /*gparams->logscore=logscore;
    gparams->logscore3pt=logscore3pt;*/
    /*Rprintf("logscore=%e logscore3pt=%e\n",logscore,logscore3pt);*/
-   return(fabs(logscore-logscore3pt)); 
+   if(gsl_isnan(error_val) || gsl_isinf(error_val)){return(DBL_MAX);/*error("Non-finite value in mlik error estimation");*/}
+   return(error_val);
  
+}
+/** *************************************************************************************************************************/
+/** *************************************************************************************************************************/
+/** *************************************************************************************************************************/
+double compute_mlik_pois_marg_brent(double finitestepsize, void *params)
+{
+   struct fnparams *gparams = ((struct fnparams *) params);
+   gsl_vector *myBeta=gparams->betastatic;
+   int n=gparams->nDim;
+   int m=gparams->mDim;
+   gsl_permutation *perm=gparams->perm;
+   gsl_matrix *hessgvalues=gparams->mattmp2;
+   gsl_matrix *hessgvalues3pt=gparams->mattmp3;
+   double gvalue=gparams->gvalue;
+   
+   int status,sss;
+   double mydet;
+   double logscore,logscore3pt;
+   double error_val=0.0;
+   
+   /** ***/
+   /*double finitestepsize=gsl_vector_get(finitestepsize_vec,0);*/
+  /** ***/
+  /*Rprintf("got h=%e n=%d m=%d gvalue=%e\n",finitestepsize,n,m,gvalue);*/
+  /*for(i=0;i<myBeta->size;i++){Rprintf("beta= %f ",gsl_vector_get(myBeta,i));}Rprintf("\n");*/
+  
+
+
+   rv_hessg_pois_outer_marg(myBeta,gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
+ 
+   /*for(i=0;i<hessgvalues3pt->size1;i++){for(j=0;j<hessgvalues3pt->size2;j++){Rprintf("%e ",gsl_matrix_get(hessgvalues3pt,i,j));}Rprintf("\n");}*/
+   
+   status=gsl_linalg_LU_decomp(hessgvalues,perm,&sss);
+   mydet=gsl_linalg_LU_lndet(hessgvalues);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
+   logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
+  
+   status=gsl_linalg_LU_decomp(hessgvalues3pt,perm,&sss);
+   mydet=gsl_linalg_LU_lndet(hessgvalues3pt);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
+   logscore3pt= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
+   
+    error_val=fabs(logscore-logscore3pt);
+   /*Rprintf("error_val=%e\n",error_val);*/
+   /*gparams->logscore=logscore;
+   gparams->logscore3pt=logscore3pt;*/
+   /*Rprintf("logscore=%e logscore3pt=%e\n",logscore,logscore3pt);*/
+   if(gsl_isnan(error_val) || gsl_isinf(error_val)){return(DBL_MAX);/*error("Non-finite value in mlik error estimation");*/}
+   return(error_val);
+ 
+}
+/** ***********************************************************************************************/
+/** ***********************************************************************************************/
+double get_best_stepsize_pois_marg(double delta,double lower,double upper,int maxiters_hessian, struct fnparams *gparams,
+			 double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror)
+{
+  gsl_function F1; 
+  /*const gsl_min_fminimizer_type *T1;
+  gsl_min_fminimizer *s1;*/ 
+  int status=GSL_SUCCESS;
+  int iter;double myerror=0.0;
+  *finitestepsize=delta;/** --copy-- current delta to finitestepsize as finitstepsize will be changed in here **/
+  /** could probably do the memory withouth alloc free in here but outside of function to avoid extra mallocs */
+   F1.function = compute_mlik_pois_marg_brent;
+   F1.params = gparams;
+   gsl_min_fminimizer_set (s1, &F1, *finitestepsize,lower,upper);
+   iter=0;
+        do
+         {
+           iter++; 
+	 /* Rprintf("iter=%d\n",iter);*/
+	   status = gsl_min_fminimizer_iterate (s1);
+           *finitestepsize = gsl_min_fminimizer_x_minimum (s1);
+           lower=gsl_min_fminimizer_x_lower (s1);
+	   upper=gsl_min_fminimizer_x_upper (s1);
+          status = gsl_min_test_interval (lower,upper, 0.00001, 0.0);
+	  /*Rprintf("[%e,%e] min=%e\n",lower,upper,finitestepsize);*/
+           /*if (status==GSL_SUCCESS)*/ 
+             /*break;*/
+         }
+        while (status == GSL_CONTINUE && iter < maxiters_hessian); 
+     
+     /** now get the error in hessian **/
+     
+     /*compute_mlik_nm_brent(finitestepsize, &gparams);*/
+    
+     /*gsl_min_fminimizer_free (s1);*/
+ 
+  myerror=compute_mlik_pois_marg_brent(*finitestepsize, gparams);
+  *saverror=myerror;/** this is a pointer to the dag->HessianError[nodeid] */
+  Rprintf("Brent minimiser: error in mlik=%e in [%e,%e] with best h=%e\n",myerror,lower,upper,*finitestepsize);
+
+return(myerror);  
 }

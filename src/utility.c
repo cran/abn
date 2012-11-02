@@ -188,6 +188,7 @@ index=0;/** this is the "row index" in the 2-d  array */
 for(i=0;i<vars;i++){/** for each node in DAG **/
    for(j=0;j<nodecache->numparcombs[i];j++){/** for each of its parent combinations **/
       if(R_nodescores){nodecache->nodeScores[i][j]=REAL(R_nodescores)[index];/** copy scores from 1-d to 2-d **/
+	               if(ISNAN(nodecache->nodeScores[i][j])){nodecache->nodeScores[i][j]= -DBL_MAX;} /** if missing then assign to worst possible value */
       } else {/*error("null R_nodescores");*/nodecache->nodeScores[i][j]=0.0;} /** is R_nodescores is null - which will be the case when making the buildscorecache() then fill with zeros **/	
       for(k=0;k<cols;k++){nodecache->defn[i][j][k]=tmpbig[index][k];}
       index++;}}

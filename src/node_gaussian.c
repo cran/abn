@@ -179,7 +179,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
      mydet=gsl_linalg_LU_lndet(hessgvalue);/** compute determinant but this might be a nan - overflow?*/
      /*if(gsl_isnan(mydet)){Rprintf("no det - gaussian node at node %d\n",nodeid+1);logscore= -DBL_MAX;*/ /** is nan so return default mlik error value */
      /*} else {*/ /** all is ok so now compute the actual laplace value */
-     logscore= -n*gvalue-0.5*mydet+(m/2)*log((2*M_PI)/n); /** this is the final value */
+     logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */
          /* }*/
      if(gsl_isnan(logscore)){logscore= R_NaN;
                            dag->nodeScoresErrCode[nodeid]=2;} 
@@ -345,16 +345,22 @@ int i,j,ss,status/* ,status2,status_inits,index*/;
     /** we now have all the individual parts so put it together to the laplace approx */
     
     
+    /*for(iter=0;iter< myBeta->size;iter++){Rprintf("%f ",gsl_vector_get(myBeta,iter));}Rprintf("\n");*/
+    
     laplace_gaus_g_marg(myBeta,&gparams, &gvalue);
     laplace_gaus_hessg_marg(myBeta,&gparams, hessgvalue);
     n=obsdata->numDataPts;
     m=designmatrix->numparams+1-1;/** -1 since a marginal calc. one less dimension in the integral **/
     perm = gsl_permutation_alloc (m);
     gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
-    logscore= -n*gvalue-0.5*gsl_linalg_LU_lndet(hessgvalue)+(m/2)*log((2*M_PI)/n); /** this is the final value */ 
+    logscore= -n*gvalue-0.5*gsl_linalg_LU_lndet(hessgvalue)+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */ 
     val=exp(logscore-mlik);
-    /*Rprintf("got betafixed=%f mlik=%f and gval=%f value=%f %f\n",betafixed,mlik,logscore,val,gsl_linalg_LU_lndet(hessgvalue)); */
-    *posterior=val;
+    /*Rprintf("got betafixed=%f mlik=%f and gval=%f value=%f %f\n",betafixed,mlik,logscore,val,gsl_linalg_LU_lndet(hessgvalue));*/
+    /*Rprintf("got betafixed=%f mlik=%f logscore=%f exp(logscore-mlik)=%f gvalue=%f\n",betafixed,mlik,logscore,val,gvalue);*/
+    if(gsl_isnan(val)){*posterior=R_NaN;
+    } else {*posterior=val;}
+    
+    
     
    gsl_vector_free(myBeta);
    gsl_vector_free(vectmp1);
@@ -424,7 +430,7 @@ void build_designmatrix_gaus(network *dag,datamatrix *obsdata, double priormean,
     gsl_matrix_set(dag->modes,nodeid,dag->numNodes+1,1);/** the precision term put at end of other params */  
   }
   
-  datamat=gsl_matrix_alloc(obsdata->numDataPts,numparents+1);
+  datamat=gsl_matrix_alloc(obsdata->numDataPts,numparents+1); /** only +1 since this is design matrix for the mean */
   designmatrix->datamatrix=datamat;
   Y=gsl_vector_alloc(obsdata->numDataPts);
   designmatrix->Y=Y;
@@ -451,7 +457,7 @@ void build_designmatrix_gaus(network *dag,datamatrix *obsdata, double priormean,
                          
    } /** end of data point loop */   
                         
-   designmatrix->numparams=numparents+1;/** +1 for intercept**/
+   designmatrix->numparams=numparents+1;/** +1 for intercept - excludes precision **/
    /** now set the priormean and priorsd vector - choose the correct prior values */
    
    for(k=0;k<designmatrix->numparams;k++){

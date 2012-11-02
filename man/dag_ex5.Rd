@@ -2,7 +2,7 @@
      \docType{data}
      \alias{ex5.dag.data}
      
-     \title{Data set for use with abn library examples}
+     \title{Valdiation data set for use with abn library examples}
      \description{434 observations across with 18 variables, 6 binary and 12 continuous, and one grouping variable. Real (anonymised) data of unknown structure. 
      }
      \usage{ex5.dag.data} 
@@ -26,7 +26,7 @@
 \item{g10}{continuous}
 \item{g11}{continuous}
 \item{g12}{continuous}
-\item{group}{binary, defines sampling groups}
+\item{group}{factor,defines sampling groups}
      }}
 
 
