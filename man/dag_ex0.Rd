@@ -2,7 +2,7 @@
      \docType{data}
      \alias{ex0.dag.data}
      
-     \title{Synthetic data set for use with abn library examples}
+     \title{Synthetic validation data set for use with abn library examples}
      \description{300 observations simulated from a DAG with 10 binary variables, 10 gaussian variables and 10 poisson variables.
      }
      \usage{ex0.dag.data} 

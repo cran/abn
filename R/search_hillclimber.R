@@ -30,7 +30,7 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
   if(!is.null(start.dag)){ ## must also have data passed
                           if(is.null(data.df)){stop("must supply data.df when using explicit start.dag");}
                           if(num.searches!=1){stop("num.searches must equal 1 when using explicit start dag - otherwise an identical search is repeated\n => the final DAG identified depends only on the initial search location\n");}
-                          check.dag(dag.m=start.dag,data.df=data.df, is.ban.matrix=FALSE);
+                          check.valid.dag(dag.m=start.dag,data.df=data.df, is.ban.matrix=FALSE,NULL);
                           use.start.dag<-TRUE;}
 
   cache.defn<-as.integer(score.cache[["node.defn"]]);## into one long vector filled by col
@@ -41,6 +41,7 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
   
   numparents.per.node<-as.integer(table(children));## number of parent combinations per variable
 
+  ## NOTE - NaN's/NAs - these are dealt with in C utility.c make_nodecache
   ################################################################################################
   ### Want graphical output
   ### via Graphviz and Cairo
@@ -72,7 +73,9 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
            con.dag<-res[2+1][[1]];## the best DAG from a single search
            mygraph<-new("graphAM",adjMat=t(con.dag),edgemode="directed");
            mygraph.prev<-new("graphAM",adjMat=t(con.dag),edgemode="directed");
+           if(num.searches>1){
            plot(mygraph,main=paste("Consensus DAG - at ",100*support.threshold,"% support - still searching....",sep=""));
+           }
            } else {
                    ## have the second or more iteration and so compute the consensus
                    seed<-seed+1;## increment seed
@@ -103,10 +106,14 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
           ## do a final plot to avoid refresh issue
           plot(mygraph,main=paste("Consensus DAG - at ",100*support.threshold,"% support after ",num.searches, " searches",sep=""));
           ## return results in similar format to batch method below
-      
+       if(num.searches==1){con.dag.binary<-con.dag;}
+
       if(create.graph){## create graph object part 
+
       mygraph<-new("graphAM",adjMat=t(con.dag.binary),edgemode="directed");
+
       return(list(init.score=init.score,final.score=final.score,init.dag=init.dag,final.dag=final.dag,consensus=con.dag.binary,support.threshold=support.threshold,graph=mygraph));
+                
       } else { 
               return(list(init.score=init.score,final.score=final.score,init.dag=init.dag,final.dag=final.dag,consensus=con.dag.binary,support.threshold=support.threshold));     
              }

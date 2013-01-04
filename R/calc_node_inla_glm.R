@@ -6,7 +6,7 @@
 ###############################################################################
 
 ## fit a given regression using I-NLA
-calc.node.mlik.inla<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
+calc.node.inla.glm<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
                          mean.intercept.loc,prec.intercept.loc,mean.loc,prec.loc,loggam.shape.loc,loggam.inv.scale.loc,verbose.loc){
 #print(data.df.loc);
  ## 1. get the formula part of the call - create a string of this
@@ -42,23 +42,33 @@ calc.node.mlik.inla<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntr
                                    "mean=",          mean.loc,",\n",
                                    "prec=",          prec.loc,",\n", 
                                    "compute=",       compute.fixed.loc,"))\n",sep="");
-
+#error.str<-"inla.arg=\"-b 2>/dev/null\",";
   
- full.command<-paste(start.str,str.eqn.str,str.data,str.family,str.extra,end.str,sep="");
+ full.command<-paste("r<-try(",start.str,str.eqn.str,str.data,str.family,str.extra,#error.str,
+                     end.str,",silent=TRUE)",sep="");
 
  ## 6. some debugging - if requested
  if(verbose.loc){cat("commands which are parsed and sent to inla().\n");
              print(full.command);}
 
  ## 7. now run the actual command - parse and eval - is parsed in current scope and so data.df exists here
- eval(parse(text=full.command));
+ #eval(parse(text=full.command));
+eval(parse(text=full.command));
+#cat("got r=\n");print(r);
+#cat("type=",typeof(r),"\n");cat("length=",length(r),"\n");cat("names=",names(r),"\n");
+#if (is.null(r) || inherits(r, "try-error")) {
+if(length(r)==1){ 
+       ### INLA failed
+       # cat("INLA failed\n");
+       return(FALSE);
+    } else {
 
  ## 8. return the results
  if(!compute.fixed.loc){## only want marginal likelihood
-          return(res$mlik[2]);## n.b. [2] is so we choose the integrated estimate and not just the Gaussian      
+          return(res$mlik[1]);## n.b. [1] is so we choose the integrated estimate and not just the Gaussian      
 
                    } else { ## alternatively get *all* the output from inla() - copious
                       return(res);}
-
+}
 
 } ## end of function

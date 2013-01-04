@@ -4,8 +4,9 @@
 ## Last modified   : 03/08/2012
 ###############################################################################
 
+########################################################################################################################
 ## a set of simple commonsense validity checks on the data.df and data.dists arguments
-check.data <- function(data.df=NULL,data.dists=NULL, ntrials.loc=NULL, exposure.loc=NULL,use.inla=NULL,group.var=NULL){
+check.valid.data <- function(data.df=NULL,data.dists=NULL,group.var=NULL){
 
     ## check data is in a data.frame
     if(!is.data.frame(data.df)){stop("The data must be in a data.frame");}
@@ -15,17 +16,17 @@ check.data <- function(data.df=NULL,data.dists=NULL, ntrials.loc=NULL, exposure.
  
     ## check that distributions are in a list  
     if(!is.list(data.dists)){stop("data.dist must be a list");}
+   
+    if(!is.null(group.var)){## have a grouping variable so temporarily drop this from data.df - LOCAL TO THIS FUNCTION ONLY
+     data.df<-data.df[,-which(names(data.df)==group.var)];}
 
-    ## check list has names
-    if(use.inla && !is.null(group.var) ){## provided we do NOT want to use INLA with grouped data
-       data.df<-data.df[,-dim(data.df)[2]];## IMPORTANT - drop off last col which is grouping variable - but only local to this function!
-    }
-     if(length(names(data.dists))!=length(names(data.df))){stop("data.dists must have named entries");}
+     if(length(names(data.dists))!=length(names(data.df))){stop("data.dists must have named entries");} 
+    
      ## check names in list are in correct order and exact match to data.frame
      for(i in 1:dim(data.df)[2]){if(names(data.dists)[i]!=names(data.df)[i]){stop("names in list must match names in data.frame");}}
      
      ## check names of likelihood function are valid
-     allowed.dists<-c("gaussian","binomial","poisson");## these must match inla() family=""
+     allowed.dists<-c("gaussian","binomial","poisson");## n.b. these must match inla() family=""
      for(i in 1:length(data.dists)){
                         if(length(which(allowed.dists%in%data.dists[[i]]))!=1){## each variable must have one of the allowed.dists
                         message<-paste("Each variable must have a distribution of either",paste(allowed.dists,collapse=", "));
@@ -33,20 +34,12 @@ check.data <- function(data.df=NULL,data.dists=NULL, ntrials.loc=NULL, exposure.
                         stop("");}
      }
 
-    ## check ntrials and exposure for binomial or poisson nodes
-    if(is.null(ntrials.loc)){ntrials.loc<-rep(1,dim(data.df)[1]);}   ## if ntrials is not explicitly specified then set to one
-    if(is.null(exposure.loc)){exposure.loc<-rep(1,dim(data.df)[1]);} ## is exposure is not explicitly specified then set to one
-    for(i in 1:length(data.dists)){ if(data.dists[[i]]=="binomial" && (length(ntrials.loc)!=dim(data.df)[1] || min(ntrials.loc)<=0)){stop("ntrials is invalid");}
-                                    if(data.dists[[i]]=="poisson" &&  (length(exposure.loc)!=dim(data.df)[1] || min(exposure.loc)<=0)){stop("exposure is invalid");}
-                                   }
-    if(!use.inla && max(ntrials.loc)>1){stop("ntrials must be equal to 1 if use.inla=FALSE");}
-
     binomial.vars.indexes<-NULL;
     poisson.vars.indexes<-NULL;
     gaussian.vars.indexes<-NULL;
     
     ## check that data is consistent with distribution given
-    for(i in 1:dim(data.df)[2]){# for each variable
+    for(i in 1:dim(data.df)[2]){## for each variable
                         cur.var<-data.df[,i];
                         if(data.dists[[i]]=="gaussian"){
                             if(is.factor(cur.var)){cat((names(data.df)[i]),"is invalid - it must not be a factor.\n");stop("");}
@@ -66,16 +59,16 @@ check.data <- function(data.df=NULL,data.dists=NULL, ntrials.loc=NULL, exposure.
                         }
            }            
       
-return(list(gaus=gaussian.vars.indexes,bin=binomial.vars.indexes,pois=poisson.vars.indexes,exposure=exposure.loc,ntrials=ntrials.loc)); ## return the indexes of any binary variables
+return(list(gaus=gaussian.vars.indexes,bin=binomial.vars.indexes,pois=poisson.vars.indexes)); ## return the indexes of any binary variables
 
-} #end of check.data()
+} #end of check.valid.data()
 #########################################   
 ## a set of simple commonsense validity checks on the directed acyclic graph definition matrix
-check.dag <- function(dag.m=NULL,data.df=NULL, is.ban.matrix=NULL,use.inla,group.var){
+check.valid.dag <- function(dag.m=NULL,data.df=NULL, is.ban.matrix=NULL,group.var=NULL){
    
-    if(use.inla && !is.null(group.var) ){## if we want INLA with grouped data - then the group variable will still be in data.df
-       data.df<-data.df[,-dim(data.df)[2]];## IMPORTANT - drop off last col which is grouping variable - but only local to this function!
-    }
+    if(!is.null(group.var)){## have a grouping variable so temporarily drop this from data.df - LOCAL TO THIS FUNCTION ONLY
+    data.df<-data.df[,-which(names(data.df)==group.var)];}
+
 
     ## if dag.m null then create unlimited - empty - network
     if(is.null(dag.m)){## want ban matrix 
@@ -96,10 +89,10 @@ check.dag <- function(dag.m=NULL,data.df=NULL, is.ban.matrix=NULL,use.inla,group
     ## check binary
     for(i in 1:dim(dag.m)[1]){for(j in 1:dim(dag.m)[2]){if(dag.m[i,j]!=0 && dag.m[i,j]!=1){stop("dag.m must comprise only 1's or 0's");}}}
  
-    ## check diagnonal and cylces - but ignore these checks for a ban matrices
+    ## check diagnonal and cycles - but ignore these checks for a ban matrices
     if(!is.ban.matrix){
     
-    for(i in 1:dim(dag.m)[1]){if(dag.m[i,i]==1){stop("dag.m is not a valid DAG- a child cannot be its own parent!");}}
+    for(i in 1:dim(dag.m)[1]){if(dag.m[i,i]==1){stop("dag.m is not a valid DAG - a child cannot be its own parent!");}}
     
     ## coerce to int for sending to C
     dim<-dim(dag.m)[1];## number of cols (or rows)
@@ -113,13 +106,13 @@ check.dag <- function(dag.m=NULL,data.df=NULL, is.ban.matrix=NULL,use.inla,group
 
 }
 
+
 #########################################   
 ## a set of simple checks on the list given as parent limits
-check.parents<-function(data.df=NULL,max.parents=NULL,use.inla,group.var)
-{
-  if(use.inla && !is.null(group.var) ){## provided we do NOT want to use INLA with grouped data
-       data.df<-data.df[,-dim(data.df)[2]];## IMPORTANT - drop off last col which is grouping variable - but only local to this function!
-    }
+check.valid.parents<-function(data.df=NULL,max.parents=NULL,group.var)
+{ 
+  if(!is.null(group.var)){## have a grouping variable so temporarily drop this from data.df - LOCAL TO THIS FUNCTION ONLY
+    data.df<-data.df[,-which(names(data.df)==group.var)];}
  #print(data.df);print(max.parents);
  ## if a constant then make integer vector
  if(is.numeric(max.parents) && length(max.parents)==1){return(as.integer(rep(max.parents,dim(data.df)[2])));}
@@ -140,31 +133,28 @@ check.parents<-function(data.df=NULL,max.parents=NULL,use.inla,group.var)
 
 #########################################   
 ## a set of simple checks on the list given as parent limits
-check.which.nodes<-function(data.df=NULL,which.nodes=NULL,use.inla,group.var)
+check.which.valid.nodes<-function(data.df=NULL,which.nodes=NULL,group.var)
 {
- if(use.inla && !is.null(group.var) ){## provided we do NOT want to use INLA with grouped data
-       data.df<-data.df[,-dim(data.df)[2]];## IMPORTANT - drop off last col which is grouping variable - but only local to this function!
-    }
+  if(!is.null(group.var)){## have a grouping variable so temporarily drop this from data.df - LOCAL TO THIS FUNCTION ONLY
+    data.df<-data.df[,-which(names(data.df)==group.var)];}
+
  if(is.null(which.nodes)){which.nodes<-1:dim(data.df)[2];return(as.integer(which.nodes));} ## if null then assume ALL nodes
 
  if(is.numeric(which.nodes) && max(which.nodes)<=dim(data.df)[2] && min(which.nodes)>=1 && length(which.nodes)<=dim(data.df)[2]){
     return(as.integer(which.nodes));} else{stop("which.nodes is invalid");}          
 
 }
+
 #########################################   
 ## a simple check on the grouping variable
-check.groups<-function(group.var,data.df,cor.vars,use.inla){
+check.valid.groups<-function(group.var,data.df,cor.vars){
  
   if(is.null(group.var)){return(list(data.df=data.df,grouped.vars=as.integer(c(-1)),group.ids=as.integer(rep(-1,dim(data.df)[1]))));}## have no groups so just return dummy values 
   if(!(is.character(group.var) && (length(group.var)==1))){stop("name of group variable is not a character?!");}
   if(!length(which(group.var%in%names(data.df)==TRUE))){stop("name of group variable does not match any of those in data.df");}
   group.var.vals<-data.df[,group.var];## get group id data
-  if(!use.inla){## INLA wants everything in the same data.frame but C code wants group variable dropped
   data.df<-data.df[,-which(names(data.df)==group.var)];## drop the group variable from original data.frame and overwrite
-  } else {## using INLA to keep all variables together but shift group variable to far right col
-         data.df<-data.frame(data.df[,-which(names(data.df)==group.var)],data.df[,group.var]);
-         names(data.df)[dim(data.df)[2]]<-group.var;## set correct names
-         }  
+  
                  
   ## have groups so some checks 
   
@@ -183,8 +173,8 @@ check.groups<-function(group.var,data.df,cor.vars,use.inla){
   if(max(table(cor.vars))>1){stop("have repeated variables in cor.vars!");}
  
  ## to get to here group.var must be ok and also variable names so return integer code for the variables
- cor.var.indexes<-as.integer(sort(match(cor.vars,var.noms)-1));## get the index in names(data.df) for each variable and then sort into order
-                                                               ## -1 is as C indexing starts from 0
+ cor.var.indexes<-as.integer(sort(match(cor.vars,var.noms)));## get the index in names(data.df) for each variable and then sort into order
+                                                               
 
 return(list(data.df=data.df,grouped.vars=cor.var.indexes,group.ids=group.var));
 

@@ -2,14 +2,8 @@
 
 export(
        "tographviz",
-       "check.data",
-       "check.dag",
-       "calc.node.mlik.inla",
-       "calc.node.mlik.inla.mixed",
        "fitabn",
-       "fitabn.inla",
        "buildscorecache",
-       "buildscorecache.inla",
        "mostprobable",
        "search.hillclimber"     
         )   

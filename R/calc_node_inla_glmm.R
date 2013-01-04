@@ -1,16 +1,16 @@
 ###############################################################################
-## fitabn.R --- 
-## Author          : Fraser Lewis
-## Last modified   : 03/08/2012
-## comment: arguments are all given the postfix .loc to avoid scoping issues
+## wrapper for INLA to fit glmm 
+##
+##
 ###############################################################################
 
-## fit a given regression using I-NLA
-calc.node.mlik.inla.mixed<-function(group.var,child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
+calc.node.inla.glmm<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
                          mean.intercept.loc,prec.intercept.loc,mean.loc,prec.loc,loggam.shape.loc,loggam.inv.scale.loc,verbose.loc){
 
 #print(data.df.loc);
-#print(group.var);stop("");
+#print(group.var);
+group.var<-names(data.df.loc)[length(names(data.df.loc))];## group variable is always the last column
+
  ## 1. get the formula part of the call - create a string of this
  if(length(which(dag.m.loc[child.loc,-child.loc]==1))==0){## independent node
                         str.eqn.str<-paste(colnames(dag.m.loc)[child.loc],"~1+");
@@ -50,7 +50,7 @@ calc.node.mlik.inla.mixed<-function(group.var,child.loc,dag.m.loc,data.df.loc,da
                                    "compute=",       compute.fixed.loc,"))\n",sep="");
 
   
- full.command<-paste(start.str,str.eqn.str,str.data,str.family,str.extra,end.str,sep="");
+ full.command<-paste("r<-try(",start.str,str.eqn.str,str.data,str.family,str.extra,end.str,",silent=TRUE)",sep="");
 
  ## 6. some debugging - if requested
  if(verbose.loc){cat("commands which are parsed and sent to inla().\n");
@@ -59,12 +59,18 @@ calc.node.mlik.inla.mixed<-function(group.var,child.loc,dag.m.loc,data.df.loc,da
  ## 7. now run the actual command - parse and eval - is parsed in current scope and so data.df exists here
  eval(parse(text=full.command));
 
+ if(length(r)==1){ 
+       ### INLA failed
+       # cat("INLA failed\n");
+       return(FALSE);
+    } else {
+
  ## 8. return the results
  if(!compute.fixed.loc){## only want marginal likelihood
-          return(res$mlik[2]);## n.b. [2] is so we choose the integrated estimate and not just the Gaussian      
+          return(res$mlik[1]);## n.b. [1] is so we choose the integrated rather than Gaussian version - debateable which to choose      
 
                    } else { ## alternatively get *all* the output from inla() - copious
                       return(res);}
-
+}
 
 } ## end of function

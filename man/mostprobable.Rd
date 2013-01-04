@@ -24,19 +24,19 @@
     
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{score.cache}{output from \code{buildscorecache()} or \code{buildscorecache.inla()}} 
+  \item{score.cache}{output from \code{buildscorecache()}} 
   \item{prior.choice}{an integer, 1 or 2, where 1 is a uniform structural prior and 2 uses a weighted prior, see details}
 }
 
 
 \details{
-  The procedure runs the exact order based structure discovery approach of Koivisto and Sood (2004) to find the most probable posterior network (DAG). The local.score is the node cache, as created using \code{\link{buildscorecache}} \code{\link{buildscorecache.inla}} (or manually provided the same format is used). Note that the scope of this search is given by the options used in local.score, for example by restricting the number of parents or the ban or retain constraints given there. 
+  The procedure runs the exact order based structure discovery approach of Koivisto and Sood (2004) to find the most probable posterior network (DAG). The local.score is the node cache, as created using \code{\link{buildscorecache}} (or manually provided the same format is used). Note that the scope of this search is given by the options used in local.score, for example by restricting the number of parents or the ban or retain constraints given there. 
 
 This routine can take a long time to complete and is highly sensitive to the number of nodes in the network. It is recommended to use this on a reduced data set to get an idea as to the computational practicality of this approach.  In particular, memory usage can quickly increase to beyond what may be available. For additive models, problems comprising up to 20 nodes are feasible on most machines, memory requirements can increase considerably after this, but then so does the run time making this less practical. It is recommended that some form of over-modelling adjustment is performed on this resulting DAG (unless dealing with vast numbers of observations), for example using parametric bootstrapping which is straightforward to implement in MCMC engines such as JAGS or WinBUGS. See the case studies at \url{http://www.r-bayesian-networks.org} for details.    
 
 The parameter prior.choice determines the prior used within each individual node for a given choice of parent combination. In Koivisto and Sood (2004) p.554 a form of prior is used which assumes that the prior probability for parent combinations comprising of the same number of parents are all equal. Specifically, that the prior probability for parent set G with cardinality |G| is proportional to 1/[n-1 choose |G|] where there are n total nodes. Note that this favours parent combinations with either very low or very high cardinality which may not be appropriate. This prior is used when prior.choice=2. When prior.choice=1 an uniformative prior is used where parent combinations of all cardinalities are equally likely. The latter is equivalent to the structural prior used in the heuristic searches e.g. \code{search.hillclimber}.   
 
-The network score (log marginal likelihood) of the most probably DAG is not returned as it can easily be computed using \code{\link{fitabn}} or \code{\link{fitabn.inla}}, see examples below.  
+Note that the network score (log marginal likelihood) of the most probable DAG is not returned as it can easily be computed using \code{\link{fitabn}}, see examples below.  
 
 }
 
@@ -98,7 +98,7 @@ retain["g1","g2"]<-1; # always retain arc from g2 to g1
 max.par<-list("b1"=1,"b2"=1,"g1"=1,"g2"=0,"p1"=1,"p2"=2);
 ## now build cache
 mycache<-buildscorecache(data.df=mydat,data.dists=mydists,
-                     dag.banned=ban, dag.retained=retain,max.parents=max.par,centre=TRUE);
+                     dag.banned=ban, dag.retained=retain,max.parents=max.par);
 
 #now find the globally best DAG
 mp.dag<-mostprobable(score.cache=mycache);
@@ -158,7 +158,7 @@ colnames(retain)<-rownames(retain)<-names(mydat); #names must be set
 max.par<-list("b1"=4,"p1"=4,"g1"=4,"b2"=4,"p2"=4,"b3"=4,"g2"=4,"b4"=4,"b5"=4,"g3"=4);
 ## now build cache
 mycache<-buildscorecache(data.df=mydat,data.dists=mydists,
-                     dag.banned=ban, dag.retained=retain,max.parents=max.par,centre=TRUE);
+                     dag.banned=ban, dag.retained=retain,max.parents=max.par);
 
 #now find the globally best DAG
 mp.dag<-mostprobable(score.cache=mycache);
@@ -201,17 +201,14 @@ max.par<-3;
 
 mycache.c<-buildscorecache(data.df=mydat,data.dists=mydists,group.var="group",
                          cor.vars=c("b1","b2","b3","b4"),## each node uses a random effect adjustment
-                         max.parents=max.par, finite.step.size=1e-07,hessian.params=c(1E-04,1E-02),
-                         term.output.freq=1,max.iters.hessian=10,
-                         verbose=FALSE,centre=TRUE);
+                         max.parents=max.par);
 
 ## find the most probable DAG
 mp.dag<-mostprobable(score.cache=mycache.c);
 
 ## get goodness of fit
 fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,group.var="group",
-       cor.vars=c("b1","b2","b3","b4"),
-       finite.step.size=1e-07,hessian.params=c(1.0E-04,1E-04))$mlik;
+       cor.vars=c("b1","b2","b3","b4"))$mlik;
 
 }}
 

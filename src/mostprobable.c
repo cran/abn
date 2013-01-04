@@ -137,6 +137,7 @@ for(i=0;i<numNodes;i++){
     also calculate the number of parents in each parent combination. The log score for each node combination is
     overwritten by adding in the prior value - save allocating more memory */
 for(i=0;i<numRows;i++){/** for every combination of parents at each node passed */
+  
    /** calculate the beta_i(G_i) values p557 in Koivisto - needed for each part of the later alpha calc**/
    tot=0;for(j=0;j<numNodes;j++){if(parents[i][j]==1){tot++;}} parents_numparents[i]=tot;/** calculate no.parents per node which we are looping */
    tmp= qprime_prior(numNodes,parents_numparents[i],priorchoice);/** unlike in getposterior_features() we now have feature=1 since consider all features  */
@@ -151,7 +152,7 @@ for(i=0;i<numNodes;i++){for(j=0;j<numNodes;j++){final_results[i][j]= -1;}} /** i
 STEP 3. we now have a vector ptr_score[] with all the values needed for the alpha_i(S) calc **/
 /** for each parent combination we need to find the subset of that combination with the max ptr_score **/
 /** each subset must meet the ban and retain constrainsts                  */
-
+  
  getAlphaMax(ptr_score,ptr_nodeid,parents,alphalong,alphalonglookup,numNodes,numRows);
      
   R_CheckUserInterrupt();/** allow an interupt from R console */ 

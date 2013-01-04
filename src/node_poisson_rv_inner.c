@@ -10,7 +10,7 @@
 /** init values - as for binary use glm least square ests but do NOT use Gaussian variance value but rather the use      */
 /** p(1-p) where p is the intercept term in the mean e.g. p=)(exp(b0)/(1+exp(b0))                                        */
 
-/** top level - calc_node_Score_binary_rv(): uses a minimiser (bfgs2) rather than root finder and 
+/** top level - calc_node_Score_pois_rv(): uses a minimiser (bfgs2) rather than root finder and 
                                   g_outer(): the objective function -1/n*log(f(D|theta)f(thera))
                               rv_dg_outer(): the derivative of the objective function - note this is a numeric derivative
                                              using central finite differences
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "structs.h" 
-#include "node_binomial_rv_inner.h"
+#include "node_poisson_rv_inner.h"
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multiroots.h>
@@ -48,6 +48,8 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_deriv.h>
+#include <gsl/gsl_statistics_double.h>
+#include <gsl/gsl_sf_log.h>
 #define PRINTGSL1
 #define NOPRIOR1 /**turn on for removing effect of priors - this is purely to enable a check of loglike values with lme4 */
 /** ****************************************************************************************************
@@ -60,7 +62,7 @@
 /** NOTE:key feature of this design matrix is that the last column is full of 1's and this is for the random effect   */
 /**    epsilon term so it can easily be included in matrix operations. this is different from the non-rv case    */
 /** **************************************************************************************************************/
-void build_designmatrix_rv(network *dag,datamatrix *obsdata, double priormean, double priorsd,const double priorgamshape, const double priorgamscale,datamatrix *designmatrix, int nodeid, int storeModes)
+void build_designmatrix_pois_rv(network *dag,datamatrix *obsdata, double priormean, double priorsd,const double priorgamshape, const double priorgamscale,datamatrix *designmatrix, int nodeid, int storeModes)
 {
   
  int i,j,k;
@@ -88,7 +90,7 @@ void build_designmatrix_rv(network *dag,datamatrix *obsdata, double priormean, d
   /** setup matrix where each non DBL_MAX entry in a row is for a parameter to be estimated and the col is which param
       first col is for the intercept */
  if(storeModes){
-    for(k=0;k<dag->numNodes+3;k++){gsl_matrix_set(dag->modes,nodeid,k,DBL_MAX);} /** initialise row to DBL_MAX n.b. +2 here is need in fitabn.R part**/
+    for(k=0;k<dag->numNodes+3;k++){gsl_matrix_set(dag->modes,nodeid,k,DBL_MAX);} /** initialise row to DBL_MAX n.b. +3 here is need in fitabn.R part**/
     gsl_matrix_set(dag->modes,nodeid,0,1);/** the intercept term - always have an intercept - but not in dag.m definition */  
     for(k=0;k<numparents;k++){gsl_matrix_set(dag->modes,nodeid,gsl_vector_int_get(parentindexes,k)+1,1);} /** offset is 1 due to intercept */
   gsl_matrix_set(dag->modes,nodeid,dag->numNodes+1,1);/** the group level precision term put at end of other params */ 
@@ -181,7 +183,8 @@ void build_designmatrix_rv(network *dag,datamatrix *obsdata, double priormean, d
        Rprintf("\n");   
      }
    }
- */ 
+  */
+ 
  /** down to here we now have a split the design matrix and Y up into separate matrices and vectors, one for each observational group */
  /** so we can free the previous datamatrix as this is not needed, also the previous Y **/
  gsl_matrix_free(designmatrix->datamatrix);
@@ -201,376 +204,16 @@ void build_designmatrix_rv(network *dag,datamatrix *obsdata, double priormean, d
 /** *************************************************************************************
 *****************************************************************************************
 *****************************************************************************************/          
-double g_inner( gsl_vector *beta, const datamatrix *designdata, int groupid, double epsabs, int maxiters, int verbose){
- 
-   /** this function perform a Laplace approx on a single data group given fixed beta, so only integrate over single term epsilon **/
- 
- const gsl_multiroot_fdfsolver_type *T;
- gsl_multiroot_fdfsolver *s;
- gsl_multiroot_function_fdf FDF;
- struct fnparams gparams;/** for passing to the gsl zero finding functions */
- /*double epsilon=0;*//** the variable we want to find the root of **/
- gsl_vector *epsilon = gsl_vector_alloc (1);
- gsl_matrix *hessgvalue = gsl_matrix_alloc (1,1);
- int iter=0;
- int status;
- /*double epsabs=1e-5;
- int maxiters=100;*/
- /*int verbose=1;*/
- gsl_vector *vectmp1 = gsl_vector_alloc (designdata->numparams+1);/** scratch space same length as number of params inc precision **/
- gsl_vector *vectmp1long = gsl_vector_alloc ( ((designdata->array_of_Y)[groupid])->size);/** scratch space same length as number of obs in group j**/
- gsl_vector *vectmp2long = gsl_vector_alloc ( ((designdata->array_of_Y)[groupid])->size);
- double logscore;
- double gvalue;int n,m;
- 
- /*Rprintf("I HAVE epsabs_inner=%f maxiters_inner=%d verbose=%d\n",epsabs,maxiters,verbose);*/
- 
- FDF.f = &rv_dg_inner;
- FDF.df = &rv_hessg_inner;
- FDF.fdf = &wrapper_rv_fdf_inner;
- FDF.n = 1;
- FDF.params = &gparams;
- 
- gparams.Y=designdata->array_of_Y[groupid];
- gparams.X=designdata->array_of_designs[groupid];
- gparams.beta=beta;/** inc precision **/
- /*Rprintf("tau in g_inner=%f\n",gsl_vector_get(beta,beta->size-1));
- if(gsl_vector_get(beta,beta->size-1)<0.0){Rprintf("got negative tau!!=%f\n",gsl_vector_get(beta,beta->size-1));error("");}*/
- gparams.vectmp1=vectmp1;/** same length as beta but used as scratch space */
- gparams.vectmp1long=vectmp1long;
- gparams.vectmp2long=vectmp2long;
-  
-  /** ******************** FIRST TRY for a root using hybridsj  *******************************************************/
-    iter=0; 
-    /*T = gsl_root_fdfsolver_newton;
-    s = gsl_root_fdfsolver_alloc (T);*/ 
-    T = gsl_multiroot_fdfsolver_hybridsj;
-    s = gsl_multiroot_fdfsolver_alloc (T, 1);
-    status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
-    /*status_inits=generate_inits_rv_n(x,&gparams);*/
-    gsl_vector_set(epsilon,0,0.0);/** initial guess */
-    /*gsl_root_fdfsolver_set (s, &FDF, epsilon);*/
-   gsl_multiroot_fdfsolver_set (s, &FDF, epsilon);
-    
-    /*Rprintf ("using %s method\n", 
-               gsl_root_fdfsolver_name (s));
-     
-       Rprintf ("%-5s %10s %10s %10s\n",
-               "iter", "root", "err", "err(est)");
-   */ 
-   
-   /*print_state (iter, s);*/
-  
-    iter=0; 
-       do
-         {
-           iter++;
-       
-           status = gsl_multiroot_fdfsolver_iterate (s);
-           
-           /*print_state (iter, s);*/
-          
-          if (status)
-             break;
-     
-           status = gsl_multiroot_test_residual (s->f, epsabs);
-         }
-       while (status == GSL_CONTINUE && iter < maxiters);
-       if( status != GSL_SUCCESS){Rprintf ("Zero finding warning: internal--- epsilon status = %s\n", gsl_strerror (status));
-                                  /*for(i=0;i<s->x->size;i++){Rprintf("0epsilon=%f ",gsl_vector_get(s->x,i));}Rprintf("\n");*/}
-       gsl_vector_memcpy(epsilon,s->x);
-      /* Rprintf("modes: %f\n",gsl_vector_get(epsilon,0));*/
-     gsl_multiroot_fdfsolver_free(s);
-    /*Rprintf("x=%5.10f f=%5.10f\n",gsl_root_fdfsolver_root(s),rv_dg_inner(gsl_root_fdfsolver_root(s),&gparams));*/  
-  
-  /* if(status != GSL_SUCCESS){*//*error("no root\n");*//*Rprintf("binary no root at node %d\n",groupid+1);*//*logscore= DBL_MAX;*/ /** root finding failed so discard model by setting fit to worst possible */
-  /*} else {*/
-    /*gsl_vector_set(epsilon,0,0.3);*/
- 
-  rv_g_inner(epsilon,&gparams, &gvalue);/*Rprintf("==>g()=%e %f tau=%f\n",gvalue,gsl_vector_get(epsilon,0),gsl_vector_get(beta,2));*/
-  /*if(status != GSL_SUCCESS){Rprintf("1epsilon=%f %f\n",gsl_vector_get(epsilon,0), gvalue);}*/
-  rv_hessg_inner(epsilon,&gparams, hessgvalue); 
-   
-                  /* Rprintf("node=%d hessian at g\n",nodeid+1);
-		   for(j=0;j<myBeta->size;j++){Rprintf("%f ",gsl_vector_get(myBeta,j));}Rprintf("\n");      
-                   for(j=0;j<hessgvalue->size1;j++){
-                   for(k=0;k<hessgvalue->size2;k++){Rprintf("%f ",gsl_matrix_get(hessgvalue,j,k));} Rprintf("\n");}*/
-   /*Rprintf("epsilon=%f\n",epsilon);*/ 
-   n=((designdata->array_of_designs)[groupid])->size1;/** number of obs in group */
-   m=1;/** number of params */
-   /*Rprintf("gvalue in g_inner=|%f| n=|%d| |%f|\n",gvalue,n,-n*gvalue);*/
-   /*if(status != GSL_SUCCESS){Rprintf("2epsilon=%f %f\n",gsl_vector_get(epsilon,0), gvalue);}*/
-   logscore= -n*gvalue-0.5*log(gsl_matrix_get(hessgvalue,0,0))+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */
-   if(gsl_isnan(logscore)){error("nan in g_inner hessmat=%f epsilon=%f gvalue=%f\n",gsl_matrix_get(hessgvalue,0,0),gsl_vector_get(epsilon,0),gvalue);}       
-     /*}*/
-    
-   /* Rprintf("group=%d logscore=%f\n",groupid+1,logscore);*/
-    
-
-    
-      gsl_vector_free(epsilon);
-      gsl_matrix_free(hessgvalue);
-      gsl_vector_free(vectmp1);
-      gsl_vector_free(vectmp1long);
-      gsl_vector_free(vectmp2long);
-     
-      
-       
-  return(logscore);
-  
-}
-/** *************************************************************************************
-*****************************************************************************************
-*****************************************************************************************/
-int rv_dg_inner (const gsl_vector *epsilonvec, void *params, gsl_vector *dgvalues)
-{
-
-   /*double epsilon=0.3; */
-   double epsilon=gsl_vector_get(epsilonvec,0);
-   const gsl_vector *Y = ((struct fnparams *) params)->Y;/** response variable **/
-   const gsl_matrix *X = ((struct fnparams *) params)->X;/** design matrix INC epsilon col **/    
-   const gsl_vector *beta = ((struct fnparams *) params)->beta;/** fixed covariate and precision terms **/
-   gsl_vector *vectmp1 = ((struct fnparams *) params)->vectmp1;
-   gsl_vector *vectmp1long = ((struct fnparams *) params)->vectmp1long;
-   gsl_vector *vectmp2long = ((struct fnparams *) params)->vectmp2long;
-   
-   double tau = gsl_vector_get(beta,beta->size-1);/** the precision term and last entry in beta */
-   double n = (double)(Y->size);/** number of observations */
-   int i;
-   double sum_y=0;
-   double term3,term1,term2;
-   double bigval=0.0;
-   
-   /*if(tau<0){Rprintf("negative tau in rv_dg_inner\n");gsl_vector_set(dgvalues,0,DBL_MAX);
-   } else {*/	     
-   term3 = (tau*epsilon)/n;/** correct sign */
-   
-   for(i=0;i<Y->size;i++){sum_y+=gsl_vector_get(Y,i);}
-   
-   term1= -sum_y/n;
-   
-   /** now for the more complex term */
-   /** the design matrix does not include precision but does include epsilon, beta includes precision but not epsilon. To use matrix operations
-       we make a copy of beta and replace precision value with value for epsilon - copy into vectmp1 */
-   for(i=0;i<beta->size-1;i++){gsl_vector_set(vectmp1,i,gsl_vector_get(beta,i));} /** copy **/ 
-   gsl_vector_set(vectmp1,beta->size-1,epsilon); /** last entry in vectmp1 is not precision but epsilon **/
-   
-   /*for(i=0;i<vectmp1->size;i++){Rprintf("=>%f\n",gsl_vector_get(vectmp1,i));} */
-   
-   /** get X%*%beta where beta = (b0,b1,...,epsilon) and so we get a vector of b0*1+b1*x1i+b2*x2i+epsilon*1 for each obs i */
-    gsl_blas_dgemv (CblasNoTrans, 1.0, X, vectmp1, 0.0, vectmp1long);/** vectmp1long hold X%*%vectmp1 = X%*%mybeta **/  
-    /*for(i=0;i<vectmp1long->size;i++){Rprintf("=%f\n",gsl_vector_get(vectmp1long,i));}*/
-    
-    /*Rprintf("---\n");for(i=0;i<X->size1;i++){for(j=0;j<X->size2;j++){Rprintf("%f ",gsl_matrix_get(X,i,j));}Rprintf("\n");}Rprintf("---\n");*/
-      
-     for(i=0;i<vectmp1long->size;i++){
-       
-       bigval=exp(gsl_vector_get(vectmp1long,i));/** might overflow */
-      
-        /** WARNING - this might overflow - form:  exp(a)/(1+exp(a)) so if a is very large = 1, if very small no problem **/	
-       if(bigval!=GSL_POSINF){ /** not big enough to overflow **/
-             gsl_vector_set(vectmp2long,i,-bigval/(1+bigval));
-       } else {gsl_vector_set(vectmp2long,i,-1.0);/*Rprintf("overflow\n");*/} /** set to unity */              
-     
-     } /** vectmp2long holds -exp(X%*%mybeta)/(1+exp(X%*%mybeta) */
-     
-   /*for(i=0;i<vectmp2long->size;i++){Rprintf(">%f\n",gsl_vector_get(vectmp2long,i));}*/
-  
-   gsl_vector_scale(vectmp2long,-1.0/n);/** multiple each entry by -n **/
-   gsl_vector_set_all(vectmp1long,1.0);/** reset each value to unity **/
-   gsl_blas_ddot (vectmp2long, vectmp1long, &term2);/** just to get the sum of vectmp2long */
-   
-   /*Rprintf("term1=%f term2=%f term3=%f\n",term1,term2,term3);
-   Rprintf("term3: tau=%f epsilon=%f n=%f\n",tau,epsilon,n);
-    
-   Rprintf("number of observations in group=%d\n",Y->size);
-   *//*Rprintf("val of dg=%5.10f\n",term1+term2+term3);*/
-  
-       /*return(0.2*(epsilo*epsilo*epsilo)-2*epsilo+3);*/
-     /*return(term1+term2+term3);*/
-     gsl_vector_set(dgvalues,0,term1+term2+term3); 
-     if(gsl_isnan(gsl_vector_get(dgvalues,0))){error("rv_dg_inner is nan %f %f %f\n",term1,term2,term3);}
-   /*}*/
-     return GSL_SUCCESS;
-     
-     
-}
-/** *************************************************************************************
-*****************************************************************************************
-*****************************************************************************************/     
-int rv_hessg_inner (const gsl_vector *epsilonvec, void *params,gsl_matrix *hessgvalues)
-{
-  
-   /*double epsilon=0.3;*/
-   double epsilon=gsl_vector_get(epsilonvec,0);
-   const gsl_vector *Y = ((struct fnparams *) params)->Y;/** response variable **/ 
-   const gsl_matrix *X = ((struct fnparams *) params)->X;/** design matrix INC epsilon col **/    
-   const gsl_vector *beta = ((struct fnparams *) params)->beta;/** fixed covariate and precision terms **/
-   gsl_vector *vectmp1 = ((struct fnparams *) params)->vectmp1;
-   gsl_vector *vectmp1long = ((struct fnparams *) params)->vectmp1long;
-   gsl_vector *vectmp2long = ((struct fnparams *) params)->vectmp2long;
-   
-   double tau = gsl_vector_get(beta,beta->size-1);/** the precision term and last entry in beta */
-   double n = (double)(Y->size);/** number of observations */
-   int i;
-   double term1,term2,tmp1,tmp2;
-   
-   term1 = tau/n;/** correct sign */
-   
-   /** now for the more complex term */
-   /** the design matrix does not include precision but does include epsilon, beta includes precision but not epsilon. To use matrix operations
-       we make a copy of beta and replace precision value with value for epsilon - copy into vectmp1 */
-   for(i=0;i<beta->size-1;i++){gsl_vector_set(vectmp1,i,gsl_vector_get(beta,i));} /** copy **/ 
-   gsl_vector_set(vectmp1,beta->size-1,epsilon); /** last entry in vectmp1 is not precision but epsilon **/
-   
-   /*for(i=0;i<vectmp1->size;i++){Rprintf("=>%f\n",gsl_vector_get(vectmp1,i));} */
-   
-   /** get X%*%beta where beta = (b0,b1,...,epsilon) and so we get a vector of b0*1+b1*x1i+b2*x2i+epsilon*1 for each obs i */
-    gsl_blas_dgemv (CblasNoTrans, 1.0, X, vectmp1, 0.0, vectmp1long);/** vectmp1long hold X%*%vectmp1 = X%*%mybeta **/  
-    /*for(i=0;i<vectmp1long->size;i++){Rprintf("=%f\n",gsl_vector_get(vectmp1long,i));}*/
-    
-    /*Rprintf("---\n");for(i=0;i<X->size1;i++){for(j=0;j<X->size2;j++){Rprintf("%f ",gsl_matrix_get(X,i,j));}Rprintf("\n");}Rprintf("---\n");*/
-    /** WARNING - this might overflow possibly.... */ 
-    for(i=0;i<vectmp1long->size;i++){
-           tmp1=gsl_vector_get(vectmp1long,i);/** top line X%*%myBeta - after log */
-           tmp2=-2*log(1+exp(tmp1))-log(n);   
-            gsl_vector_set(vectmp2long,i,exp(tmp1+tmp2 ));
-	    
-	  if(gsl_isnan(gsl_vector_get(vectmp2long,i))){error("got nan in hessian tmp2=%f\n");
-	     gsl_vector_set(vectmp2long,i,0.0);/** set to zero since term is then 1/massivenumber */
-	  }
-                                      }   
-   /*for(i=0;i<vectmp2long->size;i++){Rprintf(">%f\n",gsl_vector_get(vectmp2long,i));}*/
-  
-   gsl_vector_set_all(vectmp1long,1.0);/** reset each value to unity **/
-   gsl_blas_ddot (vectmp2long, vectmp1long, &term2);/** just to get the sum of vectmp2long */
-   
-   /*Rprintf("term1=%f term2=%f term3=%f\n",term1,term2,term3);
-   Rprintf("term3: tau=%f epsilon=%f n=%f\n",tau,epsilon,n);
-    
-   Rprintf("number of observations in group=%d\n",Y->size);*/
-  
-   /*Rprintf("val of hessg=%5.10f\n",term1+term2);*/
- 
-   /*return(term1+term2);*/
-   gsl_matrix_set(hessgvalues,0,0,term1+term2);
-   if(gsl_isnan(gsl_matrix_get(hessgvalues,0,0))){error("rv_hess_inner is nan\n");}
-  /*error("stopping");*/
-       /*return(0.6*(epsilo*epsilo)-2);*/  
-  return GSL_SUCCESS;
-}
- 
-/** **************************************************************************************************************/
-/** **************************************************************************************************************/ 
-int rv_g_inner (const gsl_vector *epsilonvec, void *params, double *gvalue)
-{
-
-   double epsilon=gsl_vector_get(epsilonvec,0);
-   const gsl_vector *Y = ((struct fnparams *) params)->Y;/** response variable **/
-   const gsl_matrix *X = ((struct fnparams *) params)->X;/** design matrix INC epsilon col **/    
-   const gsl_vector *beta = ((struct fnparams *) params)->beta;/** fixed covariate and precision terms **/
-   gsl_vector *vectmp1 = ((struct fnparams *) params)->vectmp1;
-   gsl_vector *vectmp1long = ((struct fnparams *) params)->vectmp1long;
-   gsl_vector *vectmp2long = ((struct fnparams *) params)->vectmp2long;
-   
-   double tau = gsl_vector_get(beta,beta->size-1);/** the precision term and last entry in beta */
-   double n = (double)(Y->size);/** number of observations */
-   int i;
-   double term3,term2,storedbl1,storedbl2;
-   double bigval=0.0;
-   
-  /* if(tau<0){Rprintf("negative tau\n");
-             *gvalue=DBL_MAX;Rprintf("here\n");
-   } else {*/	     
-   term2 = -0.5*(log(tau)-log(2.0*M_PI))/n;/** correct sign */
-   
-   term3 = (tau/(2.0*n))*(epsilon*epsilon);
-   
-   /*Rprintf("TEMP EDIT: epsilon=0\n");
-   epsilon=0;
-   gsl_vector_set(beta,0,-41.99);gsl_vector_set(beta,1,24.21);gsl_vector_set(beta,2,epsilon);
-   */
-   /** now for the more complex term */
-   /** the design matrix does not include precision but does include epsilon, beta includes precision but not epsilon. To use matrix operations
-       we make a copy of beta and replace precision value with value for epsilon - copy into vectmp1 */
-   
-   for(i=0;i<beta->size-1;i++){gsl_vector_set(vectmp1,i,gsl_vector_get(beta,i));} /** copy **/ 
-    
-   gsl_vector_set(vectmp1,beta->size-1,epsilon); /** last entry in vectmp1 is not precision but epsilon **/
-   
-  /* for(i=0;i<vectmp1->size;i++){Rprintf("=>%f\n",gsl_vector_get(vectmp1,i));}*/ 
-   
-   /** get X%*%beta where beta = (b0,b1,...,epsilon) and so we get a vector of b0*1+b1*x1i+b2*x2i+epsilon*1 for each obs i */
-    gsl_blas_dgemv (CblasNoTrans, 1.0, X, vectmp1, 0.0, vectmp1long);/** vectmp1long hold X%*%vectmp1 = X%*%mybeta **/
-    
-    /*Rprintf("X*B+e: ");for(i=0;i<vectmp1long->size;i++){Rprintf("%f ",gsl_vector_get(vectmp1long,i));}
-    Rprintf("\nbeta0 %f beta1 %f epsilon %f\n",gsl_vector_get(beta,0),gsl_vector_get(beta,1),epsilon);
-    Rprintf("X");for(i=0;i<X->size1;i++){for(j=0;j<X->size2;j++){Rprintf("X=%f ",gsl_matrix_get(X,i,j));}Rprintf("\n");}Rprintf("\n");
-    */
-    
-    gsl_blas_ddot (Y, vectmp1long, &storedbl1);/** storedbl1 holds Y%*%(X%*%mybeta)**/  
-    
-    /*for(i=0;i<vectmp1long->size;i++){Rprintf("=%f\n",gsl_vector_get(vectmp1long,i));}*/
-    
-   for(i=0;i<vectmp1long->size;i++){
-       bigval=exp(gsl_vector_get(vectmp1long,i));/** might overflow */ 
-       /*Rprintf("bigval=%f\n",bigval);*/
-       /** WARNING - this might overflow - form:  log(1+exp(a)) so if a is very large then 1+exp(a)=exp(a) then whole value is just "a" **/	
-       if( !(bigval==GSL_POSINF || bigval==GSL_NEGINF)){ /** not big enough to overflow **/
-       
-	 gsl_vector_set(vectmp2long,i,-log(1.0+bigval));
-       
-       } else {
-	 /*Rprintf("over/underflow bin rv g()\n");*/
-	 gsl_vector_set(vectmp2long,i,-1.0*gsl_vector_get(vectmp1long,i));}
-                                      } /** vectmp2 holds -log(1+exp(X%*%mybeta)) */
-     
-     gsl_vector_set_all(vectmp1long,1.0); /** ones vector */  
-     gsl_blas_ddot (vectmp2long, vectmp1long, &storedbl2);/** DOT product simply to calc -sum(log(1+exp(X%*%mybeta))) */ 
-   
-     *gvalue = ((storedbl1+storedbl2)*(-1.0/n)) + term2 + term3;
-   /*Rprintf("\n----value of term1 %f %f %f----\n",((storedbl1+storedbl2)*(-1/n)),term2,term3); */
-  if(gsl_isnan(*gvalue)){error("\n oops - got an NAN! ----term2 %f tau= %f----\n",term2,tau);}	    
-   /*}*/
- return GSL_SUCCESS; 
-}  
-
-
-
-/** *************************************************************************************
-*****************************************************************************************
-*****************************************************************************************/
-int wrapper_rv_fdf_inner (const gsl_vector *beta, void *gparams,
-                     gsl_vector *dgvalues, gsl_matrix *hessgvalues)
-     {
-       rv_dg_inner(beta, gparams, dgvalues);
-       rv_hessg_inner(beta, gparams, hessgvalues);
-     
-       return GSL_SUCCESS;
-     }
-/** *************************************************************************************
-*****************************************************************************************
-*****************************************************************************************/
-/*void wrapper_rv_fdf_outer (const gsl_vector *beta, void *gparams,
-                     double *g, gsl_vector *dgvalues)
-     {
-       *g=g_outer(beta, gparams);
-       rv_dg_outer(beta, gparams, dgvalues);
-     
-       
-     }*/ 
-/** *************************************************************************************
-*****************************************************************************************
-*****************************************************************************************/          
-int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
+int generate_pois_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
 
     /** this is the SAME CODE as in the Gaussian case  */
-    
-    /** beta_hat= (X^T X)^{-1} X^T y **/
+     /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+adj));} *//** NOTE -  +1.0 or 0.1 give different reliablity*/
+      
+   /** beta_hat= (X^T X)^{-1} X^T y **/
     const datamatrix *designdata = ((struct fnparams *) gparams)->designdata;/** all design data inc Y and priors **/
     
        const gsl_vector *Y = designdata->Y;/** response vector **/
-       const gsl_matrix *X = designdata->datamatrix_noRV ;/** design matrix - with one too many cols! **/
+       const gsl_matrix *X = designdata->datamatrix_noRV ;/** design matrix - with one too few cols! **/
        gsl_vector *vectmp1= gparams->vectmp1;/** numparams long*/
        gsl_vector *vectmp2 = gparams->vectmp2;/** numparams long*/
        gsl_matrix *mattmp2 = gparams->mattmp2;/** same dim as X*/
@@ -578,7 +221,9 @@ int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
        gsl_matrix *mattmp4 = gparams->mattmp4;/** p x p **/
        gsl_vector *vectmp1long = gparams->vectmp1long;/** scratch space **/
        gsl_vector *vectmp2long = gparams->vectmp2long;/** scratch space **/
-       gsl_permutation *perm = gparams->perm;
+       gsl_permutation *perm = gparams->perm;  
+       double adj=gparams->inits_adj;/** help with initial guess - an offset */
+       
      unsigned int i;
      int ss;
      int status;
@@ -591,17 +236,18 @@ int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
     gsl_blas_dgemm (CblasTrans, CblasNoTrans,    /** mattmp3 is p x p matrix X^T X **/
                        1.0, X, mattmp2,
                        0.0, mattmp3);
+    
     gsl_permutation_init(perm);/** reset - might not be needed */                   
     gsl_linalg_LU_decomp(mattmp3,perm,&ss);
-    status=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
+    status=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */ 
+    
     if(status == GSL_SUCCESS){/** if matrix is singular then need to catch otherwise unpredictable */
       /** copy Y into vectmp1long and +1 and take logs since poisson has log link - this is a fudge */
-      /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+DBL_MIN)/(log(1-gsl_vector_get(Y,i)+DBL_MIN)));}  */               
-    /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+1)/(log(1-gsl_vector_get(Y,i)+1)));} */
+       for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+adj));} /** NOTE -  +1.0 or 0.1 give different reliablity*/
     
-    gsl_blas_dgemv (CblasTrans, 1.0, X, Y, 0.0, vectmp1); /** X^T Y */
-    gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2); 
-    for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,gsl_vector_get(vectmp2,i));} /** size myBeta->size-1 as last entry is precision **/
+    gsl_blas_dgemv (CblasTrans, 1.0, X, vectmp1long, 0.0, vectmp1);  /** X^T Y - Y replaced with vectmp1long */
+    gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2);
+    for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,gsl_vector_get(vectmp2,i));} /** size myBeta->size-2 as last two entries are precisions **/
     } else {/** singular to set initial values all to zero **/ 
            Rprintf("initial guess routine failed so using 0.01!\n"); 
            for(i=0;i<myBeta->size;i++){gsl_vector_set(myBeta,i,0.01);}}
@@ -622,19 +268,324 @@ int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
     gsl_vector_memcpy(vectmp2long,vectmp1long);
     gsl_blas_ddot (vectmp1long, vectmp2long, &variance);/** got sum((Y-Y_hat)^2) */
     variance=variance/(n-m);/** unbiased estimator using denominator n-#term in regression equation **/
-    /*Rprintf("variance estimator=%f precision=%f\n",variance,1/variance);*/
+   /* Rprintf("variance estimator=%f precision=%f\n",variance,1/variance);*/
   /* variance=0.086;*/
-    variance=exp(gsl_vector_get(myBeta,0))/(1+exp(gsl_vector_get(myBeta,0)));
-    gsl_vector_set(myBeta,myBeta->size-1,1.0/(variance*(1-variance)));/** as are using precision parameterization not variance **/
+    /*variance=exp(gsl_vector_get(myBeta,0))/(1+exp(gsl_vector_get(myBeta,0)));*/
+    /** variance here is for plain glm - just split this 50/50 between residual error and group level variance **/
+    
+    gsl_vector_set(myBeta,myBeta->size-1,1.0/variance);/** - estimate for residual precision **/
     /*gsl_vector_set(myBeta,myBeta->size-1,1.0/variance); */
     /*gsl_vector_set(myBeta,0,0.9 );gsl_vector_set(myBeta,1,0.9);gsl_vector_set(myBeta,2,1.5);*/
-    /*Rprintf("inits\n");for(i=0;i<myBeta->size;i++){Rprintf("%10.15e ",gsl_vector_get(myBeta,i));} Rprintf("\n");*//** set to Least squares estimate */  
+   
+    #ifdef START
+    Rprintf("------------ TEMP: Using Fixed initial values from LME4----------------\n");
+    gsl_vector_set(myBeta,0,1.77911);/** intercept */
+    gsl_vector_set(myBeta,1,-0.30284);/** slope g2 */
+    gsl_vector_set(myBeta,2,-0.06893);/** slope g2 */
+    gsl_vector_set(myBeta,3,1.0/0.871);/** group level precision */ 
+    
+    Rprintf("inits\n");for(i=0;i<myBeta->size;i++){Rprintf("%10.15e ",gsl_vector_get(myBeta,i));} Rprintf("\n");/** set to Least squares estimate */  
+    #endif
+    
     return GSL_SUCCESS;
 } 
-/** *******************************************************************************************************************/
-/** *******************************************************************************************************************/
 
-double g_outer_single (double x, void *params)
+/** *************************************************************************************
+*****************************************************************************************
+*****************************************************************************************/          
+double g_pois_inner( gsl_vector *beta, const datamatrix *designdata, int groupid, double epsabs, int maxiters, int verbose){
+ 
+   /** this function perform a Laplace approx on a single data group given fixed beta, so only integrate over single term epsilon **/
+ 
+ const gsl_multiroot_fdfsolver_type *T;
+ gsl_multiroot_fdfsolver *s;
+ gsl_multiroot_function_fdf FDF;
+ struct fnparams gparams;/** for passing to the gsl zero finding functions */
+ /*double epsilon=0;*//** the variable we want to find the root of **/
+ gsl_vector *epsilon = gsl_vector_alloc (1);
+ gsl_matrix *hessgvalue = gsl_matrix_alloc (1,1);
+ int iter=0;
+ int status;
+ /*double epsabs=1e-5;
+ int maxiters=100;*/
+ /*int verbose=1;*/
+ gsl_vector *vectmp1 = gsl_vector_alloc (designdata->numparams+1);/** scratch space same length as number of params inc precision **/
+ gsl_vector *vectmp1long = gsl_vector_alloc ( ((designdata->array_of_Y)[groupid])->size);/** scratch space same length as number of obs in group j**/
+ gsl_vector *vectmp2long = gsl_vector_alloc ( ((designdata->array_of_Y)[groupid])->size);
+ double logscore;
+ double gvalue;int n,m;
+ double guess_epsilon=0.0;
+ 
+ /*Rprintf("I HAVE epsabs_inner=%f maxiters_inner=%d verbose=%d\n",epsabs,maxiters,verbose);*/
+ 
+ FDF.f = &rv_dg_pois_inner;
+ FDF.df = &rv_hessg_pois_inner;
+ FDF.fdf = &wrapper_rv_fdf_pois_inner;
+ FDF.n = 1;
+ FDF.params = &gparams;
+ 
+ gparams.Y=designdata->array_of_Y[groupid];
+ gparams.X=designdata->array_of_designs[groupid];
+ gparams.beta=beta;/** inc precision **/
+ /*Rprintf("tau in g_pois_inner=%f betasize=%d n=%d\n",gsl_vector_get(beta,beta->size-1),(gparams.beta)->size,(gparams.Y)->size);*/
+
+ /*if(gsl_vector_get(beta,beta->size-1)<0.0){Rprintf("got negative tau!!=%f\n",gsl_vector_get(beta,beta->size-1));error("");}*/
+ gparams.vectmp1=vectmp1;/** same length as beta but used as scratch space */
+ gparams.vectmp1long=vectmp1long;
+ gparams.vectmp2long=vectmp2long;
+  
+  /** ******************** FIRST TRY for a root using hybridsj  *******************************************************/
+    iter=0; 
+    T = gsl_multiroot_fdfsolver_hybridsj;
+    s = gsl_multiroot_fdfsolver_alloc (T, 1);
+    status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
+    guess_epsilon=gsl_stats_mean((gparams.Y)->data,1,(gparams.Y)->size);/** group mean **/
+    if(guess_epsilon>0.0){guess_epsilon=gsl_sf_log(guess_epsilon);}
+    guess_epsilon-=gsl_vector_get(beta,0);
+    gsl_vector_set(epsilon,0,guess_epsilon);/** initial guess is epsilon=log(lambda)-intercept, lambd=log of mean of Y for that group or 0*/
+    gsl_multiroot_fdfsolver_set (s, &FDF, epsilon);
+    
+    iter=0; 
+       do
+         {
+           iter++;
+           status = gsl_multiroot_fdfsolver_iterate (s);
+           if (status)
+             break;
+           status = gsl_multiroot_test_residual (s->f, epsabs);
+         }
+       while (status == GSL_CONTINUE && iter < maxiters);
+ #ifdef NO    
+       /** second try **/
+       if(status != GSL_SUCCESS){ /** re-try using different initial estimate **/
+	 gsl_vector_set(epsilon,0,2.0);/** second guess */
+         gsl_multiroot_fdfsolver_set (s, &FDF, epsilon);
+         iter=0; 
+         do
+          {
+            iter++;
+            status = gsl_multiroot_fdfsolver_iterate (s);
+            if (status)
+              break;
+            status = gsl_multiroot_test_residual (s->f, epsabs);
+          }
+         while (status == GSL_CONTINUE && iter < maxiters); 
+	 
+         }
+         
+       /** third and final try **/
+       if(status != GSL_SUCCESS){ /** re-try using different initial estimate **/
+	 gsl_vector_set(epsilon,0,-2.0);/** second guess */
+         gsl_multiroot_fdfsolver_set (s, &FDF, epsilon);
+         iter=0; 
+         do
+          {
+            iter++;
+            status = gsl_multiroot_fdfsolver_iterate (s);
+            if (status)
+              break;
+            status = gsl_multiroot_test_residual (s->f, epsabs);
+          }
+         while (status == GSL_CONTINUE && iter < maxiters); 
+	 
+         }
+#endif     
+       if( status != GSL_SUCCESS){Rprintf ("Zero finding ERROR: internal--- epsilon status = %s\n", gsl_strerror (status));
+                                  /*for(i=0;i<s->x->size;i++){Rprintf("0epsilon=%f ",gsl_vector_get(s->x,i));}Rprintf("\n");*/}
+       gsl_vector_memcpy(epsilon,s->x);
+      /*Rprintf("modes: %f\n",gsl_vector_get(epsilon,0));*/
+      
+     gsl_multiroot_fdfsolver_free(s);
+ 
+  rv_g_pois_inner(epsilon,&gparams, &gvalue);/*Rprintf("==>g()=%e %f tau=%f\n",gvalue,gsl_vector_get(epsilon,0),gsl_vector_get(beta,2));*/
+ /* Rprintf("gvalue=%f\n",gvalue);*/
+  /*if(status != GSL_SUCCESS){Rprintf("1epsilon=%f %f\n",gsl_vector_get(epsilon,0), gvalue);}*/
+  rv_hessg_pois_inner(epsilon,&gparams, hessgvalue); 
+  /*Rprintf("hessian=%f\n",gsl_matrix_get(hessgvalue,0,0));*/
+   
+                /*  int j,k;Rprintf("gvalue=%f\n",gvalue);
+		   for(j=0;j<beta->size;j++){Rprintf("%f ",gsl_vector_get(beta,j));}Rprintf("\n");      
+                   for(j=0;j<hessgvalue->size1;j++){
+                   for(k=0;k<hessgvalue->size2;k++){Rprintf("%f ",gsl_matrix_get(hessgvalue,j,k));} Rprintf("\n");}
+   *//*Rprintf("epsilon=%f\n",epsilon);*/ 
+   n=((designdata->array_of_designs)[groupid])->size1;/** number of obs in group */
+   m=1;/** number of params */
+   /*Rprintf("gvalue in g_inner=|%f| n=|%d| |%f|\n",gvalue,n,-n*gvalue);*/
+   /*if(status != GSL_SUCCESS){Rprintf("2epsilon=%f %f\n",gsl_vector_get(epsilon,0), gvalue);}*/
+   logscore= -n*gvalue-0.5*log(gsl_matrix_get(hessgvalue,0,0))+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */
+   if(gsl_isnan(logscore)){error("nan in g_pois_inner hessmat=%f epsilon=%f gvalue=%f\n",gsl_matrix_get(hessgvalue,0,0),gsl_vector_get(epsilon,0),gvalue);}       
+     /*}*/
+    
+   /* Rprintf("group=%d logscore=%f\n",groupid+1,logscore);*/
+    
+      gsl_vector_free(epsilon);
+      gsl_matrix_free(hessgvalue);
+      gsl_vector_free(vectmp1);
+      gsl_vector_free(vectmp1long);
+      gsl_vector_free(vectmp2long);
+           
+  return(logscore); 
+
+  
+} 
+/** *************************************************************************************
+*****************************************************************************************
+*****************************************************************************************/
+int rv_dg_pois_inner (const gsl_vector *epsilonvec, void *params, gsl_vector *dgvalues){
+  
+   double epsilon=gsl_vector_get(epsilonvec,0);
+   const gsl_vector *Y = ((struct fnparams *) params)->Y;/** response variable **/
+   const gsl_matrix *X = ((struct fnparams *) params)->X;/** design matrix INC epsilon col **/    
+   const gsl_vector *beta = ((struct fnparams *) params)->beta;/** fixed covariate and precision terms **/
+   gsl_vector *vectmp1 = ((struct fnparams *) params)->vectmp1;
+   gsl_vector *vectmp1long = ((struct fnparams *) params)->vectmp1long;
+   gsl_vector *vectmp2long = ((struct fnparams *) params)->vectmp2long;
+   int i;
+   
+   double tau = gsl_vector_get(beta,beta->size-1);/** the precision term and last entry in beta */
+   double n = (double)(Y->size);/** number of observations */
+   double sum_y=0;
+   double term3,term1,term2;
+   
+   term3 = (tau*epsilon)/n;/** correct sign */
+   
+   /*Rprintf("dg: got n=%f epsilon=%f tau=%f betasize=%u\n",n,epsilon,tau,beta->size);*/
+   
+    /*Rprintf("##--\n");for(i=0;i<beta->size;i++){Rprintf("%f ",gsl_vector_get(beta,i));}Rprintf("SIZE=%u##\n",beta->size);*/
+   
+   for(i=0;i<Y->size;i++){sum_y+=gsl_vector_get(Y,i);}
+   
+   term1= -sum_y/n;
+   
+   /** the design matrix does not include precision but does include epsilon, beta includes precision but not epsilon. To use matrix operations
+       we make a copy of beta and replace precision value with value for epsilon - copy into vectmp1 */
+   for(i=0;i<beta->size-1;i++){gsl_vector_set(vectmp1,i,gsl_vector_get(beta,i));} /** copy **/ 
+   gsl_vector_set(vectmp1,beta->size-1,epsilon); /** last entry in vectmp1 is not precision but epsilon **/
+   
+   /** get X%*%beta where beta = (b0,b1,...,epsilon) and so we get a vector of b0*1+b1*x1i+b2*x2i+epsilon*1 for each obs i */
+    gsl_blas_dgemv (CblasNoTrans, 1.0, X, vectmp1, 0.0, vectmp1long);/** vectmp1long hold X%*%vectmp1 = X%*%mybeta **/  
+   
+   for(i=0;i<vectmp1long->size;i++){
+       gsl_vector_set(vectmp2long,i,exp(gsl_vector_get(vectmp1long,i)) );
+                                      } /** vectmp2long holds exp(X%*%mybeta) */
+                                      
+   gsl_vector_scale(vectmp2long,1.0/n);/** i.e. exp(X%*%mybeta)/n **/
+   gsl_vector_set_all(vectmp1long,1.0);/** reset each value to unity **/
+   gsl_blas_ddot (vectmp2long, vectmp1long, &term2);/** just to get the sum of vectmp2long */
+   
+   gsl_vector_set(dgvalues,0,term1+term2+term3); 
+   if(gsl_isnan(gsl_vector_get(dgvalues,0))){error("rv_dg_inner is nan %f %f %f\n",term1,term2,term3);}
+  
+   return GSL_SUCCESS;
+  
+}
+
+/** *************************************************************************************
+*****************************************************************************************
+*****************************************************************************************/     
+int rv_hessg_pois_inner (const gsl_vector *epsilonvec, void *params,gsl_matrix *hessgvalues)
+{
+
+   double epsilon=gsl_vector_get(epsilonvec,0);
+   const gsl_vector *Y = ((struct fnparams *) params)->Y;/** response variable **/ 
+   const gsl_matrix *X = ((struct fnparams *) params)->X;/** design matrix INC epsilon col **/    
+   const gsl_vector *beta = ((struct fnparams *) params)->beta;/** fixed covariate and precision terms **/
+   gsl_vector *vectmp1 = ((struct fnparams *) params)->vectmp1;
+   gsl_vector *vectmp1long = ((struct fnparams *) params)->vectmp1long;
+   gsl_vector *vectmp2long = ((struct fnparams *) params)->vectmp2long;
+   
+   double tau = gsl_vector_get(beta,beta->size-1);/** the precision term and last entry in beta */
+   double n = (double)(Y->size);/** number of observations */
+   int i;
+   double term1,term2;
+   
+   term1 = tau/n;/** correct sign */
+   /*Rprintf("hess: got n=%f epsilon=%f tau=%f betasize=%u\n",n,epsilon,tau,beta->size);*/
+    /** the design matrix does not include precision but does include epsilon, beta includes precision but not epsilon. To use matrix operations
+       we make a copy of beta and replace precision value with value for epsilon - copy into vectmp1 */
+   for(i=0;i<beta->size-1;i++){gsl_vector_set(vectmp1,i,gsl_vector_get(beta,i));} /** copy **/ 
+   gsl_vector_set(vectmp1,beta->size-1,epsilon); /** last entry in vectmp1 is not precision but epsilon **/
+   
+   /** get X%*%beta where beta = (b0,b1,...,epsilon) and so we get a vector of b0*1+b1*x1i+b2*x2i+epsilon*1 for each obs i */
+    gsl_blas_dgemv (CblasNoTrans, 1.0, X, vectmp1, 0.0, vectmp1long);/** vectmp1long hold X%*%vectmp1 = X%*%mybeta **/  
+   
+   for(i=0;i<vectmp1long->size;i++){
+       gsl_vector_set(vectmp2long,i,exp(gsl_vector_get(vectmp1long,i)) );
+                                      } /** vectmp2long holds exp(X%*%mybeta) */
+                                      
+   gsl_vector_scale(vectmp2long,1.0/n);/** i.e. exp(X%*%mybeta)/n **/
+   gsl_vector_set_all(vectmp1long,1.0);/** reset each value to unity **/
+   gsl_blas_ddot (vectmp2long, vectmp1long, &term2);/** just to get the sum of vectmp2long */
+   
+   gsl_matrix_set(hessgvalues,0,0,term1+term2);
+   if(gsl_isnan(gsl_matrix_get(hessgvalues,0,0))){error("rv_hess_pois_inner is nan\n");}
+   
+  return GSL_SUCCESS;
+}
+/** *************************************************************************************
+*****************************************************************************************
+*****************************************************************************************/
+int wrapper_rv_fdf_pois_inner (const gsl_vector *beta, void *gparams,
+                     gsl_vector *dgvalues, gsl_matrix *hessgvalues)
+     {
+       rv_dg_pois_inner(beta, gparams, dgvalues);
+       rv_hessg_pois_inner(beta, gparams, hessgvalues);
+     
+       return GSL_SUCCESS;
+     }
+/** **************************************************************************************************************/
+/** **************************************************************************************************************/ 
+int rv_g_pois_inner (const gsl_vector *epsilonvec, void *params, double *gvalue)
+{
+  
+   double epsilon=gsl_vector_get(epsilonvec,0);
+   const gsl_vector *Y = ((struct fnparams *) params)->Y;/** response variable **/
+   const gsl_matrix *X = ((struct fnparams *) params)->X;/** design matrix INC epsilon col **/    
+   const gsl_vector *beta = ((struct fnparams *) params)->beta;/** fixed covariate and precision terms **/
+   gsl_vector *vectmp1 = ((struct fnparams *) params)->vectmp1;
+   gsl_vector *vectmp1long = ((struct fnparams *) params)->vectmp1long;
+   gsl_vector *vectmp2long = ((struct fnparams *) params)->vectmp2long;
+   
+   double tau = gsl_vector_get(beta,beta->size-1);/** the precision term and last entry in beta */
+   double n = (double)(Y->size);/** number of observations */
+   int i;
+   double term3=0.0,term2=0.0,term4=0.0,term5=0.0;
+   
+   term2 = -0.5*(log(tau)-log(2.0*M_PI))/n;/** correct sign */
+   
+   term3 = (tau/(2.0*n))*(epsilon*epsilon);
+   
+   /** now for the more complex term */
+   /** the design matrix does not include precision but does include epsilon, beta includes precision but not epsilon. To use matrix operations
+       we make a copy of beta and replace precision value with value for epsilon - copy into vectmp1 */
+   for(i=0;i<beta->size-1;i++){gsl_vector_set(vectmp1,i,gsl_vector_get(beta,i));} /** copy **/ 
+   gsl_vector_set(vectmp1,beta->size-1,epsilon); /** last entry in vectmp1 is not precision but epsilon **/
+  
+  /** get X%*%beta where beta = (b0,b1,...,epsilon) and so we get a vector of b0*1+b1*x1i+b2*x2i+epsilon*1 for each obs i */
+    gsl_blas_dgemv (CblasNoTrans, 1.0, X, vectmp1, 0.0, vectmp1long);/** vectmp1long hold X%*%vectmp1 = X%*%mybeta **/  
+    
+    gsl_blas_ddot (Y, vectmp1long, &term5);/** storedbl1 holds sum(Y%*%(X%*%mybeta))**/
+    term5= -term5/n;/** correct sign */
+     
+     for(i=0;i<vectmp1long->size;i++){
+       gsl_vector_set(vectmp2long,i, gsl_sf_lnfact(gsl_vector_get(Y,i))+exp(gsl_vector_get(vectmp1long,i)));
+                                      } /** vectmp2long holds exp(X%*%mybeta) */
+                                      
+   gsl_vector_scale(vectmp2long,1.0/n);/** i.e. exp(X%*%mybeta)/n **/
+   gsl_vector_set_all(vectmp1long,1.0);/** reset each value to unity **/
+   gsl_blas_ddot (vectmp2long, vectmp1long, &term4);/** just to get the sum of vectmp2long */
+   
+   *gvalue = (term2 + term3 + term5 + term4);
+   /*Rprintf(" %f %f %f %f\n",term2,term3,term4,term5);*/
+   /*Rprintf("\n----value of term1 %f %f %f----\n",((storedbl1+storedbl2)*(-1/n)),term2,term3); */
+  if(gsl_isnan(*gvalue)){error("\n oops - got an NAN! in rv_g_pois_inner----\n");}	   
+  
+  return GSL_SUCCESS;
+  
+}
+/** *******************************************************************************************************************/
+/** *******************************************************************************************************************/
+double g_outer_pois_single (double x, void *params)
 {
   int i,j;
   double term1=0.0;
@@ -685,7 +636,7 @@ double g_outer_single (double x, void *params)
        for(j=0;j<designdata->numUnqGrps;j++){/** for each data group **/
 	/* j=45;*/
 	 /*Rprintf("processing group %d\n",j+1);*/
-	  term1+= g_inner(betaincTau,designdata,j,epsabs_inner,maxiters_inner,verbose);
+	  term1+= g_pois_inner(betaincTau,designdata,j,epsabs_inner,maxiters_inner,verbose);
        }
 	
   /** part 2 the priors for the means **/
@@ -726,4 +677,3 @@ double g_outer_single (double x, void *params)
 /** *************************************************************************************
 *****************************************************************************************
 *****************************************************************************************/ 
-  

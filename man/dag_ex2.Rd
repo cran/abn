@@ -2,8 +2,8 @@
      \docType{data}
      \alias{ex2.dag.data}
      
-     \title{Synthetic data set for use with abn library examples}
-     \description{10000 observations simulated from a DAG with 18 variables three sets each from Poisson, Bernoulli and Gaussian distributions. This data set was generated using JAGS. 
+     \title{Synthetic validation data set for use with abn library examples}
+     \description{10000 observations simulated from a DAG with 18 variables three sets each from Poisson, Bernoulli and Gaussian distributions. 
      }
      \usage{ex2.dag.data} 
 \format{A data frame, binary variables are factors. The relevant formulas are given below (note these do not give parameter estimates just the form of the relationships, e.g. logit()=1 means a logit link function and comprises of only an intercept term).

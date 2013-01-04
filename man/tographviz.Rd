@@ -18,7 +18,7 @@
 \description{Given a matrix defining a DAG create a text file suitable for plotting with graphviz}
 
 
-\usage{tographviz(dag.m,data.df,data.dists,group.var,outfile)
+\usage{tographviz(dag.m,data.df,data.dists,group.var=NULL,outfile)
 
 }
 
