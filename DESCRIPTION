@@ -1,9 +1,9 @@
 Package: abn
-Version: 0.82
-Date: 2012-11-02
+Version: 0.83
+Date: 2013-04-07
 Title: Data Modelling with Additive Bayesian Networks
 Author: Fraser Lewis <fraseriain.lewis@uzh.ch>
-Depends: R (>= 2.15.0)
+Depends: R (>= 2.15.1)
 Suggests: INLA, Rgraphviz, Cairo
 SystemRequirements: Gnu Scientific Library version >= 1.12
 Maintainer: Fraser Lewis <fraseriain.lewis@uzh.ch>
@@ -14,20 +14,21 @@ Description: Additive Bayesian network models are equivalent to
         models are used to identify statistical dependencies in messy,
         complex data. The additive formulation of these models is
         equivalent to multivariate generalised linear modelling
-        (including mixed models). The usual term to describe this model
-        selection process is structure discovery. The core
-        functionality is concerned with model selection - determining
-        the most robust empirical model of data from interdependent
-        variables. Laplace approximations are used to estimate goodness
-        of fit metrics and model parameters, and wrappers are also
-        included to the INLA library. A comprehensive set of documented
-        case studies, numerical accuracy/quality assurance exercises,
-        and additional documentation are available from the abn
-        website.
+        (including mixed models with iid random effects). The usual
+        term to describe this model selection process is structure
+        discovery. The core functionality is concerned with model
+        selection - determining the most robust empirical model of data
+        from interdependent variables. Laplace approximations are used
+        to estimate goodness of fit metrics and model parameters, and
+        wrappers are also included to the INLA library. A comprehensive
+        set of documented case studies, numerical accuracy/quality
+        assurance exercises, and additional documentation are available
+        from the abn website.
 License: GPL (>= 2)
 LazyData: true
 BuildVignettes: no
 URL: http://www.r-bayesian-networks.org
-Packaged: 2013-01-04 08:45:19 UTC; fraser
+Packaged: 2013-03-07 10:58:09 UTC; fraser
+NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2013-01-04 10:58:19
+Date/Publication: 2013-03-07 13:16:25

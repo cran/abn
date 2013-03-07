@@ -716,7 +716,7 @@ int generate_inits_n_pois(gsl_vector *myBeta,struct fnparams *gparams){
       
      unsigned int i;
      int ss;
-     int status;
+     int haveError;
      
     /*Rprintf("X: %d %d %d %d %d %d\n",X->size1,X->size2,mattmp2->size1,mattmp2->size2,mattmp3->size1,mattmp3->size2); */
     gsl_matrix_memcpy(mattmp2,X);
@@ -725,8 +725,9 @@ int generate_inits_n_pois(gsl_vector *myBeta,struct fnparams *gparams){
                        0.0, mattmp3);
     gsl_permutation_init(perm);/** reset - might not be needed */                   
     gsl_linalg_LU_decomp(mattmp3,perm,&ss);
-    status=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
-    if(status == GSL_SUCCESS){/** if matrix is singular then need to catch otherwise unpredictable */
+    gsl_set_error_handler_off();/**Turning off GSL Error handler as this may fail as mattmp3 may be singular */     
+    haveError=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
+    if(!haveError){/** no error */
       /** copy Y into vectmp1long and +1 and take logs since poisson has log link - this is a fudge */ 
       for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+adj));} /** NOTE -  +1.0 or 0.1 give different reliablity*/
       
@@ -738,9 +739,9 @@ int generate_inits_n_pois(gsl_vector *myBeta,struct fnparams *gparams){
 			   /*} else {Rprintf("got in inits=%f %d\n",gsl_vector_get(vectmp2,i),i);
 			           error("mmmm....this should not happen...negative initial guess in generate_init_n_pois()\n");} 
 			  */ }
-    } else {/** singular to set initial values all to zero **/ 
+    } else {Rprintf ("caught gsl error - singular matrix in initial guess estimates\n");/** singular to set initial values all to zero **/ 
             for(i=0;i<myBeta->size;i++){gsl_vector_set(myBeta,i,0.0);}}
-
+   gsl_set_error_handler (NULL);/** restore the error handler*/
   /*Rprintf("inits\n");for(i=0;i<myBeta->size;i++){Rprintf("%10.15e ",gsl_vector_get(myBeta,i));} Rprintf("\n");*//** set to Least squares estimate */
      
       

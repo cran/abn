@@ -43,7 +43,7 @@ calc.node.inla.glm<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntri
                                    "prec=",          prec.loc,",\n", 
                                    "compute=",       compute.fixed.loc,"))\n",sep="");
 #error.str<-"inla.arg=\"-b 2>/dev/null\",";
-  
+  r<-NULL;
  full.command<-paste("r<-try(",start.str,str.eqn.str,str.data,str.family,str.extra,#error.str,
                      end.str,",silent=TRUE)",sep="");
 
@@ -54,6 +54,7 @@ calc.node.inla.glm<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntri
  ## 7. now run the actual command - parse and eval - is parsed in current scope and so data.df exists here
  #eval(parse(text=full.command));
 eval(parse(text=full.command));
+
 #cat("got r=\n");print(r);
 #cat("type=",typeof(r),"\n");cat("length=",length(r),"\n");cat("names=",names(r),"\n");
 #if (is.null(r) || inherits(r, "try-error")) {

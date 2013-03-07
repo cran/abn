@@ -226,4 +226,11 @@ if(length(which(names(dev.list())=="Cairo"))==0){## no Cairo so open new windows
 }
 
 }
-
+# #########################################
+# # adjust for split variables
+# # this is used after creating all the parent combinations to remove all those combinations which are not allowed
+# # e.g. a three cat variable split into X1, X2, X3 can only have one of X1,X2,X3 =1 in any parent combination
+# #########################################
+#adjust.for.split.variables<-function(split.vars.vec,defn.res.list)
+#{
+#}

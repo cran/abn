@@ -5,7 +5,8 @@
 ###############################################################################
 
 ## fit a given DAG to data using the distribution given
-search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=FALSE, timing.on=TRUE,start.dag=NULL,trace=FALSE,support.threshold=0.5,create.graph=FALSE){
+search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=FALSE, timing.on=TRUE,start.dag=NULL,trace=FALSE,support.threshold=0.5,create.graph=FALSE,
+                               dag.retained=NULL){
 
 
    data.df<-score.cache$data.df;## n.b. this might be adjusted from original data.df depending on the group variable
@@ -22,8 +23,15 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
    ## create a random network from which to commence searching. This is a random combination chosen from all valid
    ## parent combination i.e. in the node cache and then checked for cyclicity
 
+   if(!is.null(dag.retained)){check.valid.dag(dag.retained,data.df=score.cache$data.df,is.ban.matrix=FALSE,group.var=NULL);
+      } else {dag.retained<-check.valid.dag(dag.retained,data.df=score.cache$data.df,is.ban.matrix=FALSE,group.var=NULL);} ##if null just create empty mat and return
+
+
    ## check that the cache has no invalid nodes - these should be removed
-   if(length(which(is.na(score.cache$mlik)))>0){stop("the score.cache has missing values in mlik - these must removed");}
+   myNA<-which(is.na(score.cache$mlik));
+   if(length(myNA)>0){cat("### NOTE: the score.cache has missing values in mlik - assigning to -.Machine$double.xmax ###\n");
+   score.cache$mlik[myNA]<- -.Machine$double.xmax;## the most negative number possible, i.e. -infinity
+   }
 
   use.start.dag<-FALSE;
   ## user supplied start network
@@ -60,8 +68,9 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
          
            ## 1. run search to get first localloptimal DAG
            res<-.Call("searchhill",children,cache.defn,nodescores,numVars,numRows, numparents.per.node,as.integer(seed),
-                          verbose,as.integer(timing.on), as.integer(use.start.dag),as.integer(start.dag),as.integer(num.traced.searches)
-              ,PACKAGE="abn" ## uncomment to load as package not shlib
+                          verbose,as.integer(timing.on), as.integer(use.start.dag),as.integer(start.dag),as.integer(num.traced.searches),
+                          as.integer(dag.retained),
+               PACKAGE="abn" ## uncomment to load as package not shlib
               )
            for(i in 2:length(res)){colnames(res[[i]])<-colnames(score.cache[[2]]);rownames(res[[i]])<-colnames(score.cache[[2]]);} ## just for names
            
@@ -81,8 +90,9 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
                    seed<-seed+1;## increment seed
                    ## 1. run search to get first localloptimal DAG
                    res<-.Call("searchhill",children,cache.defn,nodescores,numVars,numRows, numparents.per.node,as.integer(seed),
-                                           verbose,as.integer(timing.on), as.integer(use.start.dag),as.integer(start.dag),as.integer(num.traced.searches)
-                         ,PACKAGE="abn" ## uncomment to load as package not shlib
+                                           verbose,as.integer(timing.on), as.integer(use.start.dag),as.integer(start.dag),as.integer(num.traced.searches),
+                                           as.integer(dag.retained),
+                              PACKAGE="abn" ## uncomment to load as package not shlib
                               )
                          for(i in 2:length(res)){colnames(res[[i]])<-colnames(score.cache[[2]]);rownames(res[[i]])<-colnames(score.cache[[2]]);}
 
@@ -127,8 +137,9 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
   ################################################################################################
   ## get a random DAG from which to start - N.B. last argument is verbose
   res<-.Call("searchhill",children,cache.defn,nodescores,numVars,numRows, numparents.per.node,as.integer(seed),
-                          verbose,as.integer(timing.on), as.integer(use.start.dag),as.integer(start.dag),as.integer(num.searches)
-              ,PACKAGE="abn" ## uncomment to load as package not shlib
+                          verbose,as.integer(timing.on), as.integer(use.start.dag),as.integer(start.dag),as.integer(num.searches),
+                          as.integer(dag.retained),
+              PACKAGE="abn" ## uncomment to load as package not shlib
               ) 
 
     ## results format is res[[1]] is a vector of network scores in order: init score1, final score1, init score2, final score2,....etc

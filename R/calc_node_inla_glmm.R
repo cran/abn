@@ -49,7 +49,7 @@ group.var<-names(data.df.loc)[length(names(data.df.loc))];## group variable is a
                                    "prec=",          prec.loc,",\n", 
                                    "compute=",       compute.fixed.loc,"))\n",sep="");
 
-  
+ r<-NULL; 
  full.command<-paste("r<-try(",start.str,str.eqn.str,str.data,str.family,str.extra,end.str,",silent=TRUE)",sep="");
 
  ## 6. some debugging - if requested

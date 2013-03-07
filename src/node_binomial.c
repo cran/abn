@@ -90,8 +90,9 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
     T = gsl_multiroot_fdfsolver_hybridsj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
+  
     status_inits=generate_inits_n(myBeta,&gparams);
-   
+  
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
  
    #ifdef PRINTGSL
@@ -537,13 +538,13 @@ void build_designmatrix(network *dag,datamatrix *obsdata, double priormean, doub
    }
    
    gsl_vector_int_free(parentindexes);/** finished with this **/
-  
- /*  Rprintf("##########################################\n");
+/*  
+   Rprintf("##########################################\n");
   Rprintf("got %d parents\n",numparents);
 for(i=0;i<obsdata->numDataPts;i++){
    Rprintf("Y=%f\t",gsl_vector_get(designmatrix->Y,i));  
    for(k=0;k<numparents+1;k++){Rprintf("%f\t",gsl_matrix_get(designmatrix->datamatrix,i,k));}Rprintf("\n");}
-   */  
+  */   
      
 
 
@@ -824,8 +825,8 @@ int generate_inits_n(gsl_vector *myBeta,struct fnparams *gparams){
        gsl_permutation *perm = gparams->perm;
      unsigned int i;
      int ss;
-     int status;
-     
+     int haveError;
+   
     /*Rprintf("X: %d %d %d %d %d %d\n",X->size1,X->size2,mattmp2->size1,mattmp2->size2,mattmp3->size1,mattmp3->size2); */
     gsl_matrix_memcpy(mattmp2,X);
     gsl_blas_dgemm (CblasTrans, CblasNoTrans,    /** mattmp3 is p x p matrix X^T X **/
@@ -833,9 +834,13 @@ int generate_inits_n(gsl_vector *myBeta,struct fnparams *gparams){
                        0.0, mattmp3);
     gsl_permutation_init(perm);/** reset - might not be needed */                   
     gsl_linalg_LU_decomp(mattmp3,perm,&ss);
-    status=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
-    if(status == GSL_SUCCESS){/** if matrix is singular then need to catch otherwise unpredictable */
+
+    gsl_set_error_handler_off();/**Turning off GSL Error handler as this may fail as mattmp3 may be singular */     
+    haveError=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */
+   
+    if(!haveError){/** if matrix is NOT singular */
       /** copy Y into vectmp1long and +1 and take logs since poisson has log link - this is a fudge */
+    
       /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+DBL_MIN)/(log(1-gsl_vector_get(Y,i)+DBL_MIN)));}  */               
     /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+1)/(log(1-gsl_vector_get(Y,i)+1)));} */
     
@@ -843,14 +848,21 @@ int generate_inits_n(gsl_vector *myBeta,struct fnparams *gparams){
     gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2); 
     
              for(i=0;i<myBeta->size;i++){gsl_vector_set(myBeta,i,gsl_vector_get(vectmp2,i));}
-    } else {/** singular to set initial values all to zero **/ 
+    } else {Rprintf ("caught gsl error - singular matrix in initial guess estimates\n");
+            /** singular to set initial values all to zero **/
+	    /*Rprintf("using 0.0 as initial estimates\n");*/
             for(i=0;i<myBeta->size;i++){gsl_vector_set(myBeta,i,0.0);}}
-
-   /*Rprintf("inits\n");for(i=0;i<myBeta->size;i++){Rprintf("%10.15e ",gsl_vector_get(myBeta,i));} Rprintf("\n");*//** set to Least squares estimate */
-     
+            
+   gsl_set_error_handler (NULL);/** restore the error handler*/
+  /* Rprintf("inits\n");for(i=0;i<myBeta->size;i++){Rprintf("%10.15e ",gsl_vector_get(myBeta,i));} Rprintf("\n");*//** set to Least squares estimate */
+    /*Rprintf("end inits\n"); */ 
       
     return GSL_SUCCESS;
 }   
+
+
+
+
 /** ***************************************************************************************************************
 ******************************************************************************************************************* 
 ** laplace method = int^b_a exp(-lambda g(y)) h(y) dy = exp(-lambda g(y*)) h(y*) (2PI/lambda)^(d/2) det(hess)^(1/2)

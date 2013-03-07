@@ -742,7 +742,7 @@ int generate_gaus_inits(gsl_vector *myBeta,struct fnparams *gparams){
            
     /** use least squares estimates to get started **/
     /** beta_hat= (X^T X)^{-1} X^T y **/
-       int status=0;
+       int haveError=0;
        const gsl_vector *Y = gparams->Y;/** design matrix **/
        const gsl_matrix *X = gparams->X;/** response variable **/
        gsl_vector *vectmp1= gparams->vectmp1;/** numparams long*/
@@ -773,17 +773,18 @@ int generate_gaus_inits(gsl_vector *myBeta,struct fnparams *gparams){
                        1.0, X, mattmp2,
                        0.0, mattmp3);
     gsl_permutation_init(perm);/** reset - might not be needed */                   
-    status=gsl_linalg_LU_decomp(mattmp3,perm,&ss);
-    if(status!=GSL_SUCCESS){error("failed on gsl_linalg_LU_decomp\n");} /** probably not possible */
-    status=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */                   
-    if(status==GSL_SUCCESS){/*return(GSL_FAILURE);*/  /** this seems a bit too strong - try instead just setting values to zero */
+    gsl_linalg_LU_decomp(mattmp3,perm,&ss);      
+    gsl_set_error_handler_off();/**Turning off GSL Error handler as this may fail as mattmp3 may be singular */     
+    haveError=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */                   
+    if(!haveError){ /** don't have error */
      gsl_blas_dgemv (CblasTrans, 1.0, X, Y, 0.0, vectmp1); /** X^T Y */
      gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2); 
      for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,gsl_vector_get(vectmp2,i));} /** set to Least squares estimate */
-    } else {/** must have a singular matrix so try all zeros for initial values*//*Rprintf("failed on invert\n");*/
+    } else {Rprintf ("caught gsl error - singular matrix in initial guess estimates\n");
+            /** must have a singular matrix so try all zeros for initial values*//*Rprintf("failed on invert\n");*/
             for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,0.01);}
     }
-    
+    gsl_set_error_handler (NULL);/** restore the error handler*/
     /*for(i=0;i<myBeta->size-1;i++){Rprintf("%f ",gsl_vector_get(myBeta,i));}Rprintf("\n"); */
     /** now for variance estimate */
     /** first get y_hat estimate */
