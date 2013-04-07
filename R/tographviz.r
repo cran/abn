@@ -13,7 +13,7 @@ tographviz<-function(dag.m,data.df,data.dists,group.var=NULL,outfile){
    
   }
     #some checks
-    check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL);
+    #check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL);
     
 
     # check dag is in a matrix

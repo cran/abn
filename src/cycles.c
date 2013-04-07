@@ -109,7 +109,7 @@ for(i=0;i<numnodes;i++){/** for each child */
 /** check for cycle in graph  - do this by checking for a topolgical ordering, and if a cycle is found */
 /** then remove it by dropping all outcoming arcs from a node and repeating                            */
 /** ****************************************************************************************************/
-void checkandfixcycle(cycle *cyclestore,network *dag, gsl_rng *r, int verbose){
+void checkandfixcycle(cycle *cyclestore,network *dag, gsl_rng *r, network *dagretain, int verbose){
 
 unsigned int numnodes=dag->numNodes;
 unsigned int i,j, nodesexamined,success;
@@ -149,7 +149,7 @@ while(success){
          /**to get to here means that all of the active nodes have at least one child and so we grab the first of these and remove the children and then repeat above */
          /** now remove all OUTGOING links from node = editNode, e.g. wherever i is a parent: NOTE - make changes to original dag here */
              for(i=0;i<numnodes;i++){if(isactive[gsl_permutation_get(p,i)]){editNode=gsl_permutation_get(p,i);break;}} /** get first active node */
-	     for(j=0;j<numnodes;j++){dag->defn[j][editNode]=0;} if(verbose){Rprintf("dropping links from node %d\n",editNode);} /** remove links **/
+	     droplinks(dag,dagretain->defn,editNode);/*for(j=0;j<numnodes;j++){dag->defn[j][editNode]=0;}*/ if(verbose){Rprintf("dropping links from node %d\n",editNode);} /** remove links **/
              for(i=0;i<numnodes;i++){for(j=0;j<numnodes;j++){graph[i][j]=dag->defn[i][j];}} /** copy into graph **/
 	     if(verbose){printDAG(dag,1);}
 	     isactive[editNode]=0;   
@@ -161,3 +161,17 @@ while(success){
          
 }
 
+/** *****************************************************************************************************/
+/** to fix a cycle when creating a random network we remove arcs - but we should NOT remove arcs which  */
+/** are present in a retain matrix. This function removes arcs while checking for this                  */
+/** *****************************************************************************************************/
+void droplinks(network *dag, int **retaingraph, unsigned int editnode)
+{
+ unsigned int numnodes=dag->numNodes; 
+ unsigned int i;
+ for(i=0;i<numnodes;i++){
+    if(!retaingraph[i][editnode]){/** if outgoing arc does not need to be retained then drop **/
+                                  dag->defn[i][editnode]=0;} /*else {Rprintf("found a retained arc child=%d parent=%d\n",i,editnode);}*/
+ }
+
+}

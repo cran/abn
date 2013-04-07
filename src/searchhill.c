@@ -19,11 +19,11 @@
 /** pass a DAG definition from R and this returns an error if it contains a cycle ***/
 /** MAIN FUNCTION **/
 SEXP searchhill(SEXP R_children, SEXP R_nodecache, SEXP R_nodescores, SEXP R_numVars, SEXP R_numRows, SEXP R_numparspernode, SEXP R_seed, 
-		SEXP R_verbose, SEXP R_timing, SEXP R_usestartdag, SEXP R_startdag, SEXP R_numsearches)
+		SEXP R_verbose, SEXP R_timing, SEXP R_usestartdag, SEXP R_startdag, SEXP R_numsearches,SEXP R_dagretained)
 {
 
 cache nodecache;
-network dag_scratch,dag_cur,dag_best;
+network dag_scratch,dag_cur,dag_best,dagretain;
 cycle cyclestore;
 const gsl_rng_type *T;
 gsl_rng *r;
@@ -47,6 +47,7 @@ SEXP listresults, scorevector,ans;
 /*make_dag(&dag_cur, numVars,(SEXP)NULL,1,(SEXP)NULL,(int*)NULL);*//** create an empty network **/
 make_dag(&dag_scratch, numVars,(SEXP)NULL,1,(SEXP)NULL,(int*)NULL,(SEXP)NULL);/** create an empty network **/
 make_dag(&dag_best, numVars,(SEXP)NULL,1,(SEXP)NULL,(int*)NULL,(SEXP)NULL);/** create an empty network **/
+make_dag(&dagretain,numVars,R_dagretained,0,(SEXP)NULL,(int*)NULL,(SEXP)NULL);
 init_hascycle(&cyclestore,&dag_scratch); /** initialise storage only need numnodes from dag object */
 make_nodecache(&nodecache, numVars,numVars, numRows,R_numparspernode, R_children, R_nodecache, R_nodescores);/** this rolls data from R into local C arrays **/
 
@@ -83,7 +84,7 @@ if(timingon){start = clock();}
     chosen and check that it is acyclic, and also get its network score **/
  /** use a randomly chosen DAG **/
   if(!usestartdag){
-         generateRandomDAG(r,&dag_cur,&nodecache,store,&cyclestore,verbose);
+         generateRandomDAG(r,&dag_cur,&nodecache,store,&cyclestore,&dagretain,verbose);
 	 if(hascycle(&cyclestore,&dag_cur)){error("initial DAG definition is not acyclic!");}}
  
  lookupscores(&dag_cur,&nodecache);/** lookup DAG in cache to find network score and also locations in cache which comprise the DAG **/
@@ -137,7 +138,7 @@ return(listresults);
 
 /** ********************************************************************************************************************/
 /** ********************************************************************************************************************/
-int generateRandomDAG(gsl_rng *r,network *dag,cache *nodecache,int *store,cycle *cyclestore, int verbose)
+int generateRandomDAG(gsl_rng *r,network *dag,cache *nodecache,int *store,cycle *cyclestore, network *dagretain, int verbose)
 {
 int i,j;
 int chosenindex=0;
@@ -158,7 +159,7 @@ int chosenindex=0;
  /*for(i=0;i<numVars;i++){for(j=0;j<numVars;j++){Rprintf("%d ",dag->defn[i][j]);}Rprintf("\n");} */
 
  /** we now have the new randomly generated DAG so now check that it is acyclic **/
- checkandfixcycle(cyclestore,dag,r,verbose); /** checks for a cycle and fixes it if it finds one **/
+ checkandfixcycle(cyclestore,dag,r,dagretain,verbose); /** checks for a cycle and fixes it if it finds one **/
  /*yescycle=hascycle(cyclestore,dag);*//** check supposedly fixed model */  
  
  /*curtry++;

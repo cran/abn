@@ -581,7 +581,7 @@ int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
        gsl_permutation *perm = gparams->perm;
      unsigned int i;
      int ss;
-     int status;
+     int haveError;
      double variance=0.0;
      double n=Y->size;/** no. observations **/
      double m=X->size2;/** number of coefficients excluding tau-precision */
@@ -592,9 +592,10 @@ int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
                        1.0, X, mattmp2,
                        0.0, mattmp3);
     gsl_permutation_init(perm);/** reset - might not be needed */                   
-    gsl_linalg_LU_decomp(mattmp3,perm,&ss);
-    status=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
-    if(status == GSL_SUCCESS){/** if matrix is singular then need to catch otherwise unpredictable */
+    gsl_linalg_LU_decomp(mattmp3,perm,&ss); 
+    gsl_set_error_handler_off();/**Turning off GSL Error handler as this may fail as mattmp3 may be singular */
+    haveError=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
+    if(!haveError){/** no error */
       /** copy Y into vectmp1long and +1 and take logs since poisson has log link - this is a fudge */
       /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+DBL_MIN)/(log(1-gsl_vector_get(Y,i)+DBL_MIN)));}  */               
     /*for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+1)/(log(1-gsl_vector_get(Y,i)+1)));} */
@@ -603,9 +604,9 @@ int generate_rv_inits(gsl_vector *myBeta,struct fnparams *gparams){
     gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2); 
     for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,gsl_vector_get(vectmp2,i));} /** size myBeta->size-1 as last entry is precision **/
     } else {/** singular to set initial values all to zero **/ 
-           Rprintf("initial guess routine failed so using 0.01!\n"); 
+           Rprintf("caught gsl error - singular matrix in initial guess estimates\n"); 
            for(i=0;i<myBeta->size;i++){gsl_vector_set(myBeta,i,0.01);}}
-
+    gsl_set_error_handler (NULL);/** restore the error handler*/
    /*Rprintf("inits\n");for(i=0;i<myBeta->size;i++){Rprintf("%10.15e ",gsl_vector_get(myBeta,i));} Rprintf("\n");*//** set to Least squares estimate */
      /** now for variance estimate */
     /** first get y_hat estimate */

@@ -20,7 +20,8 @@
 \usage{
        search.hillclimber(score.cache=NULL,num.searches=1,seed=0, verbose=FALSE, 
                           timing.on=TRUE,start.dag=NULL,trace=FALSE,
-                          support.threshold=0.5,create.graph=FALSE)
+                          support.threshold=0.5,create.graph=FALSE,
+                          dag.retained=NULL)
 
 }  
 %- maybe also `usage' for other objects documented here.
@@ -34,6 +35,7 @@
   \item{trace}{logical, and plots the majority consensus network based on all previous searches, requires Rgraphviz and Cairo} 
   \item{support.threshold}{the proportion of search results - each locally optimal DAG - in which each arc must appear to be a part of the consensus network} 
   \item{create.graph}{save the final graph as an R graph object}
+  \item{dag.retained}{a DAG given as a matrix, see details for format. This is necessary if the score.cache was created using an explicit retain matrix, and the same retain matrix should be used here. dag.retained is used by the algorithm which generates the initial random DAG to ensure that the necessary arcs are retained.} 
   
 }
 

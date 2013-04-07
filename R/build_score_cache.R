@@ -6,7 +6,8 @@
 
 ## fit a given DAG to data
 buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
-                            dag.banned=NULL, dag.retained=NULL,max.parents=NULL,
+                            dag.banned=NULL, dag.retained=NULL,
+                            max.parents=NULL,
                             which.nodes=NULL,defn.res=NULL,dry.run=FALSE,
                             max.mode.error=10,
                             verbose=FALSE,centre=TRUE,mean=0, prec=0.001,loggam.shape=1,
@@ -55,12 +56,17 @@ buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.va
       } else {## have user supplied children and parent combinations 
               which.nodes<-unique(defn.res$children);}
 
-  
    ## check grouping variables
    list.group.var<-check.valid.groups(group.var,data.df,cor.vars);## returns ammended data.df and suitable variables
    grouped.vars<-list.group.var$grouped.vars;## int vect of variables to be treated as grouped indexed from 1
    group.ids<-list.group.var$group.ids;## int vector of group membership ids
    data.df<-list.group.var$data.df;## this has removed the grouping variable from data.df
+
+   ## check split.vars - gives the variables which are multinomial but split into binary  
+   ## do this check after removing the grouping variable from data.df (if that was necessary)
+    #  if(!is.null(split.vars)){if(length(split.vars)!=dim(data.df)[2]){stop("split.vars is the wrong length!");}
+    #                           if(max(split.vars)>=dim(data.df)[2]){stop("split.vars seems in wrong format - should be integers from 1 through to number of unique variables");}
+    #                           }
 
    ## coerce binary factors to become 0/1 integers - the 0 is based on the first entry in levels()
    if(!is.null(mylist$bin)){## have at least one binary variable
@@ -103,6 +109,8 @@ buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.va
                colnames(defn.res[["node.defn"]])<-names(data.df);
       rm(res);
       
+    # if(!is.null(split.vars)){adjust.for.split.variables(split.vars,defn.res);}
+
       } else { ## some check since user has supplied defn.res
                if(!is.list(defn.res)){stop("defn.res must be a list");}
                if(length(defn.res)!=2){stop("defn.res must have two entries");}
@@ -127,7 +135,7 @@ buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.va
 ## Iterate over each node in the DAG separately
 ###########################################################
 cat("########################################################\n");
-cat("###### Fitting cache to data\n");
+#cat("###### Fitting cache to data\n");
 row.num<-1;
 for(child in defn.res[["children"]]){## for each child in the cache
 FAILED<-FALSE;## to catch any crashes...
@@ -143,7 +151,7 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                            ####################################################
                            if( !(child%in%grouped.vars)){## only compute option here is C since fast and INLA slower and less reliable
                                if(force.method=="notset" || force.method=="C"){
-                                 cat("Using internal code (Laplace glm)\n");
+                                 #cat("Using internal code (Laplace glm)\n");
                                  r<-try(res.c <- .Call("fit_single_node",
                                                 data.df,
                                                 as.integer(child),## childnode
@@ -175,7 +183,7 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                   if(!require(INLA)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms
-                                  cat("Using INLA (glm)\n");
+                                  #cat("Using INLA (glm)\n");
                                          res.inla<-calc.node.inla.glm(child,
                                                                       dag.m,
                                                                       data.df,
@@ -376,8 +384,8 @@ row.num<-row.num+1;
       defn.res[["data.df"]]<-data.df;
       defn.res[["group.ids"]]<-group.ids;
 
-cat("########End of cache building ##########################\n");
-cat("########################################################\n");
+#cat("########End of cache building ##########################\n");
+#cat("########################################################\n");
 return(defn.res);
 
 }
