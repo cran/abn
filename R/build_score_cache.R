@@ -1,5 +1,5 @@
 ###############################################################################
-## fit_dag.R --- 
+## buildscorecache.R --- 
 ## Author          : Fraser Lewis
 ## Last modified   : 02/12/2012
 ###############################################################################
@@ -119,7 +119,7 @@ buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.va
               }
       
       if(dry.run){## don't do any computation just return the node definitions
-                  cat("No computation - returning only the node combinations\n"); 
+                  if (verbose) cat("No computation - returning only the node combinations\n"); 
                   return(defn.res);}
 
 ### loop through each node and find out what kind of model is to be fitted and then pass to appropriate
@@ -134,14 +134,14 @@ buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.va
 ###########################################################
 ## Iterate over each node in the DAG separately
 ###########################################################
-cat("########################################################\n");
+#cat("########################################################\n");
 #cat("###### Fitting cache to data\n");
 row.num<-1;
 for(child in defn.res[["children"]]){## for each child in the cache
 FAILED<-FALSE;## to catch any crashes...
 ###########################################################
 ########################################################### 
-cat("###### Processing...",row.num," of ",total.rows,"\n");
+#cat("###### Processing...",row.num," of ",total.rows,"\n");
                            dag.m[,]<-0;## reset to empty
                            dag.m[child,]<-defn.res[["node.defn"]][row.num,];## set parent combination                          
                            orig.force.method<-NULL;
@@ -176,7 +176,7 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                                 as.double(num.intervals.brent)## Not applicable 
                                   ,PACKAGE="abn" ## uncomment to load as package not shlib
                                                  ));#print(res);
-                          if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){cat("## !!! Laplace approximation failed\n");
+                          if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){ if (verbose) cat("## !!! Laplace approximation failed\n");
                                                                            FAILED<-TRUE;} 
                            used.inla<-FALSE;## flip
                            } else {## use INLA for glm
@@ -192,7 +192,7 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                                                       rep(1,dim(data.df)[1]),## exposure  
                                                                       TRUE, mean.intercept, prec.intercept, mean, prec,loggam.shape,loggam.inv.scale,verbose);
                               
-                                  if(is.logical(res.inla)){cat("INLA failed....so reverting to internal code\n");
+                                  if(is.logical(res.inla)){ if (verbose) cat("INLA failed....so reverting to internal code\n");
                                                            r<-try(res.c <- .Call("fit_single_node",
                                                                           data.df,
                                                                           as.integer(child),## childnode
@@ -217,8 +217,8 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                                                           as.double(num.intervals.brent)## Not applicable 
                                                                           ,PACKAGE="abn" ## uncomment to load as package not shlib
                                                                          ));#print(res);
-                                                         if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){cat("## !!! Laplace approximation failed\n");
-                                                                           FAILED<-TRUE;} 
+                                                         if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){ if (verbose) cat("## !!! Laplace approximation failed\n");
+                                                                           FAILED<-TRUE;}  
                                                              used.inla<-FALSE;## flip        
                                             } ## INLA failed                                        
                            
@@ -248,7 +248,7 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                    #return(res);
 
                                    ## CHECK FOR INLA CRASH
-                                   if(is.logical(res.inla)){cat("INLA failed....so reverting to internal code\n");
+                                   if(is.logical(res.inla)){ if (verbose) cat("INLA failed....so reverting to internal code\n");
                                                             orig.force.method<-force.method;## save original
                                                             force.method="C"; ## Easiest way is just to force C for this node
                                    } else {
@@ -283,7 +283,7 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                   ,PACKAGE="abn" ## uncomment to load as package not shlib
                                                  ));#print(res);  
                             
-                             if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){cat("## !!! Laplace approximation failed\n");
+                             if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){ if (verbose) cat("## !!! Laplace approximation failed\n");
                                                                            FAILED<-TRUE;}     
                             if(!FAILED){              
                             res.c.modes<-res.c[[1]][-c(1:3)];## remove mlik - this is first entry, and error code and hessian accuracy
@@ -296,8 +296,8 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
 
                            if( !FAILED && force.method=="C" || (force.method=="notset" && error.modes>(max.mode.error/100))){ ## INLA might be unreliable so use C (slower)
                            
-                               if(force.method=="notset"){cat("Using internal code (Laplace glmm)\n=>max. abs. difference (in %) with INLA is ");
-                               cat(formatC(100*error.modes,format="f",digits=1)," and exceeds tolerance\n");} else {cat("Using internal code (Laplace glmm)\n");}
+                               if(force.method=="notset"){ if (verbose) cat("Using internal code (Laplace glmm)\n=>max. abs. difference (in %) with INLA is ");
+                               if (verbose) cat(formatC(100*error.modes,format="f",digits=1)," and exceeds tolerance\n");} else { if (verbose) cat("Using internal code (Laplace glmm)\n");}
 
                                r<-try(res.c <- .Call("fit_single_node",
                                             data.df,
@@ -323,12 +323,12 @@ cat("###### Processing...",row.num," of ",total.rows,"\n");
                                             as.double(num.intervals.brent)## Not applicable 
                                   ,PACKAGE="abn" ## uncomment to load as package not shlib
                                                  ));
-                                  if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){cat("## !!! Laplace approximation failed\n");
+                                  if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){ if (verbose) cat("## !!! Laplace approximation failed\n");
                                                                            FAILED<-TRUE;} 
                                    
                                    used.inla<-FALSE;## flip
                                    
-                                 } else {cat("Using INLA (glmm)\n");
+                                 } else { if (verbose) cat("Using INLA (glmm)\n");
                                          }## end of if inla bad
                             } ## end of if GLMM
                             ###########################################################

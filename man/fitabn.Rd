@@ -1,7 +1,8 @@
-% abn-internal.Rd --- 
-% Author           : Fraser Lewis
-% Last modified on : 06/08/2012 
-
+% fitabn.Rd --- 
+% Author    :  Fraser Lewis
+% Maintainer:  Marta Pittavino
+% Last modified on : 26/09/2012 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{fitabn}
 \alias{fitabn}
 \encoding{latin1}
@@ -88,11 +89,10 @@ When estimating the log marginal likelihood in models with random effects (using
   Further information about \bold{abn} can be found at:\cr
   \url{http://www.r-bayesian-networks.org}}
 
-\author{
-  Fraser Lewis \email{fraseriain.lewis@uzh.ch}
-}
+\author{Fraser Ian Lewis}
 
 %\seealso{\code{"\link[=fitabn.inla]{fitbn.inla}"}}
+
 
 \examples{
 \dontrun{
@@ -150,14 +150,15 @@ myres.c<-fitabn(dag.m=mydag,data.df=mydat,data.dists=mydists,centre=TRUE,
 plot(myres.c$graph);# see ?plot.graph for details.
 
 ## for publication quality may be better to use graphviz direct 
-tographviz(dag.m=mydag,data.df=mydat,data.dists=mydists,outfile="graph.dot");
+tographviz(dag.m=mydag,data.df=mydat,data.dists=mydists,outfile="graph.dot",directed=TRUE);
 ## and then process using graphviz tools e.g. on linux
 system("dot -Tpdf -o graph.pdf graph.dot")
 system("evince graph.pdf");
 
 ## a simple plot of some posterior densities
-## the algorithm which chooses density points is very simple any may be rather sparse so also
-## recompute the density over an equally spaced grid of 100 points between the two end points
+## the algorithm which chooses density points is very simple any may be
+## rather sparse so also recompute the density over an equally spaced
+## grid of 100 points between the two end points
 ## which had at f=min.pdf
 myres.c<-fitabn(dag.m=mydag,data.df=mydat,data.dists=mydists,centre=TRUE,
                 compute.fixed=TRUE,n.grid=100);
@@ -184,7 +185,6 @@ main="Posterior Marginal Density",pch="+");
 points(myres.inla$marginals$b4[["b4|b1"]],col="blue");
 
 ### A very simple mixed model example using built-in data
-
 ## specify dag - only two variables using subset of variables from ex3.dag.data
 ## both variables are assumed to need (separate) adjustment for the group variable
 ## i.e. a binomial glmm at each node
@@ -236,9 +236,10 @@ myres.inla<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydis
 
 ## this is NOT recommended - marginal density estimation using fitabn in mixed models
 ## is really just for diagnostic purposes, better to use fitabn.inla() here
-## but here goes...be patient                                                                                        
+## but here goes...be patient
 myres.c<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
-                group.var="group",cor.vars=c("b1","b2"),compute.fixed=TRUE,max.mode.error=0);
+                group.var="group",cor.vars=c("b1","b2"),compute.fixed=TRUE,
+                max.mode.error=0);
 
 ## compare marginals between internal and INLA.   
 par(mfrow=c(2,3))
@@ -271,8 +272,8 @@ myres.c<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
 
 par(mfrow=c(1,2));
 plot(myres.c$marginals[[1]],type="b",col="blue");## still fairly sparse
-## an easy way is to use spline to fill in the density without recomputing other points
-## provided the original grid is not too sparse.
+## an easy way is to use spline to fill in the density without recomputing other
+## points provided the original grid is not too sparse.
 plot(spline(myres.c$marginals[[1]],n=100),type="b",col="brown");
 }
 

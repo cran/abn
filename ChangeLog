@@ -1,0 +1,61 @@
+---------------------------
+-- ChangeLog - abn --
+---------------------------
+2014-12-09 Pittavino Marta (version 0.85)
+           * cleanup file to delete additional Makevars added
+
+2014-12-08 Pittavino Marta (version 0.85)
+           * FOSS license --as-cran NOTE addressed, eliminated BuildVignettes NO in the DESCRIPTION file
+
+2014-12-06 Pittavino Marta (version 0.84)
+           * v0.84 submitted to CRAN
+
+2014-12-05 Pittavino Marta (version 0.84)
+           * dependencies --as-cran NOTE addressed, with .Rprofile
+           * graphical issue with Sweave solved 
+
+2014-12-04 Pittavino Marta (version 0.84)
+           * finished to edit vignette
+
+2014-11-23/24 Pittavino Marta (version 0.84)
+              * updating the vignette
+
+2014-11-03/04 Pittavino Marta (version 0.84)
+              * issue with Rd2pdf and LaTeX addressed
+
+2014-10-27 Pittavino Marta (version 0.84)
+           * installation of local version of abn to text and work with vignette
+
+2014-10-23 Pittavino Marta (version 0.84)
+           * confirmation of the change of maintainer 
+
+2014-10-13 Pittavino Marta (version 0.84)
+           * updated Rclean for file .log and .status
+           * check length characters in manual
+
+2014-10-06 Pittavino Marta (version 0.84)
+           * compressed Data with resaveRdaFiles(,compress=c("xz"))
+           * solved installing issue (Rclean update)
+           
+2014-10-03 Pittavino Marta (version 0.84)
+	       * alias Rclean extended
+	       * eliminate old and very old version
+	       * comment out require(Cairo) line-code
+	
+2014-10-02 Reinhard Furrer (version 0.84)
+	       * Cairo NOTE fixed, moved from Suggests to Depends
+	       * DESCRIPTION and NAMESPACE update
+           * check if last amendments works
+	       * .gitignore create
+
+2014-09-29 Pittavino Marta (version 0.84)
+	       * update version 
+	       * rename R function as the one in manual
+	
+2014-09-26 Pittavino Marta (version 0.83)
+	       * update DESCRIPTION
+	
+2014-09-19 Pittavino Marta (version 0.83)
+ 	       * update DESCRIPTION
+           * update tographviz documentation
+           * create ChangeLog file

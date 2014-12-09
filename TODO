@@ -1,3 +1,0 @@
-1. add random effects into guassian and poisson nodes
-2. improve the algorithm for where to evaluate the marginal posteriors, current very crude and typically need manual refinement.
-3. functions to perform order-based mcmc model selection a la Friedman and Koller 2003.

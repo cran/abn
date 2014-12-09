@@ -1,4 +1,4 @@
-## fitbn.R --- 
+## mostprobable.R --- 
 ## Author          : Fraser Lewis
 ## Created On      : Sun May 13:43 2010
 ## Last Modified By: Fraser Lewis

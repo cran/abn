@@ -1,7 +1,7 @@
-% abn-internal.Rd --- 
+% buildscorecache.Rd --- 
 % Author           : Fraser Lewis
 % Last modified on : 03/08/2012 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{buildscorecache}
 
 \alias{buildscorecache}
@@ -84,9 +84,8 @@ The numerical routines used here are identical to those in \code{\link{fitabn}} 
 
   Further information about \bold{abn} can be found at:\cr
   \url{http://www.r-bayesian-networks.org}}
-\author{
-  Fraser Lewis \email{fraseriain.lewis@uzh.ch}.
-}
+
+\author{Fraser Ian Lewis}
 
 \examples{
 \dontrun{

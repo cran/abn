@@ -1,7 +1,7 @@
 ###############################################################################
-## fitabn.R --- 
+## search.hillclimber.R --- 
 ## Author          : Fraser Lewis
-## Last modified   : 03/08/2012
+## Last modified   : 03/10/2014
 ###############################################################################
 
 ## fit a given DAG to data using the distribution given
@@ -29,7 +29,7 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
 
    ## check that the cache has no invalid nodes - these should be removed
    myNA<-which(is.na(score.cache$mlik));
-   if(length(myNA)>0){cat("### NOTE: the score.cache has missing values in mlik - assigning to -.Machine$double.xmax ###\n");
+   if(length(myNA)>0){ if (verbose) cat("### NOTE: the score.cache has missing values in mlik - assigning to -.Machine$double.xmax ###\n");
    score.cache$mlik[myNA]<- -.Machine$double.xmax;## the most negative number possible, i.e. -infinity
    }
 
@@ -52,17 +52,17 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
   ## NOTE - NaN's/NAs - these are dealt with in C utility.c make_nodecache
   ################################################################################################
   ### Want graphical output
-  ### via Graphviz and Cairo
+  ### via Graphviz [and Cairo - commented out by Marta Pittavino on 03/10/2014]
   ################################################################################################
   if(trace){
       if(!require(Rgraphviz)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\n");}
-      if(!require(Cairo)){stop("library Cairo is not available!\nThis can be obtained from CRAN.");}
+  ##  if(!require(Cairo)){stop("library Cairo is not available!\nThis can be obtained from CRAN.");}
       
       num.traced.searches<-1;## fix at one - one plot output per search
       
       graphicsetup();## deals with opening or finding a Cairo window
       
-      for(searchIndex in 1:num.searches){
+      for(searchIndex in 1:num.searches){ if (verbose)
            cat("processing search...", searchIndex,"\n");
            if(searchIndex==1){## first time search   
          
@@ -109,7 +109,7 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
                                               plot(mygraph,main=paste("Consensus DAG - at ",100*support.threshold,"% support - still searching....",sep=""));
                                               mygraph.prev<-initialize(mygraph,adjMat=t(con.dag.binary),edgemode="directed");## update
            } else{ ## do nothing but same no change
-                   cat("no change in consensus\n");}
+                   if (verbose) cat("no change in consensus\n");}
                       } ## else for searchIndex==1 
            }
            

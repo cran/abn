@@ -1,12 +1,12 @@
 %                               -*- Mode: Rd -*- 
-% fitbn.Rd --- 
+% search_hillclimber.Rd --- 
 % Author          : Fraser Lewis
 % Created On      : 
-% Last Modified By: Fraser Lewis
-% Last Modified On: 
+% Last Modified By: Marta Pittavino
+% Last Modified On: 06/10/2014
 % Update Count    : 
 % Status          : Unknown, Use with caution!
-% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \name{search.hillclimber}
 \alias{search.hillclimber}
@@ -26,7 +26,7 @@
 }  
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{score.cache}{output from \code{buildscorecache()} or \code{buildscorecache.inla()}} 
+  \item{score.cache}{output from \code{buildscorecache()}} 
   \item{num.searches}{number of times to run the search}
   \item{seed}{non-negative integer which sets the seed in the GSL random number generator}
   \item{verbose}{extra output}
@@ -66,9 +66,7 @@ Further information about \bold{abn} can be found at:\cr
   \url{http://www.r-bayesian-networks.org}}
 
 
-\author{
-  Fraser Lewis \email{fraseriain.lewis@uzh.ch}
-}
+\author{Fraser Ian Lewis}
 
 
 \examples{
@@ -76,7 +74,7 @@ Further information about \bold{abn} can be found at:\cr
 ## example 1 
 ## use built-in simulated data set
 
-mydat<-ex1.dag.data;## this data comes with abn see ?ex1.dag.data
+mydat<-ex1.dag.data; ## this data comes with abn see ?ex1.dag.data
 
 ## setup distribution list for each node
 mydists<-list(b1="binomial",
@@ -92,31 +90,30 @@ mydists<-list(b1="binomial",
              );
 
 #use simple banlist with no constraints
+#     1 2 3 4 5 6 7 8 9 10 
 ban<-matrix(c(
-		    #   1 2 3 4 5 6    
-                        0,0,0,0,0,0,0,0,0,0, # 1 
+      0,0,0,0,0,0,0,0,0,0, # 1 
 			0,0,0,0,0,0,0,0,0,0, # 2
 			0,0,0,0,0,0,0,0,0,0, # 3 
 			0,0,0,0,0,0,0,0,0,0, # 4
 			0,0,0,0,0,0,0,0,0,0, # 5 
 			0,0,0,0,0,0,0,0,0,0, # 6
-                        0,0,0,0,0,0,0,0,0,0, # 7 
+      0,0,0,0,0,0,0,0,0,0, # 7 
 			0,0,0,0,0,0,0,0,0,0, # 8
 			0,0,0,0,0,0,0,0,0,0, # 9 
 			0,0,0,0,0,0,0,0,0,0  # 10     
                                            ),byrow=TRUE,ncol=10);
 
 colnames(ban)<-rownames(ban)<-names(mydat); #names must be set
-
+#     1 2 3 4 5 6 7 8 9 10
 retain<-matrix(c(
-		    #   1 2 3 4 5 6    
-                        0,0,0,0,0,0,0,0,0,0, # 1 
+      0,0,0,0,0,0,0,0,0,0, # 1 
 			0,0,0,0,0,0,0,0,0,0, # 2
 			0,0,0,0,0,0,0,0,0,0, # 3 
 			0,0,0,0,0,0,0,0,0,0, # 4
 			0,0,0,0,0,0,0,0,0,0, # 5 
 			0,0,0,0,0,0,0,0,0,0, # 6
-                        0,0,0,0,0,0,0,0,0,0, # 7 
+      0,0,0,0,0,0,0,0,0,0, # 7 
 			0,0,0,0,0,0,0,0,0,0, # 8
 			0,0,0,0,0,0,0,0,0,0, # 9 
 			0,0,0,0,0,0,0,0,0,0  # 10     
@@ -140,7 +137,8 @@ heur.res2<-search.hillclimber(score.cache=mycache,num.searches=1000,seed=0,verbo
                               trace=TRUE,timing.on=FALSE);
 
 ## for publication quality output for the consensus network use graphviz direct 
-tographviz(dag.m=heur.res$consensus,data.df=mydat,data.dists=mydists,outfile="graphcon.dot");
+tographviz(dag.m=heur.res$consensus,data.df=mydat,data.dists=mydists,
+           outfile="graphcon.dot",directed=TRUE);
 ## and then process using graphviz tools e.g. on linux
 system("dot -Tpdf -o graphcon.pdf graphcon.dot");
 system("evince graphcon.pdf");
@@ -165,20 +163,21 @@ mycache.mixed<-buildscorecache(data.df=mydat,data.dists=mydists,group.var="group
                                max.parents=max.par, which.nodes=c(1:5));
 
 # now peform 1000 greedy searches
-heur.res<-search.hillclimber(score.cache=mycache.mixed,num.searches=1000,seed=0,verbose=FALSE,
-                             timing.on=FALSE);
+heur.res<-search.hillclimber(score.cache=mycache.mixed,num.searches=1000,
+          seed=0,verbose=FALSE,timing.on=FALSE);
 
 # repeat but this time have the majority consensus network plotted as the searches progress
 heur.res<-search.hillclimber(score.cache=mycache.mixed,num.searches=1000,seed=0,verbose=FALSE,
                              trace=TRUE,timing.on=FALSE);
 
 ## for publication quality out for the consensus network may be better to use graphviz direct 
-tographviz(dag.m=heur.res$consensus,data.df=mydat,data.dists=mydists,group.var="group",
-           outfile="graphcon.dot");
+tographviz(dag.m=heur.res$consensus,data.df=mydat,data.dists=mydists,
+           group.var="group",outfile="graphcon.dot",directed=TRUE);
 ## and then process using graphviz tools e.g. on linux
 system("dot -Tpdf -o graphcon.pdf graphcon.dot");
 system("evince graphcon.pdf");
+}
 
-}}
+}
 
 \keyword{models}

@@ -1,12 +1,12 @@
 %                               -*- Mode: Rd -*- 
-% fitbn.Rd --- 
+% tographviz.Rd --- 
 % Author          : Fraser Lewis
 % Created On      : 
-% Last Modified By: Fraser Lewis
-% Last Modified On: 
+% Last Modified By: Marta Pittavino
+% Last Modified On: 19/09/2014
 % Update Count    : 
 % Status          : Unknown, Use with caution!
-% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 \name{tographviz}
 \alias{tographviz}
@@ -18,7 +18,9 @@
 \description{Given a matrix defining a DAG create a text file suitable for plotting with graphviz}
 
 
-\usage{tographviz(dag.m,data.df,data.dists,group.var=NULL,outfile)
+\usage{
+
+tographviz(dag.m,data.df,data.dists,group.var=NULL,outfile,directed=TRUE)
 
 }
 
@@ -29,9 +31,13 @@
   \item{data.dists}{a list with named arguments matching the names of the data frame which gives the distribution family for each variable. See \code{fitabn} for details.} 
   \item{group.var}{only applicable for mixed models and gives the column name in \code{data.df} of the grouping variable (which must be a factor denoting group membership). See \code{fitabn} for details.}
   \item{outfile}{a character string giving the filename which will contain the graphviz graph}
+  \item{directed}{logical; if TRUE, a directed acyclic graph is produced, otherwise an undirected graph}
 }
 
-\details{Graphviz - \url{www.graphviz.org} is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG so this can be plotted using graphviz. Graphviz is available as an R package, Rgraphviz, through the Bioconductor project \url{http://www.bioconductor.org/} (and requires a working installation of graphviz). Binary nodes will appear as squares, Gaussian as ovals and Poisson nodes as diamonds in the resulting graphviz network diagram. There are many other shapes possible for nodes and numerous other visual enhancements - see online graphviz documentation. Bespoke refinements can be added by editing the raw outfile produced. For full manual editing, particularly of the layout, or adding annotations, one easy solution is to convert a postscript format graph (produced in graphviz using the -Tps switch) into a vector format using a tool such as pstoedit \url{www.pstoedit.net}, and then edit using a vector drawing tool like xfig. This can then be resaved as postscript or pdf thus retaining full vector quality} 
+\details{
+Graphviz - \url{www.graphviz.org} is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG, or the undirected graph, so this can be plotted using graphviz. Graphviz is available as an R package, Rgraphviz, through the Bioconductor project \url{http://www.bioconductor.org/} (and requires a working installation of graphviz). Binary nodes will appear as squares, Gaussian as ovals and Poisson nodes as diamonds in the resulting graphviz network diagram. There are many other shapes possible for nodes and numerous other visual enhancements - see online graphviz documentation. Bespoke refinements can be added by editing the raw outfile produced. For full manual editing, particularly of the layout, or adding annotations, one easy solution is to convert a postscript format graph (produced in graphviz using the -Tps switch) into a vector format using a tool such as pstoedit \url{www.pstoedit.net}, and then edit using a vector drawing tool like xfig. This can then be resaved as postscript or pdf thus retaining full vector quality
+
+} 
 
 
 \value{nothing is returned}
@@ -41,9 +47,7 @@
   \url{http://www.r-bayesian-networks.org}}
 
 
-\author{
-  Fraser Lewis \email{fraseriain.lewis@uzh.ch}
-}
+\author{Fraser Ian Lewis}
 
 \examples{
 \dontrun{
@@ -72,7 +76,7 @@ mydag<-matrix(data=c(
 colnames(mydag)<-rownames(mydag)<-names(mydat);
 
 ## create file for processing with graphviz
-tographviz(dag.m=mydag,data.df=mydat,data.dists=mydists,outfile="graph.dot");
+tographviz(dag.m=mydag,data.df=mydat,data.dists=mydists,outfile="graph.dot",directed=TRUE);
 ## and then process using graphviz tools e.g. on linux
 system("dot -Tpdf -o graph.pdf graph.dot")
 system("evince graph.pdf");
@@ -93,7 +97,7 @@ mydists<-list(b1="binomial",
 
 ## create file for processing with graphviz
 tographviz(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
-           group.var="group",outfile="graph.dot");
+           group.var="group",outfile="graph.dot",directed=FALSE);
 ## and then process using graphviz tools e.g. on linux
 system("dot -Tpdf -o graph.pdf graph.dot")
 system("evince graph.pdf");

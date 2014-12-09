@@ -1,4 +1,5 @@
 #################################################################################################
+## getmarginals.R
 ## function for computing marginal posterior densities using C and is called from fit.dag()
 ## Only to be called internally.
 #################################################################################################
@@ -25,7 +26,7 @@ if( !is.null(marginal.node)) {## in single node case
     if(res.list[["error.code"]][marginal.node]!=0){stop("---- Cannot compute marginal density as the mlik is unreliable for this node.\nTry re-running with different finite difference parameters or else increase max.hessian.error ----");}
     nodeid<-marginal.node;
     paramid<-marginal.param;
-    cat("processing ",names(res.list$modes[[nodeid]])[paramid],"\n");
+    if (verbose) cat("processing ",names(res.list$modes[[nodeid]])[paramid],"\n");
     curnom<-names(res.list$modes[[nodeid]])[paramid];
     first<-TRUE;
     for(betafixed in variate.vec){
@@ -57,7 +58,7 @@ if( !is.null(marginal.node)) {## in single node case
           if(first){tmp<-matrix(data=c(betafixed,marg.res),ncol=2,byrow=TRUE);colnames(tmp)<-c("x","f(x)");
                     marginals[[curnom]]<-tmp;first<-FALSE;
           } else{ marginals[[curnom]]<-rbind(marginals[[curnom]],c(betafixed,marg.res));}
-          cat("evaluating at x=",betafixed," f(x)=",marg.res,"\n",sep="");
+          if (verbose) cat("evaluating at x=",betafixed," f(x)=",marg.res,"\n",sep="");
           }
          marginals[[curnom]]<-marginals[[curnom]][order(marginals[[curnom]][,1]),];
 
@@ -75,10 +76,10 @@ if( !is.null(marginal.node)) {## in single node case
      for(paramid in 1:length(res.list$modes[[nodeid]])){
 
    #paramid<-3;    
-         cat("processing ",names(res.list$modes[[nodeid]])[paramid],"\n");      
+         if (verbose) cat("processing ",names(res.list$modes[[nodeid]])[paramid],"\n");      
          curnom<-names(res.list$modes[[nodeid]])[paramid]; 
          have.precision<-ifelse(grepl("prec",curnom),TRUE,FALSE);
-         if(res.list[["error.code"]][nodeid]!=0){cat("--- NOTE DROPPING parameter: ",curnom," as mlik is unreliable for this node.\nTry re-running with different finite difference parameters---\n");}  
+         if(res.list[["error.code"]][nodeid]!=0){ if (verbose) cat("--- NOTE DROPPING parameter: ",curnom," as mlik is unreliable for this node.\nTry re-running with different finite difference parameters---\n");}  
          betafixedMode<-res.list$modes[[nodeid]][paramid];## just evaluate at the mode for paramid in node id
          #betafixedMode<-signif(betafixedMode,1);## adjust the mode a little as this seems to cause problems in the C optim in some unusual cases
          ##############################################################################################################
@@ -128,7 +129,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
               PACKAGE="abn" ## uncomment to load as package not shlib
               );
-             # cat("betafixed=",betafixed," gvalue=",marg.res,"\n");
+              #cat("betafixed=",betafixed," gvalue=",marg.res,"\n");
               mymat[row,]<-c(betafixed,marg.res);row<-row+1; 
               }
               #cat("original points\n");print(mymat);
@@ -567,7 +568,7 @@ if( !is.null(marginal.node)) {## in single node case
              
               ## BACKUP Use last guess if still not very good
               if( !(big.ok && small.ok)){## initial guesses not good so rebuild variate.x with last guess
-              cat("Failed to find a good x-increment so going with last estimate which may not be very good...\n May be better to provide the x-grid manually\n");
+              if (verbose) cat("Failed to find a good x-increment so going with last estimate which may not be very good...\n May be better to provide the x-grid manually\n");
               variate.x<-c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
               row<-1;
               mymat<-matrix(data=c(variate.x,rep(NA,3)),ncol=2,byrow=TRUE);colnames(mymat)<-c("x","f(x)");## storage for three rows
@@ -617,7 +618,7 @@ if( !is.null(marginal.node)) {## in single node case
            betafixed<-find.next.left.x(mymat,gvalue.max,g.factor=0.1,x.delta=x.delta,max.fact.delta=max.fact.delta);
 
            if(have.precision && betafixed<0){## precision terms must not cross zero so try again with smaller x.factor
-                                           x.delta<-x.delta/10;cat("Have precision term but jumped to left of zero so skipping...\n");
+                                           x.delta<-x.delta/10; if (verbose) cat("Have precision term but jumped to left of zero so skipping...\n");
                                             next; }  
            ## evaluate at next chosen x
            gvalue <- .Call("fitabn_marginals",data.df,as.integer(dag.m),as.integer(dim(data.df)[2]),
@@ -643,12 +644,12 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
               PACKAGE="abn" ## uncomment to load as package not shlib
               );
-            cat("left step:",iter," x=",betafixed,#" with min.step.size=",x.delta,
+            if (verbose) cat("left step:",iter," x=",betafixed,#" with min.step.size=",x.delta,
                                                  " f(x)=",gvalue,"\n",sep="");
              mymat<-rbind(mymat,c(betafixed,gvalue));
             iter<-iter+1;
             } ## end of while
-            if(iter==1000){cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}              
+            if(iter==1000){ if (verbose) cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}              
             ## restore x.factor in case changed during precision evaluation.
             x.delta<-x.delta.orig;
         #####################################################################################################################
@@ -656,7 +657,7 @@ if( !is.null(marginal.node)) {## in single node case
         ## 
         iter<-1;## to avoid taking forever...
         gvalue<-.Machine$double.xmax
-        cat("gvalue=",gvalue," min.pdf=",min.pdf," iter.max=",iter.max,"\n");
+        if (verbose) cat("gvalue=",gvalue," min.pdf=",min.pdf," iter.max=",iter.max,"\n");
          while(gvalue>min.pdf && iter <iter.max){
 
            gvalue.max<-max(mymat[,2]);## max of f(x)
@@ -692,12 +693,12 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
               PACKAGE="abn" ## uncomment to load as package not shlib
               );
-            cat("right step:",iter," x=",betafixed,#" ,min.step.size=",x.delta,
+            if (verbose) cat("right step:",iter," x=",betafixed,#" ,min.step.size=",x.delta,
                                                    " f(x)=",gvalue,"\n",sep="");
              mymat<-rbind(mymat,c(betafixed,gvalue));
             iter<-iter+1;
             } ## end of while
-            if(iter==1000){cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}              
+            if(iter==1000){if (verbose) cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}              
  
             ## final step before saving data into list is to make sure it is ordered according to increasing x
             mymat<-mymat[order(mymat[,1]),];

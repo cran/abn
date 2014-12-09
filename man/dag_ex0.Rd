@@ -39,7 +39,8 @@
      \item{p8}{poisson, log()=1 }
      \item{p9}{poisson, log()=1 }
      \item{p10}{poisson, log()=1 }
-     }}
+     }
+     }
    
 \examples{
 \dontrun{
@@ -79,6 +80,7 @@ ex0.dag.data<-data.frame(b1=sample(tmp,size=datasize,replace=TRUE),
                 p9=rpois(datasize,lambda=10),
                 p10=rpois(datasize,lambda=10)
                 );
-}}
+}
+}
      
 \keyword{datasets}

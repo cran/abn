@@ -42,19 +42,19 @@ check.valid.data <- function(data.df=NULL,data.dists=NULL,group.var=NULL){
     for(i in 1:dim(data.df)[2]){## for each variable
                         cur.var<-data.df[,i];
                         if(data.dists[[i]]=="gaussian"){
-                            if(is.factor(cur.var)){cat((names(data.df)[i]),"is invalid - it must not be a factor.\n");stop("");}
-                            if(length(unique(cur.var))<=2){cat((names(data.df)[i]),"is invalid as it has two or less unique values!\n");stop("");}
+                            if(is.factor(cur.var)){ cat((names(data.df)[i]),"is invalid - it must not be a factor.\n");stop("");}
+                            if(length(unique(cur.var))<=2){ cat((names(data.df)[i]),"is invalid as it has two or less unique values!\n");stop("");}
                         gaussian.vars.indexes<-c(gaussian.vars.indexes,i); 
                         }
                         if(data.dists[[i]]=="binomial"){
-                            if(!is.factor(cur.var)){cat((names(data.df)[i]),"is invalid - it must be a factor\n");stop("");}
-                            if(length(unique(cur.var))!=2){cat((names(data.df)[i]),"is invalid as it must be binary. Multi-category variables should be split into separate binary variables.\n");stop("");}
+                            if(!is.factor(cur.var)){ cat((names(data.df)[i]),"is invalid - it must be a factor\n");stop("");}
+                            if(length(unique(cur.var))!=2){ cat((names(data.df)[i]),"is invalid as it must be binary. Multi-category variables should be split into separate binary variables.\n");stop("");}
                         binomial.vars.indexes<-c(binomial.vars.indexes,i); 
                         }
                       
                         if(data.dists[[i]]=="poisson"){
-                            if(is.factor(cur.var)){cat((names(data.df)[i]),"is invalid - it must not be a factor\n");stop("");} 
-                            if(length(unique(cur.var))<=2){cat((names(data.df)[i]),"is invalid as it has two or less unique values!");stop("");}
+                            if(is.factor(cur.var)){ cat((names(data.df)[i]),"is invalid - it must not be a factor\n");stop("");} 
+                            if(length(unique(cur.var))<=2){ cat((names(data.df)[i]),"is invalid as it has two or less unique values!");stop("");}
                         poisson.vars.indexes<-c(poisson.vars.indexes,i);
                         }
            }            

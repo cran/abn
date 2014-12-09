@@ -1,8 +1,10 @@
 ## tographviz.R --- 
 ## Author          : Fraser Lewis
-## Last Modified on: 03/08/2012
+## Edit by Marta Pittavino
+## Last Modified on: 01/07/2014
+################################################################################
 
-tographviz<-function(dag.m,data.df,data.dists,group.var=NULL,outfile){
+tographviz<-function(dag.m,data.df,data.dists,group.var=NULL,outfile,directed=TRUE){
 
     
   if(!is.null(group.var)){## have group variable so just need to rebuild data.df without this
@@ -29,9 +31,10 @@ tographviz<-function(dag.m,data.df,data.dists,group.var=NULL,outfile){
     for(i in 1:dim(dag.m)[1]){for(j in 1:dim(dag.m)[2]){if(dag.m[i,j]!=0 && dag.m[i,j]!=1){stop("dag.m must comprise only 1's or 0's");}}}
 
     
-
     ## create header part
-            cat("digraph dag {","\n\n",file=outfile,append=FALSE);
+    cat(ifelse(directed, "digraph dag {","graph dag {"),"\n\n",file=outfile,append=FALSE);
+    # Old version: if(directed){ cat("digraph dag {","\n\n",file=outfile,append=FALSE); }
+    # Old version: else{ cat("graph dag {","\n\n",file=outfile,append=FALSE);} 
             for(i in 1:length(colnames(dag.m))){
                        if(data.dists[[i]]=="binomial"){cat(paste("\"",colnames(dag.m)[i],"\"[shape=square];\n",sep=""),file=outfile,append=TRUE);}
                        if(data.dists[[i]]=="gaussian"){cat(paste("\"",colnames(dag.m)[i],"\"[shape=oval];\n",sep=""),file=outfile,append=TRUE);}
@@ -39,18 +42,19 @@ tographviz<-function(dag.m,data.df,data.dists,group.var=NULL,outfile){
             }
             cat("\n\n\n",file=outfile,append=TRUE)
     
-    for(i in colnames(dag.m)){##for each variable
+ for(i in colnames(dag.m)){##for each variable
              children<-which(dag.m[,i]==1);##get row with children
              if(length(children)>=1){##if have at least one child
              child.nom<-rownames(dag.m)[children];
-               for(j in child.nom){cat("\"",i,"\"","->","\"",j,"\";","\n",sep="",file=outfile,append=TRUE);
+            # if(directed) {for(j in child.nom){cat("\"",i,"\"","->","\"",j,"\";","\n",sep="",file=outfile,append=TRUE);}}
+             #else { for(j in child.nom){cat("\"",i,"\"","--","\"",j,"\";","\n",sep="",file=outfile,append=TRUE);}
+           {
+             for(j in child.nom){
+               cat("\"",i,"\"",ifelse(directed, "->", "--"),"\"",j,"\";","\n",sep="",file=outfile,append=TRUE);
+             }
+           }
                  }
                 }
-            }
-
-            ## footer part
+     ## footer part
             cat("\n}\n",file=outfile,append=TRUE);
-            
 }
-
-

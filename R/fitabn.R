@@ -1,7 +1,8 @@
 ###############################################################################
-## fit_dag.R --- 
+## fitabn.R --- 
 ## Author          : Fraser Lewis
 ## Last modified   : 02/12/2012
+## Last modified   : 29/09/2014 by Marta Pittavino, just renamed.
 ###############################################################################
 
 ## fit a given DAG to data
@@ -82,13 +83,13 @@ fitabn <- function(dag.m=NULL, data.df=NULL, data.dists=NULL, group.var=NULL,cor
 ###########################################################
 ## Iterate over each node in the DAG separately
 ###########################################################
-cat("########################################################\n");
-cat("###### Fitting DAG to data\n");
+if (verbose) cat("########################################################\n");
+if (verbose) cat("###### Fitting DAG to data\n");
 for(child in 1:dim(dag.m)[1]){## for each node in the DAG
 
 ###########################################################
 ########################################################### 
-cat("###### Processing...Node ",rownames(dag.m)[child],"\n");                          
+if (verbose) cat("###### Processing...Node ",rownames(dag.m)[child],"\n");                          
                            orig.force.method<-NULL;
                            used.inla<-TRUE;
                            ####################################################
@@ -97,7 +98,7 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                            if( !(child%in%grouped.vars)){## only compute option here is C since fast and INLA slower and less reliable
                            
                                 if(force.method=="notset" || force.method=="C"){
-                                 cat("Using internal code (Laplace glm)\n");
+                                 if (verbose) cat("Using internal code (Laplace glm)\n");
                                  r<-try(res.c <- .Call("fit_single_node",
                                                 data.df,
                                                 as.integer(child),## childnode
@@ -133,7 +134,7 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                                   if(!require(INLA)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms 
-                                  cat("Using INLA (glm)\n");
+                                  if (verbose) cat("Using INLA (glm)\n");
                                          res.inla<-calc.node.inla.glm(child,
                                                                       dag.m,
                                                                       data.df,
@@ -143,7 +144,7 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                                                                       TRUE, mean.intercept, prec.intercept, mean, prec,loggam.shape,loggam.inv.scale,verbose);
                                                                      
 
-                                          if(is.logical(res.inla)){cat("INLA failed....so reverting to internal code\n");
+                                          if(is.logical(res.inla)){if (verbose) cat("INLA failed....so reverting to internal code\n");
                                                            r<-try(res.c <- .Call("fit_single_node",
                                                                           data.df,
                                                                           as.integer(child),## childnode
@@ -203,7 +204,7 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                                                             mean.intercept, prec.intercept, mean, prec,loggam.shape,loggam.inv.scale,verbose); 
                                    #return(res.inla); ## to return RAW INLA object
                                    ## CHECK FOR INLA CRASH
-                                   if(is.logical(res.inla)){cat("INLA failed....so reverting to internal code\n");
+                                   if(is.logical(res.inla)){if (verbose) cat("INLA failed....so reverting to internal code\n");
                                                             orig.force.method<-force.method;## save original
                                                             force.method="C"; ## Easiest way is just to force C for this node
                                    } else {
@@ -254,8 +255,8 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
 
                             if( force.method=="C" || (force.method=="notset" && error.modes>(max.mode.error/100))){ ## INLA might be unreliable to use C (slower)
                                
-                                if(force.method=="notset"){cat("Using internal code (Laplace glmm)\n=>max. abs. difference (in %) with INLA is ");
-                                cat(formatC(100*error.modes,format="f",digits=1)," and exceeds tolerance\n");} else {cat("Using internal code (Laplace glmm)\n");}
+                                if(force.method=="notset"){if (verbose) cat("Using internal code (Laplace glmm)\n=>max. abs. difference (in %) with INLA is ");
+                                if (verbose) cat(formatC(100*error.modes,format="f",digits=1)," and exceeds tolerance\n");} else {if (verbose) cat("Using internal code (Laplace glmm)\n");}
 
                                r<-try(res.c <- .Call("fit_single_node",
                                             data.df,
@@ -291,7 +292,7 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
 
                                    used.inla<-FALSE;## flip
                                     
-                                 } else {cat("Using INLA (glmm)\n");
+                                 } else {if (verbose) cat("Using INLA (glmm)\n");
                                          }## end of if inla bad
                             
                             } ## end of if GLMM
@@ -364,7 +365,7 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
       #####
       ##### Additional part only run if user wants marginal distributions
       #####
-      if(compute.fixed){ cat("Processing marginal distributions for non-INLA nodes...\n");
+      if(compute.fixed){ if (verbose) cat("Processing marginal distributions for non-INLA nodes...\n");
                          ## might have some already computed from INLA
                          if(length(which(INLA.marginals==FALSE))==0){## ALL INLA so finished
                             names(mymargs)<-colnames(dag.m)[which(INLA.marginals==TRUE)];
@@ -446,8 +447,8 @@ cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
       }
 
 
-cat("########End of DAG fitting #############################\n");
-cat("########################################################\n");
+if (verbose) cat("########End of DAG fitting #############################\n");
+if (verbose) cat("########################################################\n");
 return(res.list);
 
 }

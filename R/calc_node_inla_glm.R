@@ -1,11 +1,11 @@
 ###############################################################################
-## fitabn.R --- 
+## calc_node_inla_glm.R --- 
 ## Author          : Fraser Lewis
 ## Last modified   : 03/08/2012
 ## comment: arguments are all given the postfix .loc to avoid scoping issues
 ###############################################################################
 
-## fit a given regression using I-NLA
+## fit a given regression using INLA
 calc.node.inla.glm<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
                          mean.intercept.loc,prec.intercept.loc,mean.loc,prec.loc,loggam.shape.loc,loggam.inv.scale.loc,verbose.loc){
 #print(data.df.loc);

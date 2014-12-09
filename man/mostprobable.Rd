@@ -1,12 +1,12 @@
 %                               -*- Mode: Rd -*- 
-% fitbn.Rd --- 
+% mostprobable.Rd --- 
 % Author          : Fraser Lewis
 % Created On      : 
-% Last Modified By: Fraser Lewis
+% Last Modified By: Marta Pittavino
 % Last Modified On: 
 % Update Count    : 
 % Status          : Unknown, Use with caution!
-% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \name{mostprobable}
 \alias{mostprobable}
@@ -48,16 +48,15 @@ Note that the network score (log marginal likelihood) of the most probable DAG i
 Further information about \bold{abn} can be found at:\cr
   \url{http://www.r-bayesian-networks.org}}
 
-\author{
-  Fraser Lewis \email{fraseriain.lewis@uzh.ch}
-}
+\author{Fraser Ian Lewis}
 
 
 \examples{
 \dontrun{
 ## use built-in simulated data set
 
-mydat<-ex0.dag.data[,c("b1","b2","g1","g2","p1","p2")];## take a subset of cols
+mydat<-ex0.dag.data[,c("b1","b2","g1","g2","p1","p2")];
+## take a subset of cols
 
 ## setup distribution list for each node
 mydists<-list(b1="binomial",
@@ -77,7 +76,7 @@ ban<-matrix(c(
 			0,0,0,0,0,0, # 4
 			0,0,0,0,0,0, # 5 
 			0,0,0,0,0,0 # 6     
-                                           ),byrow=TRUE,ncol=6);
+               ),byrow=TRUE,ncol=6);
 
 colnames(ban)<-rownames(ban)<-names(mydat); #names must be set
 ban["b1","b2"]<-1; # now ban arc from b2 to b1 
@@ -90,7 +89,7 @@ retain<-matrix(c(
 			0,0,0,0,0,0, # 4
 			0,0,0,0,0,0, # 5 
 			0,0,0,0,0,0 # 6     
-                                           ),byrow=TRUE,ncol=6);
+                  ),byrow=TRUE,ncol=6);
 
 colnames(retain)<-rownames(retain)<-names(mydat); #names must be set
 retain["g1","g2"]<-1; # always retain arc from g2 to g1
@@ -169,7 +168,7 @@ myres<-fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,create.graph=TRUE);
 plot(myres$graph);
 
 ## for publication quality may be better to use graphviz direct 
-tographviz(dag.m=mp.dag,data.df=mydat,data.dists=mydists,outfile="mpgraph.dot");
+tographviz(dag.m=mp.dag,data.df=mydat,data.dists=mydists,outfile="mpgraph.dot",directed=TRUE);
 ## and then process using graphviz tools e.g. on linux
 ## system("dot -Tpdf -o mpgraph.pdf mpgraph.dot");
 ## system("evince mpgraph.pdf");
@@ -190,7 +189,8 @@ fitabn(dag.m=true.dag,data.df=mydat,data.dists=mydists)$mlik;
 ## example 3 - models with random effects
 #################################################################
 
-mydat<-ex3.dag.data[,c(1:4,14)];## this data comes with abn see ?ex3.dag.data
+mydat<-ex3.dag.data[,c(1:4,14)];
+## this data comes with abn see ?ex3.dag.data
 
 mydists<-list(b1="binomial",
               b2="binomial",
@@ -199,16 +199,17 @@ mydists<-list(b1="binomial",
              );
 max.par<-3;
 
-mycache.c<-buildscorecache(data.df=mydat,data.dists=mydists,group.var="group",
-                         cor.vars=c("b1","b2","b3","b4"),## each node uses a random effect adjustment
-                         max.parents=max.par);
+mycache.c<-buildscorecache(data.df=mydat,data.dists=mydists,
+           group.var="group",cor.vars=c("b1","b2","b3","b4"),
+     ## each node uses a random effect adjustment
+           max.parents=max.par);                         
 
 ## find the most probable DAG
 mp.dag<-mostprobable(score.cache=mycache.c);
 
 ## get goodness of fit
-fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,group.var="group",
-       cor.vars=c("b1","b2","b3","b4"))$mlik;
+fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,
+group.var="group",cor.vars=c("b1","b2","b3","b4"))$mlik;
 
 }}
 

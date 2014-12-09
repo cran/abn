@@ -1,15 +1,3 @@
+PKG_CPPFLAGS = -I$(LIB_GSL)/include
+PKG_LIBS = -L$(LIB_GSL)/lib -lgsl -lgslcblas
 
-## following line from Prof. B.D. Ripley 6th Sept. via email due to upgrade for gsl_1.15
-PKG_LIBS=-L$(LIB_GSL)/lib -lgsl -lgslcblas
-# the next line is a guess - using same form and update line from B.D.R.
-PKG_CPPFLAGS=-I$(LIB_GSL)/include
-
-## this part is test - inclusion for openmp etc
-#ARCH_FLAG = -m32
-#ifeq ($(R_ARCH),/x64)
-#  ARCH_FLAG = -m64
-#endif
-
-#PKG_LIBS = $(ARCH_FLAG) -fopenmp -L$(LIB_GSL)/lib -lgsl -lgslcblas
-##PKG_CPPFLAGS=$(ARCH_FLAG) -I$(LIB_GSL)/include
-#PKG_CFLAGS=$(ARCH_FLAG) -fopenmp -I$(LIB_GSL)/include

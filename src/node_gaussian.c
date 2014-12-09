@@ -121,7 +121,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
        
        /** ******************** END of FIRST TRY for a root using hybridsj  *******************************************************/
    if(status!=GSL_SUCCESS){/** try other solver **/
-    /*Rprintf("gaussian: using hybridsj failed so re-trying with unscaled hybridj\n"); */
+    /*Rprintf("gaussian: using hybridsj failed so re-trying with unscaled hybridj: nodeid=\n",nodeid+1);*/ 
     iter=0; 
     T = gsl_multiroot_fdfsolver_hybridj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams+1); /** +1 for the precision term */
@@ -184,7 +184,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
      if(gsl_isnan(logscore)){logscore= R_NaN;
                            dag->nodeScoresErrCode[nodeid]=2;} 
    /*}*/
-    
+    /*Rprintf("node=%d logscore=%f\n",nodeid,logscore);*/
     /*** Last Step before return - free all the gsl vectors, matrices, other etc **/
    gsl_vector_free(designmatrix->Y);
    gsl_matrix_free(designmatrix->datamatrix);
