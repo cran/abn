@@ -55,8 +55,8 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
   ### via Graphviz [and Cairo - commented out by Marta Pittavino on 03/10/2014]
   ################################################################################################
   if(trace){
-      if(!require(Rgraphviz)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\n");}
-  ##  if(!require(Cairo)){stop("library Cairo is not available!\nThis can be obtained from CRAN.");}
+      if(!requireNamespace("Rgraphviz", quietly = TRUE)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\n");}
+  ##  if(!requireNamespace("Cairo", quietly = TRUE)){stop("library Cairo is not available!\nThis can be obtained from CRAN.");}
       
       num.traced.searches<-1;## fix at one - one plot output per search
       
@@ -165,7 +165,7 @@ search.hillclimber <- function(score.cache=NULL,num.searches=1,seed=0, verbose=F
     ## create graph object part
     #########################################################
       if(create.graph){
-      if(!require(Rgraphviz)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\nRgraphviz is required is create.graph=TRUE");}
+      if(!requireNamespace("Rgraphviz", quietly = TRUE)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\nRgraphviz is required is create.graph=TRUE");}
       mygraph<-new("graphAM",adjMat=t(con.dag.binary),edgemode="directed");
       return(list(init.score=init.scores,final.score=fin.scores,init.dag=init.mat,final.dag=fin.mat,consensus=con.dag.binary,support.threshold=support.threshold,graph=mygraph));
      } else {

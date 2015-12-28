@@ -1,6 +1,12 @@
 ---------------------------
 -- ChangeLog - abn --
 ---------------------------
+2015-12-22 Pittavino Marta (version 0.86)
+	   INLA routine updated, ERROR and NOTE addressed.
+	
+2014-12-22 Pittavino Marta (version 0.85)
+	   * Published Version v0.85 on CRAN
+	
 2014-12-09 Pittavino Marta (version 0.85)
            * cleanup file to delete additional Makevars added
 

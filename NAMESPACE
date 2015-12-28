@@ -8,3 +8,7 @@ export(
 
 useDynLib(abn)
 importFrom("Cairo",Cairo)     
+importFrom("grDevices", "dev.list", "dev.set")
+importFrom("graphics", "plot")
+importFrom("methods", "initialize", "new")
+importFrom("stats", "complete.cases", "sd", "spline")

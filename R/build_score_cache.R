@@ -180,7 +180,7 @@ FAILED<-FALSE;## to catch any crashes...
                                                                            FAILED<-TRUE;} 
                            used.inla<-FALSE;## flip
                            } else {## use INLA for glm
-                                  if(!require(INLA)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
+                                  if(!requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms
                                   #cat("Using INLA (glm)\n");
@@ -234,7 +234,7 @@ FAILED<-FALSE;## to catch any crashes...
                            ########################################################### 
                                   ## have a glmm, so two options, INLA or C
                                   if(force.method=="notset" || force.method=="INLA"){##  
-                                  if(!require(INLA)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
+                                  if(!requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms
                                   res.inla<-calc.node.inla.glmm(child,

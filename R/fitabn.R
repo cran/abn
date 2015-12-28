@@ -131,7 +131,7 @@ if (verbose) cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                                                          stop("");}
                            used.inla<-FALSE;## flip
                            } else {## use INLA for glm
-                                  if(!require(INLA)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
+                                  if(!requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms 
                                   if (verbose) cat("Using INLA (glm)\n");
@@ -191,7 +191,7 @@ if (verbose) cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                                   ## have a glmm, so two options, INLA or C
                                  
                                   if(force.method=="notset" || force.method=="INLA"){##  
-                                  if(!require(INLA)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
+                                  if(requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms
                                   res.inla<-calc.node.inla.glmm(child,
@@ -439,7 +439,7 @@ if (verbose) cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
       ## Rgraph/graphviz part
       #########################################################
       if(create.graph){
-      if(!require(Rgraphviz)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\nRgraphviz is required is create.graph=TRUE");}
+      if(!requireNamespace("Rgraphviz", quietly=TRUE)){stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install\nRgraphviz is required is create.graph=TRUE");}
       
       mygraph<-new("graphAM",adjMat=t(dag.m),edgemode="directed");
       res.list[["graph"]]<-mygraph;

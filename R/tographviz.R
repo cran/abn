@@ -1,6 +1,6 @@
 ## tographviz.R --- 
 ## Author          : Fraser Lewis
-## Edit by Marta Pittavino
+## Edited by Marta Pittavino
 ## Last Modified on: 01/07/2014
 ################################################################################
 
