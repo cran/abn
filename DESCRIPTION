@@ -1,6 +1,6 @@
 Package: abn
-Version: 0.86
-Date: 2015-12-23
+Version: 1.0
+Date: 2016-01-11
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: c(person("Fraser Ian", "Lewis", role = c("aut"), email = "fraseriain.lewis@uzh.ch"), person("Marta", "Pittavino", role = c("cre","ctb"), email = "marta.pittavino@math.uzh.ch"), person("Reinhard", "Furrer", role = c("ctb"), email = "reinhard.furrer@math.uzh.ch"))
 Author: Fraser Ian Lewis [aut], Marta Pittavino [cre, ctb], Reinhard Furrer [ctb]
@@ -15,6 +15,6 @@ License: GPL (>= 2)
 LazyData: true
 URL: http://www.r-bayesian-networks.org
 NeedsCompilation: yes
-Packaged: 2015-12-23 07:49:16 UTC; martapit
+Packaged: 2016-01-18 10:40:15 UTC; martapit
 Repository: CRAN
-Date/Publication: 2015-12-28 13:57:14
+Date/Publication: 2016-01-18 22:20:23

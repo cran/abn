@@ -1,0 +1,29 @@
+
+
+\name{pigs.vienna}
+\alias{pigs.vienna}
+\non_function{}
+\title{Dataset related to diseases present in `finishing pigs', animals
+about to enter the human food chain at an abattoir.}
+\description{The data we consider here comprise of a randomly chosen
+batch of 50 pigs from each of 500 randomly chosen
+pig producers in the UK. The dataset consists of 25000 observations 10 binary variables and a group variable. These are `finishing pigs', animals
+about to enter the human food chain at an abattoir. Further description of the data set is present on the vignette.}
+\format{A data frame with a mixture of 10 discrete variables, each of which is set as a factor, and a group variable.
+  \describe{
+    \item{PC}{Binary.}
+    \item{PT}{Binary. }
+    \item{MS}{Binary.}
+    \item{HS}{Binary.}
+    \item{TAIL}{Binary.}
+    \item{Abscess}{Binary.}
+    \item{Pyaemia}{Binary.}
+    \item{EPcat}{Binary.}
+    \item{PDcat}{Binary.}
+    \item{plbinary}{Binary.}
+    \item{batch}{Group variable, corresponding to the 500 different pig producers}
+    }
+ }
+
+\keyword{datasets}
+
