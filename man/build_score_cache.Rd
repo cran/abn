@@ -33,8 +33,8 @@ buildscorecache(data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
   \item{data.dists}{a named list giving the distribution for each node in the network, see details} 
   \item{group.var}{only applicable for nodes to be fitted as a mixed model and gives the column name in \code{data.df} of the grouping variable which must be a factor denoting group membership}
   \item{cor.vars}{a character vector giving the column names in \code{data.df} for which a mixed model should be used to adjust for within group correlation}
-  \item{dag.banned}{a matrix defining which arcs are not permitted - banned - see details for format. Note that colnames and rownames must be set. }
-  \item{dag.retained}{a matrix defining which arcs are must be retained in any model search, see details for format. Note that colnames and rownames must be set}
+  \item{dag.banned}{a matrix defining which arcs are not permitted - banned - see details for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed}
+  \item{dag.retained}{a matrix defining which arcs are must be retained in any model search, see details for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed}
   \item{max.parents}{a constant or named list giving the maximum number of parents allowed, the list version allows this to vary per node.}
   \item{which.nodes}{a vector giving the column indices of the variables to be included, if ignored all variables are included}
   \item{defn.res}{an optional user-supplied list of child and parent combinations, see details}

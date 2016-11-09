@@ -2,7 +2,7 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 \documentclass[nojss]{jss}
 %\include{graphicx}
-\usepackage[nogin]{Sweave}
+%\usepackage[nogin]{Sweave}
 
 \usepackage{multicol} % This is so we can have multiple columns of text side-by-side
 \columnsep=100pt % This is the amount of white space between the columns in the poster
@@ -42,7 +42,7 @@ formatcom=\color{DarkGreen}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% declarations for jss.cls - journal of statistical software
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\author{Marta Pittavino, Fraser Lewis, Reinhard Furrer}
+\author{Gilles Kratzer, Marta Pittavino, Fraser Lewis, Reinhard Furrer}
 \title{\textit{abn}: an \proglang{R} package for modelling multivariate 
 data using additive Bayesian networks}
 
@@ -62,6 +62,11 @@ This vignette describes the \proglang{R} package \pkg{abn} which provides functi
 \Plainkeywords{Graphical models, additive models, structure learning, exact order based search, parametric bootstrapping, JAGS, MCMC, parameter learning, heuristic search}
 
 \Address{
+  Gilles Kratzer\\
+  Institute of Mathematics, University of Zurich\\
+  Winterthurerstrasse 190, Zurich 8057, Switzerland\\
+  E-mail: \email{gilles.kratzer@math.uzh.ch}\\ 
+
   Marta Pittavino\\
   Institute of Mathematics, University of Zurich\\
   Winterthurerstrasse 190, Zurich 8057, Switzerland\\
@@ -81,11 +86,11 @@ This vignette describes the \proglang{R} package \pkg{abn} which provides functi
 
 %% need no \usepackage{Sweave.sty}
 %%\SweaveOpts{echo=FALSE,keep.source=TRUE}
-\SweaveOpts{keep.source=TRUE,echo=FALSE,eps=FALSE,pdf=TRUE,width=11.69,height=8.27,prefix.string=abn_v10}
+%\SweaveOpts{keep.source=TRUE,echo=FALSE,eps=FALSE,pdf=TRUE,width=11.69,height=8.27,prefix.string=abn_v10}
 \newcommand{\deep}{\setlength{\jot}{12pt}}
 \newcommand{\nodeep}{\setlength{\jot}{3pt}}
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+%\SweaveOpts{concordance=TRUE}
 \setkeys{Gin}{width=1.0\textwidth}
 %----------------------------------------------------------------------------------------
 \section{Introduction}

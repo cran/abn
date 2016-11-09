@@ -1,5 +1,5 @@
 7f1783db190ae97f4d0f3c50972390a0 *ChangeLog
-181976555918348d79f9337ee225b13f *DESCRIPTION
+89a88e6fa9af7cd9a51b62be2f62e0fb *DESCRIPTION
 2f83b93c6a65ef36ee82fce9d333de2f *NAMESPACE
 4a366b65083982339a14ac1347f1499f *R/abn-internal.R
 efdc26ca58b7d48d86b0d200fd9f1083 *R/build_score_cache.R
@@ -10,7 +10,7 @@ f88fc90904fcad527c87f6e188584f3d *R/calc_node_inla_glmm.R
 857bb86deb35a81a677b867193a5e564 *R/mostprobable.R
 c238166ede57fcae6bdc54ff1ee69fe7 *R/search_hillclimber.R
 1c79cc8716cda48038ef57a7d090f148 *R/tographviz.R
-7117a26f7897119f61a68f4527805b1d *build/vignette.rds
+47a0766ebb989cfb6397051f1b97da5a *build/vignette.rds
 67c9db5dc1a8e12ccf5880ffe206ce56 *cleanup
 c076edef17cf551dbb86dc6a88b40570 *configure
 ad6251766527d7a81c30b4073802616a *configure.ac
@@ -39,11 +39,14 @@ f76160191ce7833d585dda594428b389 *inst/bootstrapping_example/jags_pigs_script.R
 1ec8c6aa3e4d72389d645716356efebb *inst/bootstrapping_example/pigs_post_params.R
 48b6d9f03b7f95878151d74b81193745 *inst/bootstrapping_example/script1.R
 0671a342cc3e85e14ef51eb30c4cb56a *inst/bootstrapping_example/simulate_1par.bug
-00f2472956355ef6fcd20311bd142329 *inst/doc/abn_v1.0.R
-907a8561d84e2880b425c96faedbc159 *inst/doc/abn_v1.0.Rnw
-c5448e38e1e54f8aba4b5ff2b037ea8f *inst/doc/abn_v1.0.pdf
+46b7999e87e39327021813dea3c1de29 *inst/doc/abn_v1.0.2.R
+a73a52ab21bc415f0a2ad08c5b703b24 *inst/doc/abn_v1.0.2.Rnw
+79c3694e62338c078ad33d891db32881 *inst/doc/abn_v1.0.2.pdf
+47571375a8e9e1d9f1200925edbb37e0 *inst/tests/test.R
+020c08f2bbecf5867806bbb66f7d9a2f *inst/tests/testdata/buildscorecache_ex1.Rdata
+2980ac038ce41407030f522db8e162fa *inst/tests/testdata/fitabn_ex0.Rdata
 55691f86625075f62c18de7019bf0af2 *man/abninla-internal.Rd
-ce3aa08e1a6c23fbcd54ae1e2415edc1 *man/build_score_cache.Rd
+80ef7ff34d297be4f5a4bbff297421ee *man/build_score_cache.Rd
 d5ff7c457e4cc5684a46e7e069fa50eb *man/dag_ex0.Rd
 9cd030ce67d893925c38c3a78eef68c8 *man/dag_ex1.Rd
 1511c17091307f9d193a54bbfee03590 *man/dag_ex2.Rd
@@ -109,8 +112,8 @@ a0275e92692042a3a3c7dc2e2e227665 *vignettes/PigsArea.png
 68e948e277bf8ba8320b3a3efa2ff03d *vignettes/Pigs_PostBootPlots.pdf
 d92ce4b0e2efa3e2d82e2a7f277b8a9c *vignettes/Summary.png
 15a80dc3c2707e0b538df36797fb096d *vignettes/abn.bib
-907a8561d84e2880b425c96faedbc159 *vignettes/abn_v1.0.Rnw
-df84d4481df890492592a114bbd81272 *vignettes/abn_v10-newfile.pdf
+a90980520d8d40b79b9bf2588ac697c1 *vignettes/abn_v1.0.2-concordance.tex
+a73a52ab21bc415f0a2ad08c5b703b24 *vignettes/abn_v1.0.2.Rnw
 eb27b9008e47b2dbfde6cfa20f296938 *vignettes/dagcon.pdf
 2fb39b851e85388b1515db6bfb9e7780 *vignettes/dagcon.png
 83f998e7348c4a86da5140de5c91388a *vignettes/map1_10var.dot
