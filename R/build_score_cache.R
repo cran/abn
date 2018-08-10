@@ -1,7 +1,8 @@
 ###############################################################################
 ## buildscorecache.R --- 
-## Author          : Fraser Lewis
+## Author          : Fraser Lewis & Gilles Kratzer
 ## Last modified   : 02/12/2012
+##                 : 06/12/2016 GK, implementation of formula (dag.banned, dag.retained)
 ###############################################################################
 
 ## fit a given DAG to data
@@ -32,12 +33,45 @@ buildscorecache <- function(data.df=NULL, data.dists=NULL, group.var=NULL,cor.va
    ## run series of checks on the arguments
    mylist<-check.valid.data(data.df,data.dists,group.var);## return a list with entries bin, gaus, pois, ntrials and exposure
 
-   ## run a series of common sense checks on the banned DAG and retain DAG
-      if(!is.null(dag.banned)){check.valid.dag(dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var);
-      } else {dag.banned<-check.valid.dag(dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var);} ##if null just create empty mat and return
-
-      if(!is.null(dag.retained)){check.valid.dag(dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var);
-      } else {dag.retained<-check.valid.dag(dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var);} ##if null just create empty mat and return
+   ## Formula transformation and run a series of common sense checks on the banned DAG and retain DAG
+   
+   #test for dag
+   if(!is.null(dag.banned)){
+     if(is.matrix(dag.banned)){
+       ## run a series of checks on the DAG passed
+       dag.banned <- check.valid.dag(dag.m=dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var)
+     } else {
+       if(grepl('~',as.character(dag.banned)[1],fixed = T)){
+         dag.banned <- formula.abn(f = dag.banned,name = colnames(data.df))
+         ## run a series of checks on the DAG passed
+         dag.banned <- check.valid.dag(dag.m=dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var)
+       }
+     }}
+   else {
+     dag.banned <- check.valid.dag(dag.m=dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var)
+   }
+   
+   #test for dag
+   if(!is.null(dag.retained)){
+     if(is.matrix(dag.retained)){
+       ## run a series of checks on the DAG passed
+       dag.retained <- check.valid.dag(dag.m=dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
+     } else {
+       if(grepl('~',as.character(dag.retained)[1],fixed = T)){
+         dag.retained <- formula.abn(f = dag.retained,name = colnames(data.df))
+         ## run a series of checks on the DAG passed
+         dag.retained <- check.valid.dag(dag.m=dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
+       }
+     }}
+   else {
+     dag.retained <- check.valid.dag(dag.m=dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
+   }
+   
+      # if(!is.null(dag.banned)){dag.banned<-check.valid.dag(dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var);
+      # } else {dag.banned<-check.valid.dag(dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var);} ##if null just create empty mat and return
+      # 
+      # if(!is.null(dag.retained)){dag.retained<-check.valid.dag(dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var);
+      # } else {dag.retained<-check.valid.dag(dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var);} ##if null just create empty mat and return
 
     ## check max.parents is a list with suitable entries      
       if(is.null(defn.res)){## not supplying custom parent sets
@@ -146,10 +180,13 @@ FAILED<-FALSE;## to catch any crashes...
                            dag.m[child,]<-defn.res[["node.defn"]][row.num,];## set parent combination                          
                            orig.force.method<-NULL;
                            used.inla<-TRUE;
+                           
                            ####################################################
                            ### First case is the node a GLM
                            ####################################################
-                           if( !(child%in%grouped.vars)){## only compute option here is C since fast and INLA slower and less reliable
+                           
+                           if( !(child%in%grouped.vars)){
+                             ## only compute option here is C since fast and INLA slower and less reliable
                                if(force.method=="notset" || force.method=="C"){
                                  #cat("Using internal code (Laplace glm)\n");
                                  r<-try(res.c <- .Call("fit_single_node",

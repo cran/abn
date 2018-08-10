@@ -1,8 +1,9 @@
 ###############################################################################
 ## fitabn.R --- 
-## Author          : Fraser Lewis
+## Author          : Fraser Lewis & Gilles Kratzer
 ## Last modified   : 02/12/2012
 ## Last modified   : 29/09/2014 by Marta Pittavino, just renamed.
+##                 : 06/12/2016 by GK (implementation of formula statment)
 ###############################################################################
 
 ## fit a given DAG to data
@@ -34,8 +35,24 @@ fitabn <- function(dag.m=NULL, data.df=NULL, data.dists=NULL, group.var=NULL,cor
    ## run series of checks on the arguments
    mylist<-check.valid.data(data.df,data.dists,group.var);## return a list with entries bin, gaus, pois, ntrials and exposure
 
+   #test for dag.m
+   if(!is.null(dag.m)){
+     if(is.matrix(dag.m)){
+       ## run a series of checks on the DAG passed
+       dag.m <- check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
+     } else {
+       if(grepl('~',as.character(dag.m)[1],fixed = T)){
+         dag.m <- formula.abn(f = dag.m,name = colnames(data.df))
+         ## run a series of checks on the DAG passed
+         dag.m <- check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
+       }
+     }}
+   else {
+     stop("Dag specification must either be a matrix or a formula expression")
+   }
+   
    ## run a series of checks on the DAG passed
-   check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var);
+   #dag.m<-check.valid.dag(dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
 
    ## check grouping variables
    list.group.var<-check.valid.groups(group.var,data.df,cor.vars);## returns ammended data.df and suitable variables
@@ -191,7 +208,7 @@ if (verbose) cat("###### Processing...Node ",rownames(dag.m)[child],"\n");
                                   ## have a glmm, so two options, INLA or C
                                  
                                   if(force.method=="notset" || force.method=="INLA"){##  
-                                  if(requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
+                                  if(!requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from http://www.r-inla.org/download\nAfter installation please use inla.upgrade() to get the latest version (this is required)");}
                                   mean.intercept<-mean;## use same as for rest of linear terms 
                                   prec.intercept<-prec;## use same as for rest of linear terms
                                   res.inla<-calc.node.inla.glmm(child,

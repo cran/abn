@@ -1,8 +1,132 @@
 ###############################################################################
 ## abn-internal.R --- 
-## Author          : Fraser Lewis
-## Last modified   : 03/08/2012
+## Author          : Gilles Kratzer and Fraser Lewis
+## Document created   : 03/08/2012
+## Last modification  : 23.11.2016 (GK)
+## Last modification  :
 ###############################################################################
+
+##-------------------------------------------------------------------------
+##Internal function that call multiple times strsplit() and remove space
+##-------------------------------------------------------------------------
+
+strsplits <- function(x, splits, ...)
+{
+  for (split in splits)
+  {
+    x <- unlist(strsplit(x, split, ...))
+  }
+  x<-gsub(" ", "", x, fixed = TRUE) #remove space
+  return(x[!x == ""]) # Remove empty values
+}
+
+##-------------------------------------------------------------------------
+##Internal function that produce a square matrix length(name) with {0,1}
+##depending on f.
+##f have to start with ~
+##terms are entries of name
+##terms are separated by +
+## term1 | term2 indicates col(term1) row(term2) puts a 1
+## term1 | term2:term3: ... : is used as a sep 
+## . = all terms in name
+##-------------------------------------------------------------------------
+
+formula.abn<-function(f, name){
+  
+  name_orignial<-name
+  
+  f<-as.character(f)
+    
+  ##tests for consistence ----------------------------------------------------------------------
+  ##start as a formula
+  if(!grepl('~',f[1],fixed = T)){stop("DAG specifications should start with a ~")}
+  
+  ##transformation name + or | or : or . or name to name_name
+  if(sum((c("+", "|", ":", ".") %in% unlist(strsplit(name,split = c("")))))!=0){
+    for(i in 1:length(name)){
+      if(sum(unlist(strsplit(name[i],split = c(""))) %in% c("+"))!=0){
+        f[[2]]<-gsub(name[i],gsub("+", "_", name[i],fixed = TRUE),f[[2]],fixed = TRUE)
+        name[i]<-gsub("+", "_", name[i],fixed = TRUE)
+      }
+      if(sum(unlist(strsplit(name[i],split = c(""))) %in% c("|"))!=0){
+        f[[2]]<-gsub(name[i],gsub("|", "_", name[i],fixed = TRUE),f[[2]],fixed = TRUE)
+        name[i]<-gsub("|", "_", name[i],fixed = TRUE)
+      }
+      if(sum(unlist(strsplit(name[i],split = c(""))) %in% c(":"))!=0){
+        f[[2]]<-gsub(name[i],gsub(":", "_", name[i],fixed = TRUE),f[[2]],fixed = TRUE)
+        name[i]<-gsub(":", "_", name[i],fixed = TRUE)
+      }
+      if(sum(unlist(strsplit(name[i],split = c(""))) %in% c("."))!=0){
+        f[[2]]<-gsub(name[i],gsub(".", "_", name[i],fixed = TRUE),f[[2]],fixed = TRUE)
+        name[i]<-gsub(".", "_", name[i],fixed = TRUE)
+      }
+      }
+  }
+  
+  ##collapse name
+  name.c<-paste(name, collapse=':')
+  ##Split by terms
+  f.p<-strsplit(x = f[[2]],split = "+", fixed=TRUE)
+  
+  ##nothing more than name variable in the dag formula
+  tmp.test<-strsplits(x = f[[2]],splits = c("+", "|", ":", "."), fixed=TRUE)
+  if(sum(!(tmp.test %in% name))!=0){stop("DAG formulation contains some variables not in provided names")}
+  ##End of tests for consistence ----------------------------------------------------------------
+  
+  ##creat the void matrix
+  out<-matrix(data = 0,nrow = length(name),ncol = length(name))
+  
+  ##delete all spaces
+  f.p<-gsub(" ", "", f.p[[1]], fixed = TRUE)
+  
+  ##replace "." by all names
+  f.p.completed<-gsub(".",name.c,f.p, fixed = TRUE)
+  
+  ##atomization of left term
+  
+  
+  ##contruction of the output matrix
+  for(i in 1:length(f.p)){
+    tmp<-f.p.completed[i]
+    
+    ##forget unique terms -> test for |
+    if(grepl('|',tmp,fixed = TRUE)){
+      
+      ##split wrt |
+      tmp.p<-strsplit(x = tmp,split = "|", fixed=TRUE)
+      
+      ##test for multiple terms and contruction of the list first term
+      if(grepl(':',tmp.p[[1]][1])){tmp.p.p.1<-strsplit(x = tmp.p[[1]][1],split = ":", fixed=TRUE)}
+      if(!grepl(':',tmp.p[[1]][1])){tmp.p.p.1<-tmp.p[[1]][1]}
+      
+      ##test for multiple terms and contruction of the list second term
+      if(grepl(':',tmp.p[[1]][2])){tmp.p.p.2<-strsplit(x = tmp.p[[1]][2],split = ":", fixed=TRUE)}
+      if(!grepl(':',tmp.p[[1]][2])){tmp.p.p.2<-tmp.p[[1]][2]}
+      
+      ##loop over the 
+      for(j in 1:length(tmp.p.p.1[[1]])){
+        for(k in 1:length(tmp.p.p.2[[1]])){
+          ##update of matrix
+          out[grep(tmp.p.p.1[[1]][j],name),grep(tmp.p.p.2[[1]][k],name)]<-1
+          
+        }
+      }
+    }
+    
+  }
+  
+  ##avoid auto dependance
+  diag(out)<-0
+  
+  ##only 0 and 1
+  out[out>1] <- 1
+  
+  ##naming
+  colnames(out)<-name_orignial
+  rownames(out)<-name_orignial
+  ##output
+  return(out)
+}
 
 ########################################################################################################################
 ## a set of simple commonsense validity checks on the data.df and data.dists arguments
@@ -74,15 +198,33 @@ check.valid.dag <- function(dag.m=NULL,data.df=NULL, is.ban.matrix=NULL,group.va
     if(is.null(dag.m)){## want ban matrix 
                        dag.m<-matrix(rep(0,dim(data.df)[2]^2),ncol=dim(data.df)[2]);
                        colnames(dag.m)<-rownames(dag.m)<-names(data.df); ##names must be set
-    return(dag.m); ## finished
+    return(dag.m) ## finished
     }
 
-    ## check dag is in a matrix
-    if(!is.matrix(dag.m)){stop("The DAG definition dag.m must be in a matrix");}
+  if(!is.matrix(dag.m)){
+    if(grepl('~',as.character(dag.m)[1],fixed = T)){
+      dag.m <- formula.abn(f = dag.m,name = names(data.df))
+      return(dag.m)
+    } else {
+      stop("Dag specification must either be a matrix or a formula expresion")
+    }
+  }
+  if(is.matrix(dag.m)){
+    return(dag.m)
+  }
+  
+    ## check dag is in a matrix -> obsolet
+    #if(!is.matrix(dag.m)){stop("The DAG definition dag.m must be in a matrix");}
 
     ## check data for missing names
-    if(is.null(colnames(dag.m)) || is.null(rownames(dag.m))){stop("dag.m must have both row and column names set");}
-
+    if(is.null(colnames(dag.m)) || is.null(rownames(dag.m)) ){ 
+      if(!is.null(data.df)){
+        cat("t")
+        colnames(dag.m)<-rownames(dag.m)<-names(data.df)
+        }
+      
+    else {stop("dag.m must have both row and column names set or a named dataset has to be provided")}
+    }
     ## check dimension
     if(dim(dag.m)[1]!=dim(data.df)[2] || dim(dag.m)[2]!=dim(data.df)[2] ){stop("dag.m as dimension inconsistent with data.df");}
 

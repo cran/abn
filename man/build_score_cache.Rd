@@ -1,6 +1,8 @@
 % buildscorecache.Rd --- 
-% Author           : Fraser Lewis
-% Last modified on : 03/08/2012 
+% Author           : Fraser Lewis & Gilles Kratzer
+% Created on :       03/08/2012 
+% Last modification : 01/12/2016
+% Last modification : 01/03/2017
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{buildscorecache}
 
@@ -33,22 +35,22 @@ buildscorecache(data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
   \item{data.dists}{a named list giving the distribution for each node in the network, see details} 
   \item{group.var}{only applicable for nodes to be fitted as a mixed model and gives the column name in \code{data.df} of the grouping variable which must be a factor denoting group membership}
   \item{cor.vars}{a character vector giving the column names in \code{data.df} for which a mixed model should be used to adjust for within group correlation}
-  \item{dag.banned}{a matrix defining which arcs are not permitted - banned - see details for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed}
-  \item{dag.retained}{a matrix defining which arcs are must be retained in any model search, see details for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed}
+  \item{dag.banned}{a matrix or a formula statement (see details for format) defining which arcs are not permitted - banned - see details for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed}
+  \item{dag.retained}{a matrix or a formula statement (see details for format) defining which arcs are must be retained in any model search, see details for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed}
   \item{max.parents}{a constant or named list giving the maximum number of parents allowed, the list version allows this to vary per node.}
   \item{which.nodes}{a vector giving the column indices of the variables to be included, if ignored all variables are included}
   \item{defn.res}{an optional user-supplied list of child and parent combinations, see details}
   \item{dry.run}{if TRUE then a list of the child nodes and parent combinations are returned but without estimation of node scores (log marginal likelihoods)}
  \item{max.mode.error}{if the estimated modes from INLA differ by a factor of max.mode.error or more from those computed internally then results from INLA are replaced by those computed internally. To force INLA to always be used then max.mode.error=100, to force INLA to never be used max.mod.error=0. See details.}  
   \item{verbose}{if TRUE then provides some additional output}
-  \item{centre}{should the observations in each Gaussian node first be standarised to mean zero and standard deviation one, defaults to TRUE}
+  \item{centre}{should the observations in each Gaussian node first be standardised to mean zero and standard deviation one, defaults to TRUE}
   \item{mean}{the prior mean for all the Gaussian additive terms for each node}
   \item{prec}{the prior precision for all the Gaussian additive term for each node}
   \item{loggam.shape}{the shape parameter in the Gamma distribution prior for the precision in a Gaussian node}
   \item{loggam.inv.scale}{the inverse scale parameter in the Gamma distribution prior for the precision in a Gaussian node}
    \item{max.iters}{total number of iterations allowed when estimating the modes in Laplace approximation}
   \item{epsabs}{absolute error when estimating the modes in Laplace approximation for models with no random effects.}
-  \item{error.verbose}{logical,additional output in the case of errors occuring in the optimisation}
+  \item{error.verbose}{logical,additional output in the case of errors occurring in the optimisation}
    \item{epsabs.inner}{absolute error in the maximisation step in the (nested) Laplace approximation for each random effect term}
    \item{max.iters.inner}{total number of iterations in the maximisation step in the nested Laplace approximation}
   \item{finite.step.size}{suggested step length used in finite difference estimation of the derivatives for the (outer) Laplace approximation when estimating modes}
@@ -56,7 +58,7 @@ buildscorecache(data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
 \item{max.iters.hessian}{integer, maximum number of iterations to use when determining an optimal finite difference approximation (nelder-mead)}
 \item{max.hessian.error}{if the estimated log marginal likelihood when using an adaptive 5pt finite difference rule for the Hessian differs by more than max.hessian.error from when using an adaptive 3pt rule then continue to minimize the local error by switching to the Brent-Dekker root bracketing method, see details} 
 \item{factor.brent}{if using Brent-Dekker root bracketing method then define the outer most interval end points as the best estimate of h (stepsize) from the nelder-mead as (h/factor.brent,h*factor.brent)}
-\item{maxiters.hessian.brent}{maximum number of interations allowed in the Brent-Dekker method}
+\item{maxiters.hessian.brent}{maximum number of iterations allowed in the Brent-Dekker method}
 \item{num.intervals.brent}{the number of initial different bracket segments to try in the Brent-Dekker method}
 }
 
@@ -68,13 +70,13 @@ buildscorecache(data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
 \item{error.code}{if non-zero then either the root finding algorithm (glm nodes) or the maximisation algorithm (glmm nodes) terminated in an unusual way suggesting a possible unreliable result, or else the finite difference hessian estimation produced and error or warning (glmm nodes)}
 \item{error.code.desc}{a textual description of the error.code}
 \item{hessian.accuracy}{An estimate of the error in the final mlik value for each parent combination - this is the absolute difference between two different adaptive finite difference rules where each computes the mlik value.}
-\item{data.df}{a version of the original data (for internal use only in other functions such as mostprobable()).}
+\item{data.df}{a version of the original data (for internal use only in other functions such as \code{\link{mostprobable}}).}
 }
 
 \details{
 This function is used to calculate all individual node scores (log marginal likelihoods). This cache can then be fed into a model search algorithm. This function is very similar to \code{\link{fitabn}} - see that help page for details of the type of models used and in particular data.dists specification - but rather than fit a single complete DAG \code{buildscorecache} iterates over all different parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents), where this can differ from node to node. In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied they are assumed to be empty matrices, i.e. no arcs banned or retained. Note that only rudimentary consistency checking is done here and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
 
-The variable \code{which.nodes} is to allow the computation to be separated by node, for example over different cpus using say R CMD BATCH. This may useful and indeed likely essential with larger problems or those with random effects. Note that in this case the results must then be combined back into a list of identical format to that produced by an individual call to buildscorecache, comprising of all nodes (in same order as the columns in data.df) before sending to any search routines. Using \code{dry.run} can be useful here.  
+The variable \code{which.nodes} is to allow the computation to be separated by node, for example over different cpus using say R CMD BATCH. This may useful and indeed likely essential with larger problems or those with random effects. Note that in this case the results must then be combined back into a list of identical format to that produced by an individual call to \code{buildscorecache}, comprising of all nodes (in same order as the columns in data.df) before sending to any search routines. Using \code{dry.run} can be useful here.  
 
 The numerical routines used here are identical to those in \code{\link{fitabn}} and see that help page for further details and also the quality assurance section on the \href{www.r-bayesian-networks.org}{abn website} for more details.
  
@@ -92,6 +94,7 @@ The numerical routines used here are identical to those in \code{\link{fitabn}} 
 #################################################################
 ## Example 1
 #################################################################
+
 mydat<-ex0.dag.data[,c("b1","b2","g1","g2","b3","g3")];## take a subset of cols
 
 ## setup distribution list for each node
@@ -201,10 +204,6 @@ mycache<-buildscorecache(data.df=mydat,data.dists=mydists,group.var="group",
                                     "b8","b9","b10",
                                     "b11","b12","b13"),
                          max.parents=max.par, which.nodes=c(1));
-
-
-}
-
-}
+}}
 
 \keyword{laplace}

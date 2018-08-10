@@ -1,0 +1,21 @@
+model{
+
+###-----------------------
+###Binomial nodes
+###-----------------------
+a ~ dbern(p.a); #Binary response
+logit(p.a) <- 0 + 1.09861228866811*b; #Logistic regression 
+
+###-----------------------
+###Binomial nodes
+###-----------------------
+b ~ dbern(p.b); #Binary response
+logit(p.b) <- 0 + 1.09861228866811*c; #Logistic regression 
+
+###-----------------------
+###Binomial nodes
+###-----------------------
+c ~ dbern(p.c); #Binary response
+logit(p.c) <- 0; #Logistic regression 
+
+}

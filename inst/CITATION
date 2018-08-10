@@ -1,0 +1,28 @@
+citHeader("To cite `abn` modelling approach and `abn` package in publication use:")
+
+citEntry(entry = "Article",
+  title        = "Improving epidemiologic data analyses through multivariate regression modelling",
+  author       = personList(as.person("Lewis, Fraser Ian"), as.person("Ward, Michael P")),
+  journal      = "Emerging themes in epidemiology",
+  volume       = "10",
+  number       = "1",
+  pages        = "4",
+  year         = "2013",
+  publisher    ="BioMed Central",
+  
+  textVersion  =
+  paste("Lewis, F. I., & Ward, M. P. (2013). Improving epidemiologic data analyses through multivariate regression modelling. Emerging themes in epidemiology, 10(1), 4."),
+)
+
+
+citEntry(entry = "Manual",
+    title = "abn: an R package for modelling multivariate data using additive Bayesian networks",
+    author = personList(as.person("Gilles Kratzer"), as.person("Marta Pittavino"), as.person("Lewis Fraser Ian"), as.person("Lewis, Fraser I")),
+    year = "2017",
+    note = "R package version 1.1",
+    url = "https://CRAN.R-project.org/package=abn",
+
+  textVersion  =
+  paste("Kratzer, G. , Pittavino, M, Lewis, F. I. and Reinhard, (2017). abn: an R package for modelling multivariate data using additive Bayesian networks. R package version 1.1.
+  https://CRAN.R-project.org/package=abn"),
+)

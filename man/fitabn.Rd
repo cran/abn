@@ -1,8 +1,11 @@
 % fitabn.Rd --- 
-% Author    :  Fraser Lewis
-% Maintainer:  Marta Pittavino
+% Author    :       Fraser Lewis
+% Maintainer:       Marta Pittavino
+% Last Modified By: Marta Pittavino
+% Last Modified On: Gilles Kratzer
 % Last modified on : 26/09/2012 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \name{fitabn}
 \alias{fitabn}
 \encoding{latin1}
@@ -10,7 +13,7 @@
 
 \title{Fit an additive Bayesian network model}
 
-\description{Fits an additive Bayesian network to observed data and is equivalent to Bayesian multi-dimensional regression modeling. Two numerical options are available, standard Laplace approximation or else an integrated nested Laplace approximation provided via a call to the R INLA library (see www.r-inla.org - this is not hosted on CRAN).}
+\description{Fits an additive Bayesian network to observed data and is equivalent to Bayesian multi-dimensional regression modelling. Two numerical options are available, standard Laplace approximation or else an integrated nested Laplace approximation provided via a call to the R INLA library (see www.r-inla.org - this is not hosted on CRAN).}
 
 \usage{
 
@@ -28,7 +31,7 @@ fitabn(dag.m=NULL, data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
   
 %- maybe also `usage' for other objects documented here.
 \arguments{ 
-  \item{dag.m}{a matrix defining the network structure, a directed acyclic graph (DAG), see details for format. Note that colnames and rownames must be set}
+  \item{dag.m}{a matrix or a formula statement (see details) defining the network structure, a directed acyclic graph (DAG), see details for format. Note that colnames and rownames must be set}
   \item{data.df}{a data frame containing the data used for learning the network, binary variables must be declared as factors and no missing values all allowed in any variable}
   \item{data.dists}{a named list giving the distribution for each node in the network, see details}
   \item{group.var}{only applicable for mixed models and gives the column name in \code{data.df} of the grouping variable (which must be a factor denoting group membership)}
@@ -39,47 +42,49 @@ fitabn(dag.m=NULL, data.df=NULL, data.dists=NULL, group.var=NULL,cor.vars=NULL,
   \item{prec}{the prior precision for all the Gaussian additive terms for each node.}
   \item{loggam.shape}{the shape parameter in the Gamma distributed prior for the precision in any Gaussian nodes, also used for group level precision is applicable.}
   \item{loggam.inv.scale}{the inverse scale parameter in the Gamma distributed prior for the precision in any Gaussian nodes, also used for group level precision is applicable. }
-  \item{verbose}{if TRUE then provides some additional output, in particular the code used to call INLA, if applicable.}
-  \item{centre}{should the observations in each Gaussian node first be standarised to mean zero and standard deviation one}
+  \item{verbose}{if \code{TRUE} then provides some additional output, in particular the code used to call INLA, if applicable.}
+  \item{centre}{should the observations in each Gaussian node first be standardised to mean zero and standard deviation one}
   \item{max.mode.error}{if the estimated modes from INLA differ by a factor of max.mode.error or more from those computed internally then results from INLA are replaced by those computed internally. To force INLA to always be used then max.mode.error=100, to force INLA to never be used max.mod.error=0. See details.}  
   \item{max.iters}{total number of iterations allowed when estimating the modes in Laplace approximation}
   \item{epsabs}{absolute error when estimating the modes in Laplace approximation for models with no random effects.}
-  \item{error.verbose}{logical,additional output in the case of errors occuring in the optimisation}
+  \item{error.verbose}{logical,additional output in the case of errors occurring in the optimisation}
   \item{epsabs.inner}{absolute error in the maximisation step in the (nested) Laplace approximation for each random effect term}
   \item{max.iters.inner}{total number of iterations in the maximisation step in the nested Laplace approximation}
   \item{finite.step.size}{suggested step length used in finite difference estimation of the derivatives for the (outer) Laplace approximation when estimating modes}
-  \item{hessian.params}{a numeric vector giving parameters for the adaptive algorithm which determines the optimal stepsize in the finite difference estimation of the hessian. First entry is the inital guess, second entry absolute error}
+  \item{hessian.params}{a numeric vector giving parameters for the adaptive algorithm which determines the optimal step size in the finite difference estimation of the Hessian. First entry is the initial guess, second entry absolute error}
 \item{max.iters.hessian}{integer, maximum number of iterations to use when determining an optimal finite difference approximation (nelder-mead)}
 \item{max.hessian.error}{if the estimated log marginal likelihood when using an adaptive 5pt finite difference rule for the Hessian differs by more than max.hessian.error from when using an adaptive 3pt rule then continue to minimize the local error by switching to the Brent-Dekker root bracketing method, see details} 
 \item{factor.brent}{if using Brent-Dekker root bracketing method then define the outer most interval end points as the best estimate of h (stepsize) from the nelder-mead as (h/factor.brent,h*factor.brent)}
-\item{maxiters.hessian.brent}{maximum number of interations allowed in the Brent-Dekker method}
+\item{maxiters.hessian.brent}{maximum number of iterations allowed in the Brent-Dekker method}
 \item{num.intervals.brent}{the number of initial different bracket segments to try in the Brent-Dekker method}
 \item{min.pdf}{the value of the posterior density function below which we stop the estimation, only used when computing marginals, see details.} 
 \item{n.grid}{recompute density on an equally spaced grid with \code{n.grid} points.}
 \item{std.area}{logical, should the area under the estimated posterior density be standardised to exactly one, useful for error checking.} 
 \item{marginal.quantiles}{vector giving quantiles at which to compute the posterior marginal distribution at.}
 \item{max.grid.iter}{gives number of grid points to estimate posterior density at when not explicitly specifying a grid, used to avoid excessively long computation.}
-\item{marginal.node}{used in conjuction with \code{marginal.param} to allow bespoke estimate of a marginal density over a specific grid. value from 1 to number of nodes.} 
+\item{marginal.node}{used in conjunction with \code{marginal.param} to allow bespoke estimate of a marginal density over a specific grid. value from 1 to number of nodes.} 
  \item{marginal.param}{used in conjunction with \code{marginal.node}. value of 1 is for intercept, see modes entry in results for appropriate number.}
 \item{variate.vec}{a vector containing the places to evaluate the posterior marginal density, must be supplied if \code{marginal.node} is not null}
 }
 
 \details{
- The procedure \code{fitabn} fits an additive Bayesian network model to data where each node (variable - a column in data.df) can be either: presence/absence (Bernoulli); continuous (Gaussian); or an unbounded count (Poisson). The model comprises of a set of conditionally independent generalized linear regressions with or without random effects. Internal code is used by default for numerical estimation in nodes without random effects, and INLA is the default for nodes with random effects. This default behaviour can be over-ridden using max.mode.error. The default is \code{max.mode.error=10} which means that the modes estimated from INLA output must be within 10\% of those estimated using internal code, otherwise internal code is used rather than INLA. To force the use of INLA on all nodes use max.mode.error=100 which then ignores this check, to force the use of internal code then use max.mode.error=0. For the numerical reliability and perform of abn see \url{http://www.r-bayesian-networks.org/quality-assurance}. Generally speaking INLA can be extremely fast and accurate, but in a number of cases it can perform very poorly and so some care is required (which is why there is an internal check on the modes). Binary variables must be declared as factors with two levels, and the argument data.dists must be a list with named arguments, one for each of the variables in \code{data.df} (except a grouping variable - if present), where each entry is either "poisson","binomial", or "gaussian", see examples below. The "poisson" and "binomial" distributions use log and logit link functions respectively. Note that "binomial" here actually means only binary, one bernoulli trial per row in data.df. 
+ The procedure \code{fitabn} fits an additive Bayesian network model to data where each node (variable - a column in data.df) can be either: presence/absence (Bernoulli); continuous (Gaussian); or an unbounded count (poisson). The model comprises of a set of conditionally independent generalized linear regressions with or without random effects. Internal code is used by default for numerical estimation in nodes without random effects, and INLA is the default for nodes with random effects. This default behaviour can be over-ridden using max.mode.error. The default is \code{max.mode.error=10} which means that the modes estimated from INLA output must be within 10\% of those estimated using internal code, otherwise internal code is used rather than INLA. To force the use of INLA on all nodes use max.mode.error=100 which then ignores this check, to force the use of internal code then use max.mode.error=0. For the numerical reliability and perform of abn see \url{http://www.r-bayesian-networks.org/quality-assurance}. Generally speaking INLA can be extremely fast and accurate, but in a number of cases it can perform very poorly and so some care is required (which is why there is an internal check on the modes). Binary variables must be declared as factors with two levels, and the argument data.dists must be a list with named arguments, one for each of the variables in \code{data.df} (except a grouping variable - if present), where each entry is either "poisson","binomial", or "gaussian", see examples below. The "poisson" and "binomial" distributions use log and logit link functions respectively. Note that "binomial" here actually means only binary, one bernoulli trial per row in data.df. 
 
-If the data are grouped into correlated blocks - where in a standard regression context a mixed model might be used - then a network comprising of one or more nodes where a generalized linear mixed model is used (but limited to only a single random effect). This is achieved by specifying parameters \code{group.var} and \code{cor.vars}, where the former defines the group membership variable which should be a factor indicating which observations belong to the same grouping. The parameter \code{cor.vars} is a character vector which contains the names of the nodes for which a mixed model should be used. For example, in some problems it may be appropriate for all variables (except group.var) in data.df to be parameterised as a mixed model while in others it may only be a single variable for which grouping adjustment is required (as the remainder of variables are covariates measured at group level).   
+If the data are grouped into correlated blocks - where in a standard regression context a mixed model might be used - then a network comprising of one or more nodes where a generalized linear mixed model is used (but limited to only a single random effect). This is achieved by specifying parameters \code{group.var} and \code{cor.vars}, where the former defines the group membership variable which should be a factor indicating which observations belong to the same grouping. The parameter \code{cor.vars} is a character vector which contains the names of the nodes for which a mixed model should be used. For example, in some problems it may be appropriate for all variables (except group.var) in data.df to be parametrised as a mixed model while in others it may only be a single variable for which grouping adjustment is required (as the remainder of variables are covariates measured at group level).   
 
-In the network structure definition, \code{dag.m}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format.
+In the network structure definition, \code{dag.m}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. The \code{dag.m} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement have to start with \code{~}. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in \code{data.df}. \code{:} is the separator between either children or parents, \code{|} separates children (left side) and parents (right side), \code{+} separates terms, \code{.} replaces all the variables in \code{data.df}.
 
 If compute.fixed=TRUE then marginal posterior distributions for all parameters are computed. Note the current algorithm used to determine the evaluation grid is rather crude and may need to be manually refined using variate.vec (one parameter at a time) for publication quality density estimates. Note that a manual grid can only be used with internal code and not INLA (which uses its own grid). The end points are defined as where the value of the marginal density drops below a given threshold \code{pdf.min}. 
 
 If create.graph=TRUE then the model definition matrix in \code{dag.m} is used to create an R graph object (of type graphAM-class). See ?"graph-class" for details and the Rgraphviz documentation (which is extensive). The main purpose of this is simply to allow easy visualisation of the DAG structure via the graphviz library. A graph plot can easily be created by calling the method plot() on this object (see example below). Note, however, that the fonts and choice of scaling used here may be far less visually optimal than using graphviz direct (e.g via \code{\link{tographviz}}) for publication quality output. Also, re-scaling the plotting window may not result in a callback to re-optimise the visual position of the nodes and edges, and so if the window is re-sized then re-run the plot command to re-draw to the new scale.   
 
-When estimating the log marginal likelihood in models with random effects (using internal code rather than INLA) an attempt is made is minimize the error by comparing the estimates given between a 3pt and 5pt rule when estimating the Hessian in the Laplace approximation. The modes used in each case are identical. The first derivatives are computed using gsl's adaptive finite difference function and this is embedding inside the standard 3pt and 5pt rules for the second derivatives. In all cases a central difference approximation is tried first with a forward difference being a fall back (as the precision parameters are strictly positive). The error is minimised through choosing an optimal stepsize using gsl's Nelder-Mead optimization, and if this fails, (e.g. is greater than \code{max.hessian.error}) then the Brent-Dekker root bracketing method is used as a fall back. If the error cannot be reduced to below \code{max.hessian.error} then the stepsize which gave the lowest error during the searches (across potentially many different initial bracket choices) is used for the final Hessian evaluations in the Laplace approximation.
+When estimating the log marginal likelihood in models with random effects (using internal code rather than INLA) an attempt is made is minimize the error by comparing the estimates given between a 3pt and 5pt rule when estimating the Hessian in the Laplace approximation. The modes used in each case are identical. The first derivatives are computed using gsl's adaptive finite difference function and this is embedding inside the standard 3pt and 5pt rules for the second derivatives. In all cases a central difference approximation is tried first with a forward difference being a fall back (as the precision parameters are strictly positive). The error is minimised through choosing an optimal step size using gsl's Nelder-Mead optimization, and if this fails, (e.g. is greater than \code{max.hessian.error}) then the Brent-Dekker root bracketing method is used as a fall back. If the error cannot be reduced to below \code{max.hessian.error} then the step size which gave the lowest error during the searches (across potentially many different initial bracket choices) is used for the final Hessian evaluations in the Laplace approximation.
+
+
 
 }
 
-\value{A named list. One entry for each of the variables in \code{data.df} (excluding the grouping variable, if present) which contains an estimate of the log marginal likelihood for that individual node. An entry "mlik" which is the total log marginal likelihood for the full ABN model. A vector of error.codes - non-zero if a numerical error or warning occured, and a vector error.code.desc giving a text description of the error. A list "modes", which contains all the mode estimates for each parameter at each node. A vector called hessian accuracy which is the estimated local error in the log marginal likelihood for each node.  If compute.fixed=TRUE then a list entry called "marginals" which contains a named entry for every parameter in the ABN and each entry in this list is a two column matrix where the first column is the value of the marginal parameter, say x, and the second column is the respective density value, pdf(x). In addition a list called "marginal.quantiles" is produced giving the quantiles for each marginal posterior distribution. If create.graph=TRUE then an additional entry "graph" which is of type class graphAM-class is created. 
+\value{A named list. One entry for each of the variables in \code{data.df} (excluding the grouping variable, if present) which contains an estimate of the log marginal likelihood for that individual node. An entry "mlik" which is the total log marginal likelihood for the full ABN model. A vector of error.codes - non-zero if a numerical error or warning occurred, and a vector error.code.desc giving a text description of the error. A list "modes", which contains all the mode estimates for each parameter at each node. A vector called Hessian accuracy which is the estimated local error in the log marginal likelihood for each node.  If compute.fixed=TRUE then a list entry called "marginals" which contains a named entry for every parameter in the ABN and each entry in this list is a two column matrix where the first column is the value of the marginal parameter, say x, and the second column is the respective density value, pdf(x). In addition a list called "marginal.quantiles" is produced giving the quantiles for each marginal posterior distribution. If create.graph=TRUE then an additional entry "graph" which is of type class graphAM-class is created. 
 
 }
 
@@ -92,7 +97,6 @@ When estimating the log marginal likelihood in models with random effects (using
 \author{Fraser Ian Lewis}
 
 %\seealso{\code{"\link[=fitabn.inla]{fitbn.inla}"}}
-
 
 \examples{
 \dontrun{
@@ -146,14 +150,7 @@ print(myres.c$mlik);## a much poorer fit than full independence DAG
 myres.c<-fitabn(dag.m=mydag,data.df=mydat,data.dists=mydists,centre=TRUE,
                 create.graph=TRUE,compute.fixed=FALSE);
 
-## ok for quick visualisation - but not publication quality 
-plot(myres.c$graph);# see ?plot.graph for details.
-
-## for publication quality may be better to use graphviz direct 
-tographviz(dag.m=mydag,data.df=mydat,data.dists=mydists,outfile="graph.dot",directed=TRUE);
-## and then process using graphviz tools e.g. on linux
-system("dot -Tpdf -o graph.pdf graph.dot")
-system("evince graph.pdf");
+plotabn(dag.m = mydag,data.dists = mydists,fitted.values.abn = myres.c$modes)
 
 ## a simple plot of some posterior densities
 ## the algorithm which chooses density points is very simple any may be
@@ -185,7 +182,7 @@ main="Posterior Marginal Density",pch="+");
 points(myres.inla$marginals$b4[["b4|b1"]],col="blue");
 
 ### A very simple mixed model example using built-in data
-## specify dag - only two variables using subset of variables from ex3.dag.data
+## specify DAG - only two variables using subset of variables from ex3.dag.data
 ## both variables are assumed to need (separate) adjustment for the group variable
 ## i.e. a binomial glmm at each node
 
@@ -209,9 +206,10 @@ myres.c<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
 print(myres.c);## show all the output 
 
 ## compare modes for node b1 with glmer()
-library(lme4);
+require(MASS);
+require(lme4);
 m1<-glmer(b1~1+b2+(1|group),family="binomial",data=ex3.dag.data[,c(1,2,14)])
-print(slot(m1,"fixef"));
+print(fixef(m1));
 print(1/unlist(VarCorr(m1)));
 print(myres.c$modes$b1);## almost identical to lme4 n.b. glmer() gives variance
 ##                         fitabn gives precision=1/variance
@@ -232,14 +230,15 @@ cbind(unlist(myres.inla[1:3]),unlist(myres.c[1:3]));
 # as this makes the plots smoother - see below.
 myres.inla<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
                         group.var="group",cor.vars=c("b1","b2"),
-                        compute.fixed=TRUE,max.mode.error=100,n.grid=500);
+                        compute.fixed=TRUE,max.mode.error=100,
+                        n.grid=500,max.hessian.error = 10E-02);
 
 ## this is NOT recommended - marginal density estimation using fitabn in mixed models
 ## is really just for diagnostic purposes, better to use fitabn.inla() here
 ## but here goes...be patient
 myres.c<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
                 group.var="group",cor.vars=c("b1","b2"),compute.fixed=TRUE,
-                max.mode.error=0);
+                max.mode.error=0,max.hessian.error = 10E-02);
 
 ## compare marginals between internal and INLA.   
 par(mfrow=c(2,3))
@@ -268,15 +267,13 @@ myres.c<-fitabn(dag.m=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
                 group.var="group",
                 cor.vars=c("b1","b2"),centre=FALSE,compute.fixed=TRUE,
                 marginal.node=1,marginal.param=3,## precision term in node 1
-                variate.vec=seq(0.05,1.5,len=25));
+                variate.vec=seq(0.05,1.5,len=25),max.hessian.error = 10E-02);
 
 par(mfrow=c(1,2));
 plot(myres.c$marginals[[1]],type="b",col="blue");## still fairly sparse
 ## an easy way is to use spline to fill in the density without recomputing other
 ## points provided the original grid is not too sparse.
 plot(spline(myres.c$marginals[[1]],n=100),type="b",col="brown");
-}
-
-}
+}}
 
 \keyword{models}

@@ -1,8 +1,9 @@
 ## mostprobable.R --- 
 ## Author          : Fraser Lewis
 ## Created On      : Sun May 13:43 2010
-## Last Modified By: Fraser Lewis
+## Last Modified By: Fraser Lewis & Gilles Kratzer
 ## Last Modified On: Sun May 13:43 2010
+## Last Modification: 29.03.2017 (adapted for mle search)
 ## Update Count    : 0
 ## Status          : Unknown, Use with caution!
 ###############################################################################
@@ -24,8 +25,13 @@
 ##    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ######################################################################
 
-mostprobable <- function(score.cache=NULL, prior.choice=1) {
+mostprobable <- function(score.cache=NULL, prior.choice=1, score="mlik") {
     
+  if(score=="aic"){score.cache$mlik<-(-score.cache$aic)}
+  if(score=="bic"){score.cache$mlik<-(-score.cache$bic)}
+  if(score=="mdl"){score.cache$mlik<-(-score.cache$mdl)}
+  if(score=="mit"){score.cache$mlik<-(-score.cache$mit)}
+  
     data.df<-score.cache$data.df;## n.b. this might be adjusted from original data.df    
 
     loc.numnodes<-as.integer(dim(score.cache$node.defn)[2]);
@@ -53,7 +59,7 @@ mostprobable <- function(score.cache=NULL, prior.choice=1) {
     if(prior.choice != 1 && prior.choice!= 2){stop("prior choice must be 1 or 2!\n");}
 
     res.prob <- .Call("mostprobable",score.cache,loc.numnodes,loc.start,loc.end, as.integer(prior.choice)
-               ,PACKAGE="abn" ## uncomment to load as package not shlib
+               #,PACKAGE="abn" ## uncomment to load as package not shlib
               );
     loc.res<-matrix(data=res.prob[[1]],ncol=loc.numnodes,byrow=TRUE);
     colnames(loc.res)<-rownames(loc.res)<-names(data.df);

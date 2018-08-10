@@ -3,7 +3,7 @@
 % Author          : Fraser Lewis
 % Created On      : 
 % Last Modified By: Marta Pittavino
-% Last Modified On: 
+% Last Modified On: Gilles Kratzer
 % Update Count    : 
 % Status          : Unknown, Use with caution!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,7 +18,7 @@
 \description{Find most probable DAG structure using exact order based approach due to Koivisto and Sood, 2004}
 
 \usage{
-       mostprobable(score.cache, prior.choice=1) 
+       mostprobable(score.cache, prior.choice=1, score = "mlik") 
 
 }
     
@@ -26,6 +26,7 @@
 \arguments{
   \item{score.cache}{output from \code{buildscorecache()}} 
   \item{prior.choice}{an integer, 1 or 2, where 1 is a uniform structural prior and 2 uses a weighted prior, see details}
+  \item{score}{character giving which network score should be used to learn the structure.}
 }
 
 
@@ -34,7 +35,7 @@
 
 This routine can take a long time to complete and is highly sensitive to the number of nodes in the network. It is recommended to use this on a reduced data set to get an idea as to the computational practicality of this approach.  In particular, memory usage can quickly increase to beyond what may be available. For additive models, problems comprising up to 20 nodes are feasible on most machines, memory requirements can increase considerably after this, but then so does the run time making this less practical. It is recommended that some form of over-modelling adjustment is performed on this resulting DAG (unless dealing with vast numbers of observations), for example using parametric bootstrapping which is straightforward to implement in MCMC engines such as JAGS or WinBUGS. See the case studies at \url{http://www.r-bayesian-networks.org} for details.    
 
-The parameter prior.choice determines the prior used within each individual node for a given choice of parent combination. In Koivisto and Sood (2004) p.554 a form of prior is used which assumes that the prior probability for parent combinations comprising of the same number of parents are all equal. Specifically, that the prior probability for parent set G with cardinality |G| is proportional to 1/[n-1 choose |G|] where there are n total nodes. Note that this favours parent combinations with either very low or very high cardinality which may not be appropriate. This prior is used when prior.choice=2. When prior.choice=1 an uniformative prior is used where parent combinations of all cardinalities are equally likely. The latter is equivalent to the structural prior used in the heuristic searches e.g. \code{search.hillclimber}.   
+The parameter prior.choice determines the prior used within each individual node for a given choice of parent combination. In Koivisto and Sood (2004) p.554 a form of prior is used which assumes that the prior probability for parent combinations comprising of the same number of parents are all equal. Specifically, that the prior probability for parent set G with cardinality |G| is proportional to 1/[n-1 choose |G|] where there are n total nodes. Note that this favours parent combinations with either very low or very high cardinality which may not be appropriate. This prior is used when prior.choice=2. When prior.choice=1 an uninformative prior is used where parent combinations of all cardinalities are equally likely. The latter is equivalent to the structural prior used in the heuristic searches e.g. \code{search.hillclimber}.   
 
 Note that the network score (log marginal likelihood) of the most probable DAG is not returned as it can easily be computed using \code{\link{fitabn}}, see examples below.  
 
@@ -163,16 +164,10 @@ mycache<-buildscorecache(data.df=mydat,data.dists=mydists,
 mp.dag<-mostprobable(score.cache=mycache);
 fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists)$mlik;
 
-## plot the best model - requires Rgraphviz
+## plot the best model
 myres<-fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,create.graph=TRUE);
-plot(myres$graph);
 
-## for publication quality may be better to use graphviz direct 
-tographviz(dag.m=mp.dag,data.df=mydat,data.dists=mydists,outfile="mpgraph.dot",directed=TRUE);
-## and then process using graphviz tools e.g. on linux
-## system("dot -Tpdf -o mpgraph.pdf mpgraph.dot");
-## system("evince mpgraph.pdf");
-
+plotabn(dag.m = mp.dag,data.dists = mydat,fitted.values.abn = myres)
 
 ## fit the known true DAG
 true.dag<-ban;

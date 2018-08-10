@@ -2,13 +2,41 @@ export(
        "tographviz",
        "fitabn",
        "buildscorecache",
+       "buildscorecache.mle",
+       "fitabn.mle",
        "mostprobable",
-       "search.hillclimber"     
-        )   
+       "search.hillclimber",
+       "plotabn",
+       "simulateabn",
+       "logit",
+       "expit",
+       "odds",
+       "or",
+       "mb",
+       "link.strength",
+       "discretization",
+       "essentialGraph",
+       "compareDag",
+       "infoDag",
+       "simulateDag",
+       "search.heuristic",
+       "entropyData",
+       "miData"
+       
+#       "irls_binomial_cpp_br",
+#       "irls_binomial_cpp"
+        )
 
 useDynLib(abn)
+
 importFrom("Cairo",Cairo)     
 importFrom("grDevices", "dev.list", "dev.set")
 importFrom("graphics", "plot")
-importFrom("methods", "initialize", "new")
-importFrom("stats", "complete.cases", "sd", "spline")
+importFrom("methods", "initialize", "new", "slot")
+importFrom("stats", "complete.cases", "sd", "spline","coef", "model.matrix", "pnorm", "pt", "residuals")
+importFrom("rjags",coda.samples, jags.model)
+importFrom("stats", "IQR", "cor", "nobs", "rbinom")
+importFrom("utils", "tail", "combn")
+importFrom("nnet", "multinom", "nnet.default")
+import("MASS")
+importFrom("lme4", "glmer", "VarCorr")

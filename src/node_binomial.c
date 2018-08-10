@@ -808,7 +808,8 @@ int wrapper_fdf (const gsl_vector *beta, void *gparams,
 /** *************************************************************************************
 *****************************************************************************************
 *****************************************************************************************/          
-int generate_inits_n(gsl_vector *myBeta,struct fnparams *gparams){
+int generate_inits_n(gsl_vector *myBeta,struct fnparams *gparams)
+{
 
     /** this is the SAME CODE as in the Gaussian case  */
     

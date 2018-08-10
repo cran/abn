@@ -1,6 +1,31 @@
 ---------------------------
 -- ChangeLog - abn --
 ---------------------------
+2018-07-23 Gilles Kratzer (version 1.2)
+	   * (many) new functions
+	   * buildscorecache.mle()
+	   * fitabn.mle()
+	   * plotabn()
+	   * simulateabn()
+	   * expit(), logit(), odds() and or()
+	   * mb()
+	   * link.strength()
+	   * discretization()
+	   * essentialGraph()
+	   * compareDag()
+	   * infoDag()
+	   * simulateDag()
+	   * search.heuristic()
+	   * entropyData()
+	   * miData()
+	   
+	   * modification of existing functions:
+	   * mostprobable()
+
+2016-11-09 Gilles Kratzer (version 1.0.2)
+	   * Default ban and retain matrix
+	   * Automatic testing procedure of the package
+
 2016-01-11 Pittavino Marta (version 1.0)
 	   New vignette uploaded.
 	
