@@ -6,7 +6,7 @@ using namespace Rcpp;
 using namespace R;
 
 // [[Rcpp::export]]
-int factorial_fast(int n)
+double factorial_fast(int n)
 {
   return (n == 1 || n == 0) ? 1 : factorial_fast(n - 1) * n;
 }

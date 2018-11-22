@@ -15,7 +15,7 @@ Rcpp::NumericVector logit_cpp(Rcpp::NumericVector x) {
   Rcpp::NumericVector result(n);
 
   for(int i = 0; i < n; ++i) { 
-    result[i] = log( x[i] / (1.0 - x[i]) );
+    result[i] = std::log(static_cast<double>( x[i] / (1.0 - x[i]) ));
   }
 
   return result;
@@ -29,7 +29,7 @@ Rcpp::NumericVector expit_cpp(Rcpp::NumericVector x) {
   Rcpp::NumericVector result(n);
 
   for (int i=0; i < n; ++i) { 
-    result[i] = 1.0 / (1.0 + exp (-1.0 * x[i]));
+    result[i] = 1.0 / (1.0 + std::exp(static_cast<double>( (-1.0 * x[i]))));
   }
   return result;
 }

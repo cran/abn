@@ -20,7 +20,7 @@
 \usage{
 
 link.strength(dag.m = NULL,
-              data.df = data.df, 
+              data.df = NULL, 
               data.dists = NULL, 
               method = c("mi.raw","mi.raw.pc","mi.corr","ls","ls.pc","stat.dist"),
               discretization.method = "doane")

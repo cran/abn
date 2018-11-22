@@ -374,4 +374,11 @@ essentialGraph <- function(dag.m = NULL, name = NULL, PDAG = "minimal"){
     return(moral)
   }
 }
+
+##-------------------------------------------------------------------------
+##External functions for MCMC
+##-------------------------------------------------------------------------
+
+
+
 ##EOF

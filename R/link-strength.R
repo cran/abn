@@ -9,7 +9,7 @@
 ##Function that return estimation of link strength for a Bayesian Network
 ##-------------------------------------------------------------------------
 
-link.strength <- function(dag.m=NULL,data.df = data.df, data.dists=NULL, method=c("mi.raw","mi.raw.pc","mi.corr","ls","ls.pc","stat.dist"), discretization.method="doane"){
+link.strength <- function(dag.m=NULL,data.df = NULL, data.dists = NULL, method = c("mi.raw","mi.raw.pc","mi.corr","ls","ls.pc","stat.dist"), discretization.method="doane"){
   
   ##for compatibility purpose
   dag <- dag.m

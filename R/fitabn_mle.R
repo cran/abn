@@ -129,20 +129,7 @@ fitabn.mle <- function(dag.m = NULL,
         num.na<-fit[[2]]
         fit<-fit[[1]]
       }else{
-        
-        
-        
-        
-      
-      # num.na<-0
-      # if(qr(X)$rank/ncol(X)!=1 & as.character(data.dists[i])=="binomial"){
-      #   
-      #   Y<-as.numeric(as.character(Y))
-      #   
-      #   fit<-irls_binomial_cpp_br(A = X, b = Y, maxit = 25,tol = 10^-8)
-      #   
-      # }else{
-      
+
             switch(as.character(data.dists[i]),
              "binomial"={
                

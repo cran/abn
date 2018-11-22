@@ -6,7 +6,7 @@ using namespace Rcpp;
 using namespace R;
 
 // [[Rcpp::export]]
-int factorial(int n)
+double factorial(int n)
 {
   return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
 }

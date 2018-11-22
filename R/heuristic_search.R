@@ -67,7 +67,10 @@ search.heuristic <- function(score.cache = NULL,
     
     score.init <- vector(mode = "numeric",length = n.var)
     
-    sc<-cbind(score.cache$node.defn[,as.numeric(colnames(dag.tmp))],score.cache$mlik)
+    if(score %in% c("bic", "aic", "mdl")){sc<-cbind(score.cache$node.defn[,as.numeric(colnames(dag.tmp))],-score.cache[[score]])
+    }else{
+      sc<-cbind(score.cache$node.defn[,as.numeric(colnames(dag.tmp))],score.cache[[score]])
+    }
     
     for(lines in 1:n.var){
 
@@ -239,15 +242,29 @@ search.heuristic <- function(score.cache = NULL,
 
   
   ##return
-  if(verbose){
-    
+  
+  ##todo: inverse detailed score for aic/bic/mdl
+  
+    if(score %in% c("bic","aic","mdl")){
+      if(verbose){
   return(list(dags = out.dags, 
-              scores = out.scores,
-              detailed.score = out.detailed))
+              scores = lapply(X = out.scores,FUN = function(x){-x}),
+              detailed.score = lapply(X = out.detailed,FUN = function(x){-x})))
   }else{
     
   return(list(dag = out.dags[[which.max(unlist(out.scores))]], 
-              score = max(unlist(out.scores))))
+              score = -max(unlist(out.scores))))
+  }
+  }else{
+    if(verbose){
+    return(list(dags = out.dags, 
+                scores = out.scores,
+                detailed.score = out.detailed))
+  }else{
+    
+    return(list(dag = out.dags[[which.max(unlist(out.scores))]], 
+                score = max(unlist(out.scores))))
+  }
   }
   
   }#eof
