@@ -22,6 +22,7 @@ This function empirically estimates the Shannon entropy from a table of counts u
 \value{Shannon's entropy estimate on natural logarithm scale.}
 
 \author{Gilles Kratzer}
+\seealso{\code{\link{discretization}}}
 
 \examples{
 ## Generate random variable
@@ -30,8 +31,8 @@ dist <- list("gaussian")
 names(dist) <- c("rv")
 
 ## Compute the entropy through discretization
-entropyData(freqs.table = discretization(data.df = rv,
-data.dists = dist,
-discretization.method = "fd",
-nb.states = FALSE))
+entropyData(discretization(data.df = rv, data.dists = dist,
+                        discretization.method = "fd", nb.states = FALSE))
 }
+\keyword{utilities}
+\concept{DAG}

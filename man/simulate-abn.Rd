@@ -1,5 +1,5 @@
 %                               -*- Mode: Rd -*- 
-% simulateabn.Rd --- 
+% simulateAbn.Rd --- 
 % Author          : Gilles Kratzer
 % Created On      : 17.01.2017
 % Last Modified By: 
@@ -8,17 +8,19 @@
 % Status          : Unknown, Use with caution!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\name{simulateabn}
+\name{simulateAbn}
+\alias{simulateAbn}
+\alias{simulate.abn}
 \alias{simulateabn}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Simulate from an ABN network}
+\title{Simulate from an ABN Network}
 
 \description{Simulate one or more responses from an ABN network corresponding to a fitted object using formula statement or an adjacency matrix.}
 
 \usage{
-  simulateabn(data.dists = NULL, 
+simulateAbn(data.dists = NULL, 
                        data.param = NULL,
                        data.param.var = NULL,
                        data.param.mult = NULL,
@@ -29,13 +31,14 @@
                        bug.file=NULL,
                        verbose=TRUE,
                        simulate=TRUE,
+                       keep.file=FALSE,
                        seed=42)
 }
     
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{data.dists}{named list giving the distribution for each node in the network, see details.}
-  \item{data.param}{named matrix, which have to be square with as many entries as the number of variables, each element is the coefficient (for specifications see details) used in the glm to simulate responses.}
+  \item{data.dists}{named list giving the distribution for each node in the network, see \sQuote{Details}.}
+  \item{data.param}{named matrix, which have to be square with as many entries as the number of variables, each element is the coefficient (for specifications see \sQuote{Details}) used in the glm to simulate responses.}
   \item{data.param.var}{optional matrix, which should be square and having as many entries as number of variables, which contains the precision values for gaussian nodes. Default is set to 1.}
   \item{data.param.mult}{optional matrix, which should be square and having as many entries as number of variables, which contains the multinomial coefficient.}
   \item{n.chains}{number of parallel chains for the model.}
@@ -45,61 +48,53 @@
   \item{bug.file}{path/name of the user specific bug file.}
   \item{verbose}{logical. Default \code{TRUE}. Should R report extra information on progress?}
   \item{simulate}{logical. Default \code{TRUE}. If set to \code{FALSE}, no simulation will be run only creation of the bug file.}
+  \item{keep.file}{logical. Default \code{FALSE}. If set to \code{TRUE}, the model.bug file generated will be kept afterwards.}
   \item{seed}{by default set to 42.}
 }
 
 \details{
 This function use \code{rjags} to simulate data from a DAG. It first creates a \code{bug} file, in the actual repository, then use it to simulate the data. This function output a data frame. The \code{bug} file can be run using \code{rjags} separately. 
 
-The coefficients given in the \code{data.param} are: the logit of the probabilities for binomial nodes, the means of the gaussian nodes and the log of the Poison parameter. Additionally, a matrix \code{data.param.var} could give precision values for gaussian nodes (Default is set to 1).
+The coefficients given in the \code{data.param} are: the logit of the probabilities for binomial nodes, the means of the gaussian nodes and the log of the Poison parameter. Additionally, a matrix \code{data.param.var} could give precision values for gaussian nodes (default is set to 1).
 
-Binary and multinomial variables must be declared as factors, and the argument \code{data.dists} must be a list with named arguments, one for each of the variables in \code{data.df} (except a grouping variable - if present), where each entry is either "poisson","binomial", "multinomial" or "gaussian", see examples below. The "poisson" distributions use log and "binomial" and "multinomial" distributions  logit link functions. Note that "binomial" here actually means only binary, one bernoulli trial per row in data.df. 
+Binary and multinomial variables must be declared as factors, and the argument \code{data.dists} must be a list with named arguments, one for each of the variables in \code{data.df} (except a grouping variable - if present), where each entry is either "poisson","binomial", "multinomial" or "gaussian", see examples below. The "poisson" distributions use log and "binomial" and "multinomial" distributions  logit link functions. Note that "binomial" here actually means only binary, one bernoulli trial per row in \code{data.df}. 
 
 The number of simulated data (rows of the outputted data frame) is given by \code{n.iter} divided by \code{n.thin}. 
 }
 
-\value{A data frame containing simulated data}
+\value{A data frame containing simulated data.}
 
 \references{
-Further information about \bold{abn} can be found at:\cr
-  \url{http://www.r-bayesian-networks.org}}
+Further information about \pkg{abn} can be found at:\cr
+  \url{http://r-bayesian-networks.org}}
 
 \author{Gilles Kratzer}
 
 
 \examples{
+## Define set of distributions:
+dist<-list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", 
+           e="binomial", f="binomial")
 
-#define set of distribution
-dist<-list(a="gaussian",
-b="gaussian",
-c="gaussian",
-d="gaussian", 
-e="binomial", 
-f="binomial")
+## Define parameter matrix:
+data.param <- matrix(c(1,2,0.5,0,20,0,
+                       0,1,3,10,0, 0.8,
+                       0,0,1,0,0,0,
+                       0,0,0,1,0,0,
+                       0,0,0,0,0.5,1,
+                       0,0,0,0,0,0), nrow = 6L, ncol = 6L, byrow = TRUE)
 
-#define parameter matrix
-data.param <- matrix(data = c(1,2,0.5,0,20,0,
-                              0,1,3,10,0, 0.8,
-                              0,0,1,0,0,0,
-                              0,0,0,1,0,0,
-                              0,0,0,0,0.5,1,
-                              0,0,0,0,0,0),nrow = 6L,ncol = 6L,byrow = TRUE)
-
-#precision matrix 
-data.param.var <- matrix(data = 0,nrow = 6L,ncol = 6L)
+## Define precision matrix: 
+data.param.var <- matrix(0, nrow = 6L, ncol = 6L)
 diag(data.param.var) <- c(10,20,30,40,0,0)
 
-#plot the dag
-plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f,data.dists = dist ,plot = FALSE)
+## Plot the dag
+plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot = FALSE)
 
-#simulate the data
-simulateabn(data.dists = dist,
-n.chains = 1,
-n.thin = 1,
-n.iter = 1000,
-data.param = data.param,
-data.param.var = data.param.var,
-seed = 132)
+## Simulate the data
+simulateAbn(data.dists=dist, n.chains=1, n.thin=1, n.iter=1000,
+            data.param=data.param, data.param.var=data.param.var)
 }
 
-\keyword{simulated data}
+\keyword{utilities}
+\concept{DAG}

@@ -6,7 +6,7 @@
 
 \name{miData}
 \alias{miData}
-\title{Computes an Empirical Estimation of the Entropy from a Table of Counts}
+\title{Empirical Estimation of the Entropy from a Table of Counts}
 
 \usage{
 miData(freqs.table, method = c("mi.raw", "mi.raw.pc"))
@@ -29,16 +29,16 @@ The plugin estimator is I(X, Y) = H (X) + H(Y) - H(X, Y), where H() is the entro
 \value{Mutual information estimate.}
 
 \author{Gilles Kratzer}
-
+\seealso{\code{\link{discretization}}}
 \examples{
 ## Generate random variable
 Y <- rnorm(n = 100, mean = 0, sd = 2)
 X <- rnorm(n = 100, mean = 5, sd = 2)
 
-dist<-list(Y="gaussian", X="gaussian")
+dist <- list(Y="gaussian", X="gaussian")
 
-miData(freqs.table = discretization(data.df = cbind(X,Y),
-data.dists = dist,
-discretization.method = "fd",
-nb.states = FALSE),method = "mi.raw")
+miData(discretization(data.df = cbind(X,Y), data.dists = dist,
+                discretization.method = "fd", nb.states = FALSE),
+       method = "mi.raw")
 }
+\keyword{utilities}

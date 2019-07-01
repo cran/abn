@@ -1,6 +1,21 @@
 ---------------------------
 -- ChangeLog - abn --
 ---------------------------
+2019-06-06 Gilles Kratzer & Reinhard Furrer (version 2.0)
+	   * Implementation of S3 methods (print, summary, plot)
+	   * New classes:
+	   		* abnDag, abnCache, abnHeuristic, abnMostprobable, abnHillClimber, abnFit 
+	   * renaming of functions 
+	   		* link.strength() -> linkStrength()
+	   		* search.heuristic() -> searchHeuristic()
+	   		* backward compatibility is not ensured for those functions
+	   * New tests implemented for internal validation and some backward compatibility
+	   * Dependence with Cairo removed
+	   * modification of search.hillclimber(): no interactive plotting possible
+	   * buildscorecache() becomes a parametrisable wrapper for the bayesian and the mle methods
+	   * fitabn() becomes a parametrisable wrapper for the bayesian and the mle methods
+	   * Multiple Bugs corrected
+
 2018-07-23 Gilles Kratzer (version 1.2)
 	   * (many) new functions
 	   * buildscorecache.mle()

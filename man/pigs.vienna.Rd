@@ -1,5 +1,3 @@
-
-
 \name{pigs.vienna}
 \alias{pigs.vienna}
 \non_function{}
@@ -24,6 +22,9 @@ about to enter the human food chain at an abattoir. Further description of the d
     \item{batch}{Group variable, corresponding to the 500 different pig producers}
     }
  }
+ 
+ \references{
+Hartnack, S., et al. (2016) "Attitudes of Austrian veterinarians towards euthanasia in small animal practice: impacts of age and gender on views on euthanasia." BMC Veterinary Research 12.1: 26.}
 
 \keyword{datasets}
 

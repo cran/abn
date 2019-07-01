@@ -1,33 +1,13 @@
 \name{ex5.dag.data}
-     \docType{data}
-     \alias{ex5.dag.data}
+\docType{data}
+\alias{ex5.dag.data}
      
-     \title{Valdiation data set for use with abn library examples}
-     \description{434 observations across with 18 variables, 6 binary and 12 continuous, and one grouping variable. Real (anonymised) data of unknown structure. 
-     }
-     \usage{ex5.dag.data} 
-\format{A data frame, binary variables are factors
-     \describe{
-     \item{b1}{binary}
-     \item{b2}{binary}
-\item{b3}{binary}
-\item{b4}{binary}
-\item{b5}{binary}
-\item{b6}{binary}
-\item{g1}{continuous}
-\item{g2}{continuous}
-\item{g3}{continuous}
-\item{g4}{continuous}
-\item{g5}{continuous}
-\item{g6}{continuous}
-\item{g7}{continuous}
-\item{g8}{continuous}
-\item{g9}{continuous}
-\item{g10}{continuous}
-\item{g11}{continuous}
-\item{g12}{continuous}
-\item{group}{factor,defines sampling groups}
-     }}
-
-
+\title{Valdiation data set for use with abn library examples}
+\description{434 observations across with 18 variables, 6 binary and 12 continuous, and one grouping variable. Real (anonymised) data of unknown structure. }
+\usage{ex5.dag.data} 
+\format{A data frame with 19 columns: \code{b1,\dots,b6} binary
+  variables, encoded as factors; 
+    \code{g1,\dots,g12} continuous variables. Finally, the column
+    \code{group} defines sampling groups (encoded as a factor as well).
+}
 \keyword{datasets}

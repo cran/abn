@@ -14,7 +14,7 @@
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Odd ratio from a table}
+\title{Odds Ratio from a Table}
 
 \description{Compute the odds ratio from a table or a matrix.}
 
@@ -23,7 +23,7 @@ or(x)
 }
 
 \arguments{
-  \item{x}{a table or a matrix.}
+  \item{x}{a 2x2 table or matrix.}
 }
 
 \details{
@@ -35,4 +35,4 @@ A real value.
 
 \author{Gilles Kratzer}
 
-\keyword{odds ratio}
+\keyword{utilities}

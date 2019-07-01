@@ -18,17 +18,14 @@
 \description{Function that returns multiple graph metrics to compare two DAGs, known as confusion matrix or error matrix.}
 
 \usage{
-      compareDag(ref=NULL,
-                test=NULL,
-                name=NULL)
-
+compareDag(ref, test, node.names = NULL)
 }
     
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{ref}{a matrix or a formula statement (see details for format) defining the reference network structure, a directed acyclic graph (DAG). Note that rownames must be set or given in \code{name} if the DAG is given via a formula statement.}
-  \item{test}{a matrix or a formula statement (see details for format) defining the test network structure, a directed acyclic graph (DAG). Note that rownames must be set or given in \code{name} if the DAG is given via a formula statement.}
-  \item{name}{a vector of names if the DAGs are given via formula, see details.}
+  \item{ref}{a matrix or a formula statement (see details for format) defining the reference network structure, a directed acyclic graph (DAG). Note that rownames must be set or given in \code{node.names} if the DAG is given via a formula statement.}
+  \item{test}{a matrix or a formula statement (see details for format) defining the test network structure, a directed acyclic graph (DAG). Note that rownames must be set or given in \code{node.names} if the DAG is given via a formula statement.}
+  \item{node.names}{a vector of names if the DAGs are given via formula, see details.}
 }
 
 
@@ -55,7 +52,7 @@ Positive Predictive Value \deqn{\frac{\sum TP}{\sum PCP}}{\frac{\sum TP}{\sum PC
 False Ommision Rate \deqn{\frac{\sum FN}{\sum PCN}}{\frac{\sum FN}{\sum PCN}}
 Hamming-Distance: Number of changes needed to match the matrices.
 
-The \code{ref} or \code{test} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement have to start with \code{~}. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in \code{name}. \code{:} is the separtor between either children or parents, \code{|} separates children (left side) and parents (right side), \code{+} separates terms, \code{.} replaces all the variables in \code{name}.
+The \code{ref} or \code{test} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement have to start with \code{~}. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in \code{node.names}. \code{:} is the separtor between either children or parents, \code{|} separates children (left side) and parents (right side), \code{+} separates terms, \code{.} replaces all the variables in \code{node.names}.
 }
 
 
@@ -63,23 +60,21 @@ The \code{ref} or \code{test} can be provided using a formula statement (similar
 
 
 \references{
+Sammut, Claude, and Geoffrey I. Webb. (2017). Encyclopedia of machine learning and data mining. Springer.
 
-Sammut, Claude, and Geoffrey I. Webb. Encyclopedia of machine learning and data mining. Springer Publishing Company, Incorporated, (2017).
-
-Further information about \bold{abn} can be found at:\cr
-  \url{http://www.r-bayesian-networks.org}}
+Further information about \pkg{abn} can be found at:\cr
+  \url{http://r-bayesian-networks.org}}
 
 \author{Gilles Kratzer}
 
-
 \examples{
-test.m <- matrix(data = 0,nrow = 3,ncol = 3)
+test.m <- matrix(data = 0, nrow = 3, ncol = 3)
     
 ref.m <- matrix(data = c(0,0,0,
                           1,0,0,
-                          1,0,0),nrow = 3,ncol = 3)
+                          1,0,0), nrow = 3, ncol = 3)
                           
-compareDag(ref = ref.m,test = test.m)
+compareDag(ref = ref.m, test = test.m)
 }
-
-\keyword{DAG}
+\keyword{utilities}
+\concept{DAG}

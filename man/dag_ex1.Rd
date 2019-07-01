@@ -22,9 +22,8 @@
      }}
    
 \examples{
-\dontrun{
-## the true underlying stochastic model has DAG - this data is one realisation from this.
-ex1.true.dag<-matrix(data=c(
+## The data is one realisation from the the underlying DAG:
+ex1.true.dag <- matrix(data=c(
   0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,
@@ -34,12 +33,9 @@ ex1.true.dag<-matrix(data=c(
   0,1,1,1,0,0,0,0,0,0,
   0,0,1,0,1,0,0,0,0,0,
   0,0,1,0,0,0,1,0,0,0,
-  0,0,1,1,0,0,0,0,0,0
-   ), ncol=10,byrow=TRUE);
+  0,0,1,1,0,0,0,0,0,0), ncol=10, byrow=TRUE)
 
-colnames(ex1.true.dag)<-rownames(ex1.true.dag)<-c("b1","p1","g1","b2","p2","b3","g2","b4",
-"b5","g3");
-
-}
+colnames(ex1.true.dag) <- rownames(ex1.true.dag) <-
+    c("b1","p1","g1","b2","p2","b3","g2","b4","b5","g3")
 }
 \keyword{datasets}

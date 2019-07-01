@@ -28,6 +28,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// irls_binomial_cpp
+Rcpp::List irls_binomial_cpp(arma::mat A, arma::vec b, double maxit, double tol);
+RcppExport SEXP _abn_irls_binomial_cpp(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(irls_binomial_cpp(A, b, maxit, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // irls_binomial_cpp_br
 Rcpp::List irls_binomial_cpp_br(arma::mat A, arma::vec b, double maxit, double tol);
 RcppExport SEXP _abn_irls_binomial_cpp_br(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
@@ -39,20 +53,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(irls_binomial_cpp_br(A, b, maxit, tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// irls_binomial_cpp_fast_br
-Rcpp::List irls_binomial_cpp_fast_br(arma::mat A, arma::vec b, double maxit, double tol);
-RcppExport SEXP _abn_irls_binomial_cpp_fast_br(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(irls_binomial_cpp_fast_br(A, b, maxit, tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -70,9 +70,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// irls_binomial_cpp
-Rcpp::List irls_binomial_cpp(arma::mat A, arma::vec b, double maxit, double tol);
-RcppExport SEXP _abn_irls_binomial_cpp(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+// irls_binomial_cpp_fast_br
+Rcpp::List irls_binomial_cpp_fast_br(arma::mat A, arma::vec b, double maxit, double tol);
+RcppExport SEXP _abn_irls_binomial_cpp_fast_br(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,21 +80,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
     Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(irls_binomial_cpp(A, b, maxit, tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// irls_gaussian_cpp_fast
-Rcpp::List irls_gaussian_cpp_fast(arma::mat A, arma::vec b, double maxit, double tol);
-RcppExport SEXP _abn_irls_gaussian_cpp_fast(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-    Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(irls_gaussian_cpp_fast(A, b, maxit, tol));
+    rcpp_result_gen = Rcpp::wrap(irls_binomial_cpp_fast_br(A, b, maxit, tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -112,20 +98,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// factorial_fast
-int factorial_fast(int n);
-RcppExport SEXP _abn_factorial_fast(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(factorial_fast(n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// irls_poisson_cpp_fast
-Rcpp::List irls_poisson_cpp_fast(arma::mat A, arma::vec b, double maxit, double tol);
-RcppExport SEXP _abn_irls_poisson_cpp_fast(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+// irls_gaussian_cpp_fast
+Rcpp::List irls_gaussian_cpp_fast(arma::mat A, arma::vec b, double maxit, double tol);
+RcppExport SEXP _abn_irls_gaussian_cpp_fast(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -133,17 +108,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
     Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(irls_poisson_cpp_fast(A, b, maxit, tol));
+    rcpp_result_gen = Rcpp::wrap(irls_gaussian_cpp_fast(A, b, maxit, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // factorial
-int factorial(int n);
+double factorial(double n);
 RcppExport SEXP _abn_factorial(SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
     rcpp_result_gen = Rcpp::wrap(factorial(n));
     return rcpp_result_gen;
 END_RCPP
@@ -159,6 +134,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(irls_poisson_cpp(A, b, maxit, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// factorial_fast
+double factorial_fast(double n);
+RcppExport SEXP _abn_factorial_fast(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(factorial_fast(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// irls_poisson_cpp_fast
+Rcpp::List irls_poisson_cpp_fast(arma::mat A, arma::vec b, double maxit, double tol);
+RcppExport SEXP _abn_irls_poisson_cpp_fast(SEXP ASEXP, SEXP bSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(irls_poisson_cpp_fast(A, b, maxit, tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -178,29 +178,29 @@ RcppExport SEXP buildcachematrix(SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP checkforcycles(SEXP, SEXP);
 RcppExport SEXP fit_single_node(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP fitabn_marginals(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP mostprobable(SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP mostprobable(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP searchhill(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_abn_logit_cpp", (DL_FUNC) &_abn_logit_cpp, 1},
     {"_abn_expit_cpp", (DL_FUNC) &_abn_expit_cpp, 1},
-    {"_abn_irls_binomial_cpp_br", (DL_FUNC) &_abn_irls_binomial_cpp_br, 4},
-    {"_abn_irls_binomial_cpp_fast_br", (DL_FUNC) &_abn_irls_binomial_cpp_fast_br, 4},
-    {"_abn_irls_binomial_cpp_fast", (DL_FUNC) &_abn_irls_binomial_cpp_fast, 4},
     {"_abn_irls_binomial_cpp", (DL_FUNC) &_abn_irls_binomial_cpp, 4},
-    {"_abn_irls_gaussian_cpp_fast", (DL_FUNC) &_abn_irls_gaussian_cpp_fast, 4},
+    {"_abn_irls_binomial_cpp_br", (DL_FUNC) &_abn_irls_binomial_cpp_br, 4},
+    {"_abn_irls_binomial_cpp_fast", (DL_FUNC) &_abn_irls_binomial_cpp_fast, 4},
+    {"_abn_irls_binomial_cpp_fast_br", (DL_FUNC) &_abn_irls_binomial_cpp_fast_br, 4},
     {"_abn_irls_gaussian_cpp", (DL_FUNC) &_abn_irls_gaussian_cpp, 4},
-    {"_abn_factorial_fast", (DL_FUNC) &_abn_factorial_fast, 1},
-    {"_abn_irls_poisson_cpp_fast", (DL_FUNC) &_abn_irls_poisson_cpp_fast, 4},
+    {"_abn_irls_gaussian_cpp_fast", (DL_FUNC) &_abn_irls_gaussian_cpp_fast, 4},
     {"_abn_factorial", (DL_FUNC) &_abn_factorial, 1},
     {"_abn_irls_poisson_cpp", (DL_FUNC) &_abn_irls_poisson_cpp, 4},
+    {"_abn_factorial_fast", (DL_FUNC) &_abn_factorial_fast, 1},
+    {"_abn_irls_poisson_cpp_fast", (DL_FUNC) &_abn_irls_poisson_cpp_fast, 4},
     {"_abn_mi_cpp", (DL_FUNC) &_abn_mi_cpp, 1},
-    {"buildcachematrix",               (DL_FUNC) &buildcachematrix,                5},
-    {"checkforcycles",                 (DL_FUNC) &checkforcycles,                  2},
-    {"fit_single_node",                (DL_FUNC) &fit_single_node,                26},
-    {"fitabn_marginals",               (DL_FUNC) &fitabn_marginals,               29},
-    {"mostprobable",                   (DL_FUNC) &mostprobable,                    5},
-    {"searchhill",                     (DL_FUNC) &searchhill,                     13},
+    {"buildcachematrix", (DL_FUNC) &buildcachematrix,  5},
+    {"checkforcycles",   (DL_FUNC) &checkforcycles,    2},
+    {"fit_single_node",  (DL_FUNC) &fit_single_node,  26},
+    {"fitabn_marginals", (DL_FUNC) &fitabn_marginals, 29},
+    {"mostprobable",     (DL_FUNC) &mostprobable,      6},
+    {"searchhill",       (DL_FUNC) &searchhill,       13},
     {NULL, NULL, 0}
 };
 

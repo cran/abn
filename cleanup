@@ -6,5 +6,6 @@ done
 if [ -e src/Makevars ]; then
 rm -f src/Makevars
 fi
+rm -f model.bug
 exit 0
  

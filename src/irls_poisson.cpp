@@ -6,9 +6,9 @@ using namespace Rcpp;
 using namespace R;
 
 // [[Rcpp::export]]
-double factorial(int n)
+double factorial(double n)
 {
-  return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+  return (n == 1.0 || n == 0.0) ? 1 : factorial(n - 1.0) * n;
 }
 
 
@@ -72,7 +72,7 @@ df = A.n_cols;
 //loglik
     
     for (int j = 0; j < nobs; ++j) {
-      f[j] = log(factorial(b[j]));
+      f[j] = log(factorial(1.0 * b[j]));
       }
     ll = arma::accu(b % (A * x) - exp(A * x) - f);
     

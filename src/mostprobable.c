@@ -15,7 +15,7 @@
 #define JUNKa
 #define PRINT_RES
 
-SEXP mostprobable(SEXP R_localscoreslist, SEXP R_numnodes, SEXP R_indexstart, SEXP R_indexend, SEXP R_priorchoice)
+SEXP mostprobable(SEXP R_localscoreslist, SEXP R_numnodes, SEXP R_indexstart, SEXP R_indexend, SEXP R_priorchoice, SEXP R_verbose)
 {
 /** ****************/
 /** declarations **/
@@ -59,6 +59,8 @@ int got=0;
 priorchoice=asInteger(R_priorchoice);
 numRows=LENGTH(VECTOR_ELT(R_localscoreslist,0));/** number of local node scores */ /*Rprintf("no. of score=%d\n",numRows);*/
 numNodes=asInteger(R_numnodes);/** number of nodes in the network */
+
+int verbose=asInteger(R_verbose);
 
 /*gsl_permutation *p;*/
 /*Rprintf("note: using logs - experimental...\n");*/
@@ -157,7 +159,7 @@ STEP 3. we now have a vector ptr_score[] with all the values needed for the alph
      
   R_CheckUserInterrupt();/** allow an interupt from R console */ 
 
-Rprintf("Step1. completed max alpha_i(S) for all i and S\n");
+if(verbose){Rprintf("Step1. completed max alpha_i(S) for all i and S\n");};
 
 /** for this to work we need alphalong and alphalonglookup */
 /** *************************************************************************************************************************************/
@@ -198,7 +200,7 @@ totaldbl=0.0;
 */
 for(i=0;i<=numNodes;i++){totaldbl+=gsl_sf_choose(numNodes,i);} /** sum of numNodes choose 0,...,numNodes choose maxparents **/ 
 total=rint(totaldbl);/** this is NEEDED - as gsl_sf_choose() returns double and just casting to int does not work - e.g. may be out by 1 rint() seems to work fine **/
-Rprintf("Total sets g(S) to be evaluated over: %d\n",total);
+if(verbose){Rprintf("Total sets g(S) to be evaluated over: %d\n",total);};
 /** total is the overall number of different subsets, including empty and full sets */
 g=(double *)R_alloc(total,sizeof(double));/** will hold all values of g() */
 for(i=0;i<total;i++){g[i]=0.0;} /** initalise */
@@ -295,7 +297,7 @@ g_mynodemax[g_index]=-1;/** impossible since boundary */
 /** ***************************************************************************************************************************************/
 while(g_index<total){
   if(timingon && g_index%10000==0){startclock = clock();}
-  if(g_index%10000==0){Rprintf("processed set %d of %d\n",g_index,total);R_CheckUserInterrupt();/** allow an interupt from R console */}
+  if(g_index%10000==0){if(verbose){Rprintf("processed set %d of %d\n",g_index,total);R_CheckUserInterrupt();};/** allow an interupt from R console */}
 myalphamax= -DBL_MAX;/** will hold the value of g(S) **/
 minindex=0;/** to enable alpha_index - to get correct index must be reset for each new S */
 for(i=0;i<g_cardinality[g_index];i++){/** for each member of current S defined in g_lookup[g_index] */
@@ -372,7 +374,7 @@ for(i=0;i<g_cardinality[g_index];i++){/** for each member of current S defined i
   
  if(timingon && g_index%10000==0 ){endclock = clock();
  elapsed = ((double) (endclock - startclock)) / CLOCKS_PER_SEC;
- Rprintf("CPU time: %10.6f secs\n",elapsed);}   
+ if(verbose){Rprintf("CPU time: %10.6f secs\n",elapsed);};};
 
   
 } /** end of loop over all subsets of S=0,....max_parents */

@@ -30,11 +30,11 @@ void init_hascycle(cycle *cyclestore,network *dag){
 
 unsigned int i;
 unsigned int numnodes=dag->numNodes;
-unsigned int *isactive, *incomingedges,*isactive_scratch;
+unsigned int *isactive, *incomingedges;
 unsigned int **graph,*graphtmp;
           
    isactive=(unsigned int *)R_alloc(numnodes,sizeof(unsigned  int));
-   isactive_scratch=(unsigned int *)R_alloc(numnodes,sizeof(unsigned  int));
+   /*isactive_scratch=(unsigned int *)R_alloc(numnodes,sizeof(unsigned  int));*/
    incomingedges=(unsigned  int *)R_alloc(numnodes,sizeof(unsigned  int));
    graph=(unsigned  int **)R_alloc(numnodes,sizeof(unsigned  int*));/** create storage for a copy of the dag->defn[][] */
    for(i=0;i<numnodes;i++){graphtmp=(unsigned  int *)R_alloc( numnodes,sizeof(unsigned  int)); graph[i]=graphtmp;}

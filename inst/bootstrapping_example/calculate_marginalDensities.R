@@ -5,7 +5,7 @@
 ##################################################################################################################
 library(abn);
 # define a DAG and call it mydag
-mydag<-matrix(c(
+mydag <- matrix(c(
   # D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 Year Loc.x Loc.y
   0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  0,   0,    0,    # D1
   0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  0,   0,    0,    # D2
@@ -21,7 +21,7 @@ mydag<-matrix(c(
   0, 0, 0, 0, 0, 0, 1, 0, 0, 0,  0,   0,    0,    # Loc.x
   0, 0, 0, 0, 0, 0, 1, 0, 0, 0,  0,   0,    0     # Loc.y
 ),byrow=TRUE,ncol=13); 
-colnames(mydag)<-rownames(mydag)<-names(pigs.1par);#set names
+colnames(mydag) <- rownames(mydag) <- names(pigs.1par);#set names
 
 ## setup distribution list for each node
 mydists.pigs <- list( D1 = "binomial",
@@ -50,7 +50,7 @@ print(fitabn(dag.m=mydag,data.df=pigs.1par,data.dists=mydists.pigs)$mlik);
 ## manually in some case. Using n.grid=1000 uses a fine grid of 1000 points. 
 ## this works well here for the "sensible" variables but terrible for the "bad" variables
 ##################################################################################################################
-marg<-fitabn(dag.m=mydag,data.df=pigs.1par,data.dists=mydists.pigs,compute.fixed=TRUE,n.grid=1000);#, marginal.node=1,marginal.param=1,variate.vec=seq(-150,5,len=1000),verbose=TRUE);
+marg <- fitabn(dag.m=mydag,data.df=pigs.1par,data.dists=mydists.pigs,compute.fixed=TRUE,n.grid=1000);#, marginal.node=1,marginal.param=1,variate.vec=seq(-150,5,len=1000),verbose=TRUE);
 
 ### Reproduce fitabn in order to get a grid of discrete values d and f(d):
 marnew <- marg$marginals[[1]]

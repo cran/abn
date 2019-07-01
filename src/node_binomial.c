@@ -19,7 +19,7 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
                                 datamatrix *designmatrix, const double priormean, const double priorsd,
                                 const int maxiters, const double epsabs,int storeModes)
 {
- int i,ss,status,status2,status_inits,index;
+ int i,ss,status,index;
  /*unsigned int k,j;*/
  int iter=0;
  /*unsigned int numparents=0;*/
@@ -91,7 +91,7 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
   
-    status_inits=generate_inits_n(myBeta,&gparams);
+    generate_inits_n(myBeta,&gparams);
   
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
  
@@ -127,7 +127,7 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
     T = gsl_multiroot_fdfsolver_hybridj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
-    status_inits=generate_inits_n(myBeta,&gparams);
+    generate_inits_n(myBeta,&gparams);
    
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
  
@@ -180,7 +180,7 @@ void calc_node_Score_binary(network *dag, datamatrix *obsdata, int nodeid,  int 
    n=obsdata->numDataPts;
    m=designmatrix->numparams;
    perm = gsl_permutation_alloc (m);
-   status2=gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
+   gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
    /*if(status2 != GSL_SUCCESS){Rprintf("binary no inversion at node %d \n",nodeid+1);logscore= -DBL_MAX; 
    } else {*/
      mydet=gsl_linalg_LU_lndet(hessgvalue);/** compute determinant but this might be a nan - overflow?*/

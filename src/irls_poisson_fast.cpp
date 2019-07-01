@@ -6,11 +6,10 @@ using namespace Rcpp;
 using namespace R;
 
 // [[Rcpp::export]]
-double factorial_fast(int n)
+double factorial_fast(double n)
 {
-  return (n == 1 || n == 0) ? 1 : factorial_fast(n - 1) * n;
+  return (n == 1.0 || n == 0.0) ? 1 : factorial_fast(n - 1.0) * n;
 }
-
 
 // [[Rcpp::export]]
 
@@ -62,15 +61,15 @@ if(sqrt(arma::dot(x-xold,x-xold)) < tol){
 }}
 
 arma::vec e;
-double ssr;
+//double ssr;
 e = (b - A*x);
-ssr = accu(e.t()*e);
+//ssr = accu(e.t()*e);
 
 df = A.n_cols;
 
 //scores
     for (int j = 0; j < nobs; ++j) {
-      f[j] = log(factorial_fast(b[j]));
+      f[j] = log(factorial_fast(1.0 * b[j]));
       }
     ll = arma::accu(b % (A * x) - exp(A * x) - f);
     

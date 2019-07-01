@@ -3,7 +3,7 @@
      \alias{ex0.dag.data}
      
      \title{Synthetic validation data set for use with abn library examples}
-     \description{300 observations simulated from a DAG with 10 binary variables, 10 gaussian variables and 10 poisson variables.
+     \description{300 observations simulated from a DAG with 10 binary variables, 10 Gaussian variables and 10 poisson variables.
      }
      \usage{ex0.dag.data} 
 \format{A data frame, binary variables are factors. The relevant formulas are given below (note these do not give parameter estimates just the form of the relationships, e.g. logit()=1 means a logit link function and comprises of only an intercept term).
@@ -44,42 +44,41 @@
    
 \examples{
 \dontrun{
-## This data set was generated using the following code:
- datasize<-300;
-tmp<-c(rep("y",as.integer(datasize/2)),rep("n",as.integer(datasize/2)));
-set.seed(1);
+## The dataset was (essentially) generated using the following code:
+datasize <- 300   
+tmp <- c(rep("y", as.integer(datasize/2)), rep("n", as.integer(datasize/2)))
+set.seed(1)
 
-ex0.dag.data<-data.frame(b1=sample(tmp,size=datasize,replace=TRUE),
-                b2=sample(tmp,size=datasize,replace=TRUE),
-                b3=sample(tmp,size=datasize,replace=TRUE),
-                b4=sample(tmp,size=datasize,replace=TRUE),
-                b5=sample(tmp,size=datasize,replace=TRUE),
-                b6=sample(tmp,size=datasize,replace=TRUE),
-                b7=sample(tmp,size=datasize,replace=TRUE),
-                b8=sample(tmp,size=datasize,replace=TRUE),
-                b9=sample(tmp,size=datasize,replace=TRUE),
-                b10=sample(tmp,size=datasize,replace=TRUE),
-                g1=rnorm(datasize,mean=0,sd=1),
-                g2=rnorm(datasize,mean=0,sd=1),
-                g3=rnorm(datasize,mean=0,sd=1),
-                g4=rnorm(datasize,mean=0,sd=1),
-                g5=rnorm(datasize,mean=0,sd=1),
-                g6=rnorm(datasize,mean=0,sd=1),
-                g7=rnorm(datasize,mean=0,sd=1),
-                g8=rnorm(datasize,mean=0,sd=1),
-                g9=rnorm(datasize,mean=0,sd=1),
-                g10=rnorm(datasize,mean=0,sd=1),
-                p1=rpois(datasize,lambda=10),
-                p2=rpois(datasize,lambda=10),
-                p3=rpois(datasize,lambda=10),
-                p4=rpois(datasize,lambda=10),
-                p5=rpois(datasize,lambda=10),
-                p6=rpois(datasize,lambda=10),
-                p7=rpois(datasize,lambda=10),
-                p8=rpois(datasize,lambda=10),
-                p9=rpois(datasize,lambda=10),
-                p10=rpois(datasize,lambda=10)
-                );
+ex0.dag.data <- data.frame(b1=sample(tmp, size=datasize, replace=TRUE),
+                b2=sample(tmp, size=datasize, replace=TRUE),
+                b3=sample(tmp, size=datasize, replace=TRUE),
+                b4=sample(tmp, size=datasize, replace=TRUE),
+                b5=sample(tmp, size=datasize, replace=TRUE),
+                b6=sample(tmp, size=datasize, replace=TRUE),
+                b7=sample(tmp, size=datasize, replace=TRUE),
+                b8=sample(tmp, size=datasize, replace=TRUE),
+                b9=sample(tmp, size=datasize, replace=TRUE),
+                b10=sample(tmp, size=datasize, replace=TRUE),
+                g1=rnorm(datasize, mean=0,sd=1),
+                g2=rnorm(datasize, mean=0,sd=1),
+                g3=rnorm(datasize, mean=0,sd=1),
+                g4=rnorm(datasize, mean=0,sd=1),
+                g5=rnorm(datasize, mean=0,sd=1),
+                g6=rnorm(datasize, mean=0,sd=1),
+                g7=rnorm(datasize, mean=0,sd=1),
+                g8=rnorm(datasize, mean=0,sd=1),
+                g9=rnorm(datasize, mean=0,sd=1),
+                g10=rnorm(datasize, mean=0,sd=1),
+                p1=rpois(datasize, lambda=10),
+                p2=rpois(datasize, lambda=10),
+                p3=rpois(datasize, lambda=10),
+                p4=rpois(datasize, lambda=10),
+                p5=rpois(datasize, lambda=10),
+                p6=rpois(datasize, lambda=10),
+                p7=rpois(datasize, lambda=10),
+                p8=rpois(datasize, lambda=10),
+                p9=rpois(datasize, lambda=10),
+                p10=rpois(datasize, lambda=10))
 }
 }
      

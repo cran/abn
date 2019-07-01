@@ -122,10 +122,10 @@ if(timingon){start = clock();}
 	 
   if(timingon){end = clock();
  elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
- Rprintf("CPU time:%10.6f\n",elapsed);} 
+ if(verbose){Rprintf("CPU time:%10.6f\n",elapsed);};} 
 
  searchNum++;
- if(searchNum%100==0){Rprintf("%d out of %d\n",searchNum,nosearches);}
+ if(searchNum%100==0){if(verbose){Rprintf("%d out of %d\n",searchNum,nosearches);};};
 }
 
 gsl_rng_free (r);

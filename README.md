@@ -1,6 +1,5 @@
 # abn devel project (PRIVATE)
 
-## how to
 
 ## structure
 * abn/ contains source code

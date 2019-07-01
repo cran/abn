@@ -32,7 +32,7 @@ SEXP fit_single_node(SEXP R_obsdata, SEXP R_child, SEXP R_parents, SEXP R_numVar
   
 /** ****************/
 /** declarations **/
-unsigned int i,k,index;
+unsigned int i,k;
 int errverbose,verbose;
 datamatrix data,designmatrix;
 const double priormean=asReal(R_priors_mean);/*Rprintf("priormean=%f %f\n",priormean[0],priormean[5]);*/
@@ -101,7 +101,7 @@ make_dag(&dag, numVars,(SEXP)NULL,1,R_vartype,&maxparents,R_groupedvars);/** cre
    curnode=asInteger(R_child)-1;/** -1 since R indexes start at unity and not zero **/ 
                            /** important NOTE: the nodecache is indexed in terms of i and NOT curnode e.g. it runs from 0,,,numVarsinCache-1 but the actual nodeid are in whichnodes */ 
   
-index=0;                         
+/*index=0;*/                         
          /** copy the parent combination in cache into dag  **/
 	 for(k=0;k<numVars;k++){dag.defn[curnode][k]=INTEGER(R_parents)[k];}
 /*Rprintf("child=%d\n",curnode+1);

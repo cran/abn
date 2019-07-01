@@ -18,7 +18,7 @@ double nobs;
 nobs = A.n_rows;
 double df;
 df = A.n_cols;
-double n;
+//double n;
 
 double ll;
 double aic;
@@ -68,7 +68,7 @@ if(sqrt(arma::dot(x-xold,x-xold)) < tol){
  break;
 }}
 
-n = A.n_rows;
+//n = A.n_rows;
 
 //arma::vec e;
 //double ssr;

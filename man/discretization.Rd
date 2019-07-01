@@ -15,7 +15,7 @@ discretization(data.df = NULL,
 }
 \arguments{
   \item{data.df}{a data frame containing the data to discretize, binary variables must be declared as factors, other as numeric vector. The data frame must be named.}
-    \item{data.dists}{a named list giving the distribution for each node in the network}
+    \item{data.dists}{a named list giving the distribution for each node in the network.}
   \item{discretization.method}{a character vector giving the discretization method to use; see details. If a number is provided, the variable will be discretized by equal binning.}
   
   \item{nb.states}{logical variable to select the output. If set to TRUE a list with the discretized data frame and the number of state of each variable is returned. If set to FALSE only the discretized data frame is returned.}}
@@ -48,7 +48,7 @@ is a modification of Sturges' formula which attempts to improve its performance 
 
 \code{terrell-scott} stands for Terrell-Scott's rule. The number of bins is given by: \deqn{(2 n)^{1/3}}{(2 n)^{1/3}}
 
-This is known that Cencov, Rice and Terrell-Scott rules over estimates k compared to other rules due to his simplicity.
+This is known that Cencov, Rice and Terrell-Scott rules over-estimates k, compared to other rules due to his simplicity.
 
 \code{sturges} stands for Sturges's rule. The number of bins is given by: \deqn{1 + \log_2(n)}{1 + \log_2(n)}
 
@@ -56,13 +56,14 @@ This is known that Cencov, Rice and Terrell-Scott rules over estimates k compare
 \deqn{range(x) / \sigma(x) n^{-1/3}}{range(x) / \sigma(x) n^{-1/3}}
 }
 
-\value{the discretized dataframe or a list containing the table of counts for each bin the discretized dataframe.}
+\value{The discretized dataframe or a list containing the table of
+  counts for each bin the discretized data frame.}
 
 \author{Gilles Kratzer}
 
-\references{Garcia, S., et al.  (2013) A survey of discretization techniques: Taxonomy and empirical analysis in supervised learning. \emph{IEEE Transactions on Knowledge and Data Engineering}, 25.4, 734-750.
+\references{Garcia, S., et al.  (2013). A survey of discretization techniques: Taxonomy and empirical analysis in supervised learning. \emph{IEEE Transactions on Knowledge and Data Engineering}, 25.4, 734-750.
 
-Cebeci, Z. and Yildiz, F. (2017) Unsupervised Discretization of Continuous Variables in a Chicken Egg Quality Traits Dataset. \emph{Turkish Journal of Agriculture-Food Science and Technology}, 5.4, 315-320.
+Cebeci, Z. and Yildiz, F. (2017). Unsupervised Discretization of Continuous Variables in a Chicken Egg Quality Traits Dataset. \emph{Turkish Journal of Agriculture-Food Science and Technology}, 5.4, 315-320.
 }
 
 \examples{
@@ -72,8 +73,7 @@ dist <- list("gaussian")
 names(dist) <- c("rv")
 
 ## Compute the entropy through discretization
-entropyData(freqs.table = discretization(data.df = rv,
-data.dists = dist,
-discretization.method = "sturges",
-nb.states = FALSE))
+entropyData(freqs.table = discretization(data.df = rv, data.dists = dist,
+            discretization.method = "sturges", nb.states = FALSE))
 }
+\keyword{utilities}

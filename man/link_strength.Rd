@@ -8,8 +8,10 @@
 % Status          : Unknown, Use with caution!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\name{link.strength}
+\name{linkStrength}
+\alias{linkStrength}
 \alias{link.strength}
+\alias{linkstrength}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
@@ -18,18 +20,15 @@
 \description{A flexible implementation of multiple proxy for strength measures usefull for visualizing the edge connections in a Bayesian Network learned form observational data.}
 
 \usage{
-
-link.strength(dag.m = NULL,
-              data.df = NULL, 
-              data.dists = NULL, 
-              method = c("mi.raw","mi.raw.pc","mi.corr","ls","ls.pc","stat.dist"),
+linkStrength(dag, data.df = NULL, data.dists = NULL, 
+              method = c("mi.raw", "mi.raw.pc", "mi.corr", "ls", "ls.pc", "stat.dist"),
               discretization.method = "doane")
 }
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{dag.m}{a matrix or a formula statement (see details for format) defining the network structure, a directed acyclic graph (DAG). Note that rownames must be set or given in \code{data.dist} if the DAG is given via a formula statement.}
+  \item{dag}{a matrix or a formula statement (see details for format) defining the network structure, a directed acyclic graph (DAG). Note that rownames must be set or given in \code{data.dist} if the DAG is given via a formula statement.}
   \item{data.df}{a data frame containing the data used for learning each node, binary variables must be declared as factors.}
-  \item{data.dists}{a named list giving the distribution for each node in the network, see details.}
+  \item{data.dists}{a named list giving the distribution for each node in the network, see \sQuote{Details}.}
   \item{method}{the method to be used. See \sQuote{Details}.}
   \item{discretization.method}{a character vector giving the discretization method to use. See \code{\link{discretization}}.}
 }
@@ -56,12 +55,12 @@ The statistical distance is defined as SD(X,Y) = 1- MI(X,Y) / max(H(X),H(Y)).
 \value{The function returns a DAG wise matrix with the requested metric.}
 
 \references{
-Boerlage, Brent. Link strength in bayesian networks. Diss. University of British Columbia, (1992).
+Boerlage, B. (1992).  Link strength in Bayesian networks. Diss. University of British Columbia.
 
 Ebert-Uphoff, Imme. "Tutorial on how to measure link strengths in discrete Bayesian networks." (2009).
 
-Further information about \bold{abn} can be found at:\cr
-  \url{http://www.r-bayesian-networks.org}}
+Further information about \pkg{abn} can be found at:\cr
+  \url{http://r-bayesian-networks.org}}
 
 
 \author{Gilles Kratzer}
@@ -69,30 +68,20 @@ Further information about \bold{abn} can be found at:\cr
 
 \examples{
 
-dist <- list(a="gaussian",b="gaussian",c="gaussian")
-data.param <- matrix(data = c(0,1,0,
-                              0,0,1,
-                              0,0,0),nrow = 3L,ncol = 3L,byrow = TRUE)
+dist <- list(a="gaussian", b="gaussian", c="gaussian")
+data.param <- matrix(c(0,1,0, 0,0,1, 0,0,0), nrow = 3L, ncol = 3L, byrow = TRUE)
     
-data.param.var <- matrix(data = 0,nrow = 3L,ncol = 3L)
+data.param.var <- matrix(0, nrow = 3L, ncol = 3L)
 diag(data.param.var) <- c(0.1,0.1,0.1)
     
-out <- simulateabn(data.dists = dist,
-    n.chains = 1,
-    n.adapt = 1000,
-    n.thin = 1,
-    n.iter = 100,
-    data.param = data.param,
-    data.param.var = data.param.var,
-    simulate = TRUE,
-    seed = 132)
+out <- simulateAbn(data.dists = dist,
+    n.chains = 1, n.adapt = 1000, n.thin = 1, n.iter = 100,
+    data.param = data.param, data.param.var = data.param.var)
 
-link.strength(dag.m = data.param,
-data.df = out,
-data.dists = dist,
-method = "ls",
-discretization.method = "sturges")
+linkStrength(data.param, data.df = out, data.dists = dist,
+             method = "ls", discretization.method = "sturges")
 
 }
 
-\keyword{link strength, connection strength}
+\keyword{utilities}
+\concept{DAG}

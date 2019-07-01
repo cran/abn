@@ -6,45 +6,45 @@
 ###############################################################################
 
 ## fit a given regression using INLA
-calc.node.inla.glm<-function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
+calc.node.inla.glm <- function(child.loc,dag.m.loc,data.df.loc,data.dists.loc,ntrials.loc,exposure.loc,compute.fixed.loc,
                          mean.intercept.loc,prec.intercept.loc,mean.loc,prec.loc,loggam.shape.loc,loggam.inv.scale.loc,verbose.loc){
 #print(data.df.loc);
  ## 1. get the formula part of the call - create a string of this
  if(length(which(dag.m.loc[child.loc,-child.loc]==1))==0){## independent node
-                        str.eqn.str<-paste(colnames(dag.m.loc)[child.loc],"~1,");
+                        str.eqn.str <- paste(colnames(dag.m.loc)[child.loc],"~1,");
  } else { ## have some covariate
     
     if(dim(dag.m.loc)[1]==2){## special case - 2x2 DAG and so names are not retained when -child.loc
-    str.eqn.str<-paste(colnames(dag.m.loc)[child.loc],"~",colnames(dag.m.loc)[-child.loc],",",sep="");
-    } else {str.eqn.str<-paste(colnames(dag.m.loc)[child.loc],"~",paste(names(which(dag.m.loc[child.loc,-child.loc]==1)),collapse="+",sep=""),",",sep="");}
+    str.eqn.str <- paste(colnames(dag.m.loc)[child.loc],"~",colnames(dag.m.loc)[-child.loc],",",sep="");
+    } else {str.eqn.str <- paste(colnames(dag.m.loc)[child.loc],"~",paste(names(which(dag.m.loc[child.loc,-child.loc]==1)),collapse="+",sep=""),",",sep="");}
   }
  #cat(str.eqn.str,"\n");
  #stop("");
  ## 2. data set
- str.data<-"data=data.df.loc,";
+ str.data <- "data=data.df.loc,";
  
  ## 3. family
- str.family<-paste("family=\"",data.dists.loc[[child.loc]],"\",",sep="");
+ str.family <- paste("family=\"",data.dists.loc[[child.loc]],"\",",sep="");
  
  ## 4. additional parameter for number of trials (binomial) or exposure (poisson)
- str.extra<-"";
- if(data.dists.loc[[child.loc]]=="binomial"){ str.extra<-paste("Ntrials=ntrials.loc,",sep="");}
- if(data.dists.loc[[child.loc]]=="poisson"){ str.extra<-paste("E=exposure.loc,",sep="");}
- if(data.dists.loc[[child.loc]]=="gaussian"){str.extra<-paste("control.family=list(hyper = list(prec = list(prior=\"loggamma\",param=c(",
+ str.extra <- "";
+ if(data.dists.loc[[child.loc]]=="binomial"){ str.extra <- paste("Ntrials=ntrials.loc,",sep="");}
+ if(data.dists.loc[[child.loc]]=="poisson"){ str.extra <- paste("E=exposure.loc,",sep="");}
+ if(data.dists.loc[[child.loc]]=="gaussian"){str.extra <- paste("control.family=list(hyper = list(prec = list(prior=\"loggamma\",param=c(",
                                            loggam.shape.loc,",",loggam.inv.scale.loc,")))),\n",sep="");}
 
 
  ## 5. get the full command
- res<-NULL;
- start.str<-"res<-inla(";
- end.str  <-paste("\ncontrol.fixed=list(mean.intercept=",mean.intercept.loc,",\n",
+ res <- NULL;
+ start.str <- "res <- inla(";
+ end.str <- paste("\ncontrol.fixed=list(mean.intercept=",mean.intercept.loc,",\n",
                                    "prec.intercept=",prec.intercept.loc,",\n",
                                    "mean=",          mean.loc,",\n",
                                    "prec=",          prec.loc,",\n", 
                                    "compute=",       compute.fixed.loc,"))\n",sep="");
-#error.str<-"inla.arg=\"-b 2>/dev/null\",";
-  r<-NULL;
- full.command<-paste("r<-try(",start.str,str.eqn.str,str.data,str.family,str.extra,#error.str,
+#error.str <- "inla.arg=\"-b 2>/dev/null\",";
+  r <- NULL;
+ full.command <- paste("r <- try(",start.str,str.eqn.str,str.data,str.family,str.extra,#error.str,
                      end.str,",silent=TRUE)",sep="");
 
  ## 6. some debugging - if requested

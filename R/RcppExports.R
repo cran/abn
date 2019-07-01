@@ -19,36 +19,28 @@ expit_cpp <- function(x) {
     .Call('_abn_expit_cpp', PACKAGE = 'abn', x)
 }
 
-irls_binomial_cpp_br <- function(A, b, maxit, tol) {
-    .Call('_abn_irls_binomial_cpp_br', PACKAGE = 'abn', A, b, maxit, tol)
+irls_binomial_cpp <- function(A, b, maxit, tol) {
+    .Call('_abn_irls_binomial_cpp', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
-irls_binomial_cpp_fast_br <- function(A, b, maxit, tol) {
-    .Call('_abn_irls_binomial_cpp_fast_br', PACKAGE = 'abn', A, b, maxit, tol)
+irls_binomial_cpp_br <- function(A, b, maxit, tol) {
+    .Call('_abn_irls_binomial_cpp_br', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
 irls_binomial_cpp_fast <- function(A, b, maxit, tol) {
     .Call('_abn_irls_binomial_cpp_fast', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
-irls_binomial_cpp <- function(A, b, maxit, tol) {
-    .Call('_abn_irls_binomial_cpp', PACKAGE = 'abn', A, b, maxit, tol)
-}
-
-irls_gaussian_cpp_fast <- function(A, b, maxit, tol) {
-    .Call('_abn_irls_gaussian_cpp_fast', PACKAGE = 'abn', A, b, maxit, tol)
+irls_binomial_cpp_fast_br <- function(A, b, maxit, tol) {
+    .Call('_abn_irls_binomial_cpp_fast_br', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
 irls_gaussian_cpp <- function(A, b, maxit, tol) {
     .Call('_abn_irls_gaussian_cpp', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
-factorial_fast <- function(n) {
-    .Call('_abn_factorial_fast', PACKAGE = 'abn', n)
-}
-
-irls_poisson_cpp_fast <- function(A, b, maxit, tol) {
-    .Call('_abn_irls_poisson_cpp_fast', PACKAGE = 'abn', A, b, maxit, tol)
+irls_gaussian_cpp_fast <- function(A, b, maxit, tol) {
+    .Call('_abn_irls_gaussian_cpp_fast', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
 factorial <- function(n) {
@@ -57,6 +49,14 @@ factorial <- function(n) {
 
 irls_poisson_cpp <- function(A, b, maxit, tol) {
     .Call('_abn_irls_poisson_cpp', PACKAGE = 'abn', A, b, maxit, tol)
+}
+
+factorial_fast <- function(n) {
+    .Call('_abn_factorial_fast', PACKAGE = 'abn', n)
+}
+
+irls_poisson_cpp_fast <- function(A, b, maxit, tol) {
+    .Call('_abn_irls_poisson_cpp_fast', PACKAGE = 'abn', A, b, maxit, tol)
 }
 
 mi_cpp <- function(joint_dist) {

@@ -40,9 +40,9 @@ odds(x)
 Those functions become numerically unstable if evaluated at the edge or the definition range.
 }
 \value{
-A real vector corresponding to the expit, the logit or the odds of the input real values.
+A real vector corresponding to the expit, the logit or the odds of the input values.
 }
 
 \author{Gilles Kratzer}
 
-\keyword{expit, logit, odds}
+\keyword{manip}

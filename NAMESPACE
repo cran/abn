@@ -2,41 +2,60 @@ export(
        "tographviz",
        "fitabn",
        "buildscorecache",
-       "buildscorecache.mle",
-       "fitabn.mle",
        "mostprobable",
        "search.hillclimber",
+       "searchHillclimber",
        "plotabn",
-       "simulateabn",
+       "simulateAbn",
        "logit",
        "expit",
        "odds",
        "or",
        "mb",
-       "link.strength",
+       "linkStrength",
        "discretization",
        "essentialGraph",
        "compareDag",
        "infoDag",
        "simulateDag",
-       "search.heuristic",
+       "searchHeuristic",
        "entropyData",
-       "miData"
-       
-#       "irls_binomial_cpp_br",
-#       "irls_binomial_cpp"
+       "miData",
+       "scoreContribution",
+       "create_abnDag"
         )
 
 useDynLib(abn)
 
-importFrom("Cairo",Cairo)     
-importFrom("grDevices", "dev.list", "dev.set")
-importFrom("graphics", "plot")
+importFrom("grDevices", "rgb", "dev.flush", "dev.new")
+importFrom("graphics", "plot", "lines", "par", "points", "title")
 importFrom("methods", "initialize", "new", "slot")
-importFrom("stats", "complete.cases", "sd", "spline","coef", "model.matrix", "pnorm", "pt", "residuals")
+importFrom("stats", "complete.cases", "sd", "spline","coef", "model.matrix", "pnorm", "pt", "residuals", "hatvalues")
 importFrom("rjags",coda.samples, jags.model)
-importFrom("stats", "IQR", "cor", "nobs", "rbinom")
+importFrom("stats", "IQR", "cor", "nobs", "rbinom", "dbinom", "dist", "dnorm", "dpois", "glm","predict.glm", "sigma")
 importFrom("utils", "tail", "combn")
 importFrom("nnet", "multinom", "nnet.default")
 import("MASS")
 importFrom("lme4", "glmer", "VarCorr")
+
+
+exportClasses("abnDag", 
+			  "abnCache", 
+		      "abnHeuristic",
+		      "abnMostprobable",
+		      "abnHillClimber",
+		      "abnFit")
+              	
+S3method(print, abnDag)
+S3method(print, abnCache)
+S3method(print, abnHeuristic)
+S3method(print, abnMostprobable)
+S3method(print, abnFit)
+S3method(print, abnHillClimber)
+S3method(plot, abnHillClimber)
+S3method(plot, abnDag)
+S3method(plot, abnHeuristic)
+S3method(plot, abnMostprobable)
+S3method(summary, abnDag)
+S3method(summary, abnFit)
+S3method(summary, abnMostprobable)

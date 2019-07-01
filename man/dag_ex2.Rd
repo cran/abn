@@ -30,10 +30,8 @@
    
 
 \examples{
-
-\dontrun{
-## the true underlying stochastic model has DAG - this data is a single realisation.
-ex2.true.dag<-matrix(data=c(
+## The true underlying stochastic model has DAG - this data is a single realisation.
+ex2.true.dag <- matrix(data = c(
    0,1,0,1,0,0,1,0,1,1,1,0,1,0,0,0,0,0, 
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
@@ -52,15 +50,10 @@ ex2.true.dag<-matrix(data=c(
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0
-   ), ncol=18,byrow=TRUE);
+   ), ncol = 18, byrow = TRUE)
 
-colnames(ex2.true.dag)<-rownames(ex2.true.dag)<-c("b1","g1","p1","b2","g2","p2","b3","g3",
-"p3","b4","g4","p4","b5","g5","p5","b6","g6","p6");
-
-}
-
-
-
+colnames(ex2.true.dag) <- rownames(ex2.true.dag) <- c("b1","g1","p1","b2",
+  "g2","p2","b3","g3","p3","b4","g4","p4","b5","g5","p5","b6","g6","p6")
 }
 
 

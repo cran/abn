@@ -10,6 +10,7 @@
 
 \name{simulateDag}
 \alias{simulateDag}
+\alias{simulate.dag}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
@@ -18,7 +19,7 @@
 \description{Simulate a Directed Acyclic Graph (ABN) with arbitrary arc density.}
 
 \usage{
-simulateDag(node.name = NULL, 
+simulateDag(node.name = NULL,
             data.dists = NULL, 
             nn = 0.5)
 }
@@ -33,24 +34,24 @@ simulateDag(node.name = NULL,
 \details{
 This function generates DAGs by sampling triangular matrices and reorder randomly columns and rows. The network density (\code{nn}) is used column wise as binomial sampling probability. Then the matrix is named using the user provided names.}
 
-\value{A list containing a named matrix and a named list giving the distribution for each node.}
+\value{An object of class \code{abnDag} a named matrix and a named list giving the distribution for each node.}
 
 \references{
-Further information about \bold{abn} can be found at:\cr
-  \url{http://www.r-bayesian-networks.org}}
+Further information about \pkg{abn} can be found at:\cr
+  \url{http://r-bayesian-networks.org}}
 
 \author{Gilles Kratzer}
 
 \examples{
-##example using Ozon entries:
-
-dist <- list(Ozone="gaussian",
-Solar.R="gaussian",
-Wind="gaussian",
-Temp="gaussian",
-Month="gaussian",
-Day="gaussian")
-simulateDag(node.name = names(dist),data.dists = dist,nn = 0.8)
+## Example using Ozon entries:
+dist <- list(Ozone="gaussian",   Solar.R="gaussian",  Wind="gaussian", 
+             Temp="gaussian",    Month="gaussian",    Day="gaussian")
+out <- simulateDag(node.name = names(dist), data.dists = dist, nn = 0.8)
+\dontrun{
+plot(out)
+}
 }
 
-\keyword{simulated structure, DAG}
+\keyword{utilities}
+\concept{DAG}
+
