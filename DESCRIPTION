@@ -1,5 +1,5 @@
 Package: abn
-Version: 2.0
+Version: 2.1
 Date: 2019-06-06
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: c(person("Gilles", "Kratzer", role = c("aut", "cre"),
@@ -31,6 +31,6 @@ LazyData: true
 URL: http://r-bayesian-networks.org
 RoxygenNote: 6.0.1
 NeedsCompilation: yes
-Packaged: 2019-06-27 15:13:25 UTC; Kratzer
+Packaged: 2019-07-03 20:38:19 UTC; Kratzer
 Repository: CRAN
-Date/Publication: 2019-07-01 09:10:48 UTC
+Date/Publication: 2019-07-04 10:00:03 UTC

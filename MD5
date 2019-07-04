@@ -1,5 +1,5 @@
 273daa1421ca436ce96a9d2d165c9538 *ChangeLog
-ff4fb79c33b5ee1ee747ca346ca21cec *DESCRIPTION
+24b58a326c8a10a58da5071778c882a6 *DESCRIPTION
 ade5ebf9bc48ce1ebeb5085c8d5bd451 *NAMESPACE
 0b68e3f18bdf726fb516f35f43ca8867 *R/RcppExports.R
 e6535eb8a42c5dedf75fc9a85a5e0986 *R/abn-infotheo.R
@@ -92,7 +92,7 @@ aff84eb7a50f64245ceb40d52885c934 *man/plot-abn.Rd
 9dd5c90adc3c8421653145bc22b09960 *man/simulate-dag.Rd
 f016bc9b7d4774359031bff39b85471f *man/tographviz.Rd
 9ce2fa2e4efd561673349f8ac43cb372 *man/var33.Rd
-1c03495406e9de001ce9b9a6602caca4 *src/Makevars.in
+96b3de3864450e45ef62a245b0ef93ff *src/Makevars.in
 8bfbf7a9b23a9469fb89f604d3069e90 *src/Makevars.win
 0c4f59769dc8aec82ca0a8b896435510 *src/RcppExports.cpp
 64a743c4fb75bc3eec6a56bd2667fa8f *src/abn_toolbox.cpp
