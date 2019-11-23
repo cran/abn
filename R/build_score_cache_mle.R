@@ -2,8 +2,9 @@
 
 ## fit a given DAG to data
 buildscorecache.mle <- function(data.df = NULL, data.dists = NULL, max.parents = NULL, adj.vars = NULL, cor.vars = NULL, dag.banned = NULL, dag.retained = NULL, which.nodes = NULL, maxit = 100, 
-    tol = 10^-8, centre = TRUE, defn.res = NULL, dry.run = FALSE, verbose = FALSE) {
+    tol = 10^-8, centre = TRUE, defn.res = NULL, dry.run = FALSE, verbose = FALSE, seed = 9062019) {
     
+    set.seed(seed)
     ## which.nodes
     if (!is.null(which.nodes)) {
         data.df <- data.df[, which.nodes]
@@ -72,7 +73,7 @@ buildscorecache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
             ## run a series of checks on the DAG passed
             dag.retained <- check.valid.dag(dag.m = dag.retained, data.df = data.df, is.ban.matrix = FALSE, group.var = group.var)
         } else {
-            if (grepl("~", as.character(dag.retained)[1], fixed = T)) {
+            if (grepl("~", as.character(dag.retained)[1], fixed = TRUE)) {
                 dag.retained <- formula.abn(f = dag.retained, name = colnames(data.df))
                 ## run a series of checks on the DAG passed
                 dag.retained <- check.valid.dag(dag.m = dag.retained, data.df = data.df, is.ban.matrix = FALSE, group.var = group.var)

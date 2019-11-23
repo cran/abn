@@ -654,7 +654,7 @@ double compute_mlik_pois_marg_nm(const gsl_vector *finitestepsize_vec, void *par
    gsl_matrix *hessgvalues3pt=gparams->mattmp3;
    double gvalue=gparams->gvalue;
    
-   int status,sss;
+   int sss;
    double mydet;
    double logscore,logscore3pt;
    double error_val=0.0;
@@ -670,11 +670,11 @@ double compute_mlik_pois_marg_nm(const gsl_vector *finitestepsize_vec, void *par
  
    /*for(i=0;i<hessgvalues3pt->size1;i++){for(j=0;j<hessgvalues3pt->size2;j++){Rprintf("%e ",gsl_matrix_get(hessgvalues3pt,i,j));}Rprintf("\n");}*/
    
-   status=gsl_linalg_LU_decomp(hessgvalues,perm,&sss);
+   /*status=*/gsl_linalg_LU_decomp(hessgvalues,perm,&sss);
    mydet=gsl_linalg_LU_lndet(hessgvalues);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
    logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
   
-   status=gsl_linalg_LU_decomp(hessgvalues3pt,perm,&sss);
+   /*status=*/gsl_linalg_LU_decomp(hessgvalues3pt,perm,&sss);
    mydet=gsl_linalg_LU_lndet(hessgvalues3pt);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
    logscore3pt= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
    
@@ -701,7 +701,7 @@ double compute_mlik_pois_marg_brent(double finitestepsize, void *params)
    gsl_matrix *hessgvalues3pt=gparams->mattmp3;
    double gvalue=gparams->gvalue;
    
-   int status,sss;
+   int sss;
    double mydet;
    double logscore,logscore3pt;
    double error_val=0.0;
@@ -718,11 +718,11 @@ double compute_mlik_pois_marg_brent(double finitestepsize, void *params)
  
    /*for(i=0;i<hessgvalues3pt->size1;i++){for(j=0;j<hessgvalues3pt->size2;j++){Rprintf("%e ",gsl_matrix_get(hessgvalues3pt,i,j));}Rprintf("\n");}*/
    
-   status=gsl_linalg_LU_decomp(hessgvalues,perm,&sss);
+   /*status=*/ gsl_linalg_LU_decomp(hessgvalues,perm,&sss);
    mydet=gsl_linalg_LU_lndet(hessgvalues);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
    logscore= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
   
-   status=gsl_linalg_LU_decomp(hessgvalues3pt,perm,&sss);
+   /*status=*/ gsl_linalg_LU_decomp(hessgvalues3pt,perm,&sss);
    mydet=gsl_linalg_LU_lndet(hessgvalues3pt);/** compute determinant but this might be a nan - overflow? gsl_linalg_LU_lndet*/
    logscore3pt= -n*gvalue-0.5*mydet+(m/2.0)*log((2.0*M_PI)/n);/** this is the final value */
    

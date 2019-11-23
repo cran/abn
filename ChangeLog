@@ -1,7 +1,22 @@
 ---------------------------
 -- ChangeLog - abn --
 ---------------------------
-2019-06-06 Gilles Kratzer & Reinhard Furrer (version 2.0)
+
+2019-11-22 Gilles Kratzer & Reinhard Furrer (version 2.2)
+	   * New vignette describing new functionalities!
+	   * Old vignette is store in the﻿directories inst/bootstrapping_example and inst/old_vignette
+	   * Dataset: FCV
+	   * Methods related to the class abnFit: family, logLik, AIC, BIC, nobs, coef 
+	   * Bugs corrected in plotabn()
+	   * Compilation warnings corrected
+	   * Typos in man help files corrected
+	   * Compiler flags that were not compatible with the Solaris OS
+
+2019-07-04 Gilles Kratzer & Reinhard Furrer (version 2.1)
+	   * Compiler flags that were not compatible with the Solaris system
+	   * Note related to INLA
+
+2019-07-01 Gilles Kratzer & Reinhard Furrer (version 2.0)
 	   * Implementation of S3 methods (print, summary, plot)
 	   * New classes:
 	   		* abnDag, abnCache, abnHeuristic, abnMostprobable, abnHillClimber, abnFit 
@@ -14,6 +29,7 @@
 	   * modification of search.hillclimber(): no interactive plotting possible
 	   * buildscorecache() becomes a parametrisable wrapper for the bayesian and the mle methods
 	   * fitabn() becomes a parametrisable wrapper for the bayesian and the mle methods
+	   * Dataset: adg
 	   * Multiple Bugs corrected
 
 2018-07-23 Gilles Kratzer (version 1.2)

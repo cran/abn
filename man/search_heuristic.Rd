@@ -3,7 +3,7 @@
 % Author          : Gilles Kratzer
 % Created On      : 04/07/2018
 % Last Modified By: 17/07/2018
-% Last Modified On: 
+% Last Modified On: 21/11/2019
 % Update Count    : 
 % Status          : Unknown, Use with caution!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,14 +14,14 @@
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{A familly of heuristic algorithms that aims at finding high scoring directed acyclic graphs}
+\title{A family of heuristic algorithms that aims at finding high scoring directed acyclic graphs}
 
 \description{A flexible implementation of multiple greedy search algorithms to find high scoring network (DAG)}
 
 \usage{
 searchHeuristic(score.cache = NULL,
-                        score = "mlik",
-                        num.searches = 1,
+               score = "mlik",
+               num.searches = 1,
                max.steps = 100,
                seed = 42,
                verbose = FALSE,
@@ -33,7 +33,7 @@ searchHeuristic(score.cache = NULL,
 %- maybe also `usage' for other objects documented here.
 \arguments{
   \item{score.cache}{output from \code{buildscorecache()}.}
-  \item{score}{which score should be used to score the network. Possible choices \code{aic, bic, mdl, mlik}.}
+  \item{score}{which score should be used to score the network. Possible choices are \code{aic, bic, mdl, mlik}.}
   \item{num.searches}{a positive integer giving the number of different search to run, see details.}
   \item{max.steps}{a constant giving the number of search steps per search, see details.}
   \item{seed}{a non-negative integer which sets the seed.}
@@ -49,41 +49,46 @@ searchHeuristic(score.cache = NULL,
 
 \details{
 
-This function contains a flexible implementation of multiple greedy heuristic algorithm particularly well adapted to \code{abn} framework.
+This function is a flexible implementation of multiple greedy heuristic algorithms, particularly well adapted to the \code{abn} framework. It targets multi-random restarts heuristic algorithms. The user can select the \code{num.searches} and the maximum number of steps within by \code{max.steps}. The optimization algorithm within each search is relatively rudimentary. 
 
-This function is a flexible implementation of multiple greedy search algorithms to find high scoring network.
+The function \code{searchHeuristic} is different from the \code{\link{searchHillclimber}} in the sense that this function is fully written in R, whereas the \code{\link{searchHillclimber}} is written in C and thus expected to be faster. The function \code{\link{searchHillclimber}} at each hill-climbing step consider every information from the pre-computed scores cache while the function \code{\link{searchHeuristic}} performs a local stepwise optimization. This function chooses a structural move (or edge move) and compute the score's change. On this point, it is closer to the MCMCMC algorithm from Madigan and York (1995) and Giudici and Castelo (2003) with a single edge move.
 
+If the user select \code{random}, then a random valid DAG is selected. The routine used favourise low density structure. The function implements three algorithm selected with the parameter \code{algo}: \code{hc}, \code{tabu} or \code{sa}. 
 
-The hill-climber procedure \code{hc} is similar, but not identical, to the method presented in Heckerman et al. 1995. Each search begins with a choice of node ordering and then randomly choose a DAG structure or a user given matrix. If a unique matrix is provided no attemp will 
+If \code{algo=hc}:
+The Hill-climber algorithm (\code{hc}) is a single move algorithm. At each Hill-climbing step within a search an arc is attempted to be added. The new score is computed and compared to the previous network's score.
 
-  The procedure runs a greedy hill climbing search similar, but not identical, to the method presented initially in Heckerman et al. 1995. Each search begins with a randomly chosen DAG structure where this is constructed in such a way as to attempt to choose a DAG uniformly from the vast landscape of possible structures. The algorithm used is as follows: given a node cache (from \code{\link{buildscorecache}}), then within this set of all allowed local parent combinations, a random combination is chosen for each node. This is then combined into a full DAG which is then checked for cycles, where this check iterates over the nodes in a random order. If all nodes have at least one child (i.e. at least one cycle is present) then the first node examined has all its children removed, and the check for cycles is then repeated. If this has removed the only cycle present then this DAG is used at the starting point for the search, if not a second node is chosen (randomly) and the process is then repeated until a DAG is obtained. 
+If \code{algo=tabu}:
+The same algorithm is as with \code{hc} is used, but a list of banned moves is computed. The parameter \code{tabu.memory} controls the length of the tabu list. The idea is that the classical Hill-climber algorithm is inefficient when it should cross low probability regions to unblock from a local maximum and reaching a higher score peak. By forcing the algorithm to choose some not already used moves, this will force the algorithm to escape the local maximum.
 
-  The actual hill climbing algorithm itself differs slightly from that presented in Heckerman et al. as a full cache of all possible local combinations are available. At each hill-climbing step everything in the node cache is considered, in other words all possible single swaps between members of cache currently present in the DAG and those in the full cache. The single swap which provides the greatest increase in goodness of fit is chosen. A single swap here is the removal or addition of any one node-parent combination present in the cache while avoiding a cycle. This means that as well as all single arc changes (addition or removal), multiple arc changes are also considered at each same step, note however that arc reversal in this scheme takes two steps (as this requires first removal of a parent arc from one node and then addition of a parent arc to a different node). The original algorithm perturbed the current DAG by only a single arc at each step but also included arc reversal. The current implementation may not be any more efficient that the original but is arguably more natural given a pre-computed cache of local scores.
-
-  A start DAG may be provided in which case num.searches must equal 1 - this option is really just to provide a local search around a previously identified optimal DAG.
-
-  This function is designed for two different purposes: i) interactive visualisation; and ii) longer batch processing. The former prvoides easy visual "eyeballing" of data in terms of its majority consensus network (or similar threshold), which is a graphical structure which comprises of all arcs which feature in a given proportion (\code{support.threshold}) of locally optimal DAGs already identified during the run. For example, running 1000 searches with \code{trace=TRUE} will after each new search plot the current consensus network based on all previous searches. The general hope is that this structure will stabilize - become fixed - relatively quickly, at least for problems with smaller numbers of nodes. Note that library Rgraphviz is needed when \code{trace=TRUE}. When \code{trace=FALSE} then there is no graphical output and as such is rather faster. The format of results is identical in each case but note that the choice of random starting networks (the only random part in the algorithm) used when \code{trace=TRUE} and \code{trace=FALSE} will differ as these use different random number streams (the former uses R's random number generator, whereas the latter uses gsl's).      
-
+If \code{algo=sa}:
+This variant of the heuristic search algorithm is based on simulated annealing described by Metropolis et al. (1953). Some accepted moves could result in a decrease of the network score. The acceptance rate can be monitored with the parameter \code{temperature}.    
 }
 
-\value{An object of class \code{abnHillClimber} (which extends the class
-  \code{abnLearnd}) and contains list with entires: 
-\item{init.score}{a vector giving network score for initial network from which the search commenced}
-\item{final.score}{a vector giving the network score for the locally optimal network}
-\item{init.dag}{list of matrices, inital DAGs}
-\item{final.dag}{list of matrices, locally optimal DAGs}
-\item{consensus}{a matrix holding a DAG}
-\item{support.threshold}{percentage supported used to create consensus matrix}
+\value{An object of class \code{abnHeuristic} (which extends the class \code{abnLearnd}) and contains list with entires: 
+\item{dags}{a list of DAGs}
+\item{scores}{a vector giving the network score for the locally optimal network for each search}
+\item{detailed.score}{a vector giving the evolution of the network score for the all the random restarts}
+\item{score}{a number giving the network score for the locally optimal network}
+\item{score.cache}{the pre-computed cache of scores}
+\item{num.searches}{a numeric giving the number of random restart}
+\item{max.steps}{a numeric giving the maximal number of optimization steps within each search}
+\item{algorithm}{a character for indicating the algorithm used}
 }
 
-\references{Lewis, F. I., and McCormick B. J. J. (2012). Revealing the complexity of health determinants in resource poor settings. \emph{American Journal Of Epidemiology}. DOI:10.1093/aje/KWS183).  
-
+\references{
 Heckerman, D., Geiger, D. and Chickering, D. M. (1995). Learning Bayesian networks: The combination of knowledge and statistical data. \emph{Machine Learning}, 20, 197-243.
+
+Madigan, D. and York, J. (1995) "Bayesian graphical models for discrete data". International Statistical Review, 63:215232.
+
+Giudici, P. and Castelo, R. (2003). "Improving Markov chain Monte Carlo model search for data mining". Machine Learning, 50:127158.
+
+Metropolis, N., Rosenbluth, A. W., Rosenbluth, M. N., Teller, A. H., & Teller, E. (1953). "Equation of state calculations by fast computing machines". The journal of chemical physics, 21(6), 1087-1092.
   
 Further information about \pkg{abn} can be found at:\cr
   \url{http://r-bayesian-networks.org}}
 
-\author{Fraser Iain Lewis}
+\author{Gilles Kratzer}
 
 \examples{
 \dontrun{

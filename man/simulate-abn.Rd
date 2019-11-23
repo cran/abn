@@ -17,7 +17,7 @@
 
 \title{Simulate from an ABN Network}
 
-\description{Simulate one or more responses from an ABN network corresponding to a fitted object using formula statement or an adjacency matrix.}
+\description{Simulate one or more responses from an ABN network corresponding to a fitted object using a formula statement or an adjacency matrix.}
 
 \usage{
 simulateAbn(data.dists = NULL, 
@@ -55,9 +55,9 @@ simulateAbn(data.dists = NULL,
 \details{
 This function use \code{rjags} to simulate data from a DAG. It first creates a \code{bug} file, in the actual repository, then use it to simulate the data. This function output a data frame. The \code{bug} file can be run using \code{rjags} separately. 
 
-The coefficients given in the \code{data.param} are: the logit of the probabilities for binomial nodes, the means of the gaussian nodes and the log of the Poison parameter. Additionally, a matrix \code{data.param.var} could give precision values for gaussian nodes (default is set to 1).
+The coefficients given in the \code{data.param} are: the logit of the probabilities for binomial nodes, the means of the gaussian nodes, and the log of the Poison parameter. Additionally, a matrix \code{data.param.var} could give precision values for gaussian nodes (default is set to 1).
 
-Binary and multinomial variables must be declared as factors, and the argument \code{data.dists} must be a list with named arguments, one for each of the variables in \code{data.df} (except a grouping variable - if present), where each entry is either "poisson","binomial", "multinomial" or "gaussian", see examples below. The "poisson" distributions use log and "binomial" and "multinomial" distributions  logit link functions. Note that "binomial" here actually means only binary, one bernoulli trial per row in \code{data.df}. 
+Binary and multinomial variables must be declared as factors, and the argument \code{data.dists} must be a list with named arguments, one for each of the variables in \code{data.df} (except a grouping variable - if present), where each entry is either "poisson", "binomial", "multinomial" or "gaussian", see examples below. The Poisson distributed variables use log and Binomial and multinomial distributed ones the logit link functions. Note that "binomial" here actually means only binary, one Bernoulli trial per row in \code{data.df}. 
 
 The number of simulated data (rows of the outputted data frame) is given by \code{n.iter} divided by \code{n.thin}. 
 }

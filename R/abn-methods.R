@@ -246,4 +246,110 @@ summary.abnFit <- function(object, ...){
   invisible(object)
 }
 
+# coef
+
+coef.abnFit <- function(object, ...){
+  if(object$method=="mle"){
+    cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n")
+    print(object$coef, digits=3)
+  }
+  
+  if(object$method=="bayes"){
+    cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n")
+    print(object$modes, digits=3)
+  }
+  
+  invisible(object)
+  
+}
+
+
+
+AIC.abnFit <- function(object, ...){
+  
+  if(object$method=="mle"){
+    
+    cat("The ABN model was fitted using an mle approach. The AIC network score per node is: \n")
+    print(unlist(object[["aicnode"]]), digits=3)
+    
+  }
+  
+  if(object$method=="bayes"){
+    cat("The ABN model was fitted using a Bayesian approach. AIC does not make sense but the network score per node is is is:\n")
+    print(unlist(object[1:length(object$modes)]))
+  }
+  
+  invisible(object)
+  
+  
+}
+
+BIC.abnFit <- function(object, ...){
+  
+  if(object$method=="mle"){
+    
+    cat("The ABN model was fitted using an mle approach. The BIC network score per node is: \n")
+    print(unlist(object[["bicnode"]]), digits=3)
+    
+  }
+  
+  if(object$method=="bayes"){
+    cat("The ABN model was fitted using a Bayesian approach. BIC does not make sense but the network score per node is is is:\n")
+    print(unlist(object[1:length(object$modes)]))
+  }
+  
+  invisible(object)
+}
+
+
+logLik.abnFit <- function(object, ...){
+  
+  if(object$method=="mle"){
+    
+    cat("The ABN model was fitted using an mle approach. The loglikelihood network score per node is: \n")
+    print(unlist(object[["mliknode"]]), digits=3)
+    
+  }
+  
+  if(object$method=="bayes"){
+    cat("The ABN model was fitted using a Bayesian approach. Loglikelihood does not make sense but the network score per node is is is:\n")
+    print(unlist(object[1:length(object$modes)]))
+  }
+  
+  invisible(object)
+}
+
+
+
+family.abnFit <- function(object, ...){
+  
+  cat("All link functions are canonical: \n 
+      gaussian node = identy, binomial node = logit, Poisson node = log and multinomial node = logit.\n\n")
+  
+  print(unlist(object$abnDag$data.dists))
+  
+  invisible(object)
+}
+
+
+nobs.abnFit <- function(object, ...){
+  
+  print(dim(object$abnDag$data.df)[1])
+  
+  invisible(object)
+}
+
+plot.abnFit <- function(x, which ="abnFit", ...){
+  
+  if(x$method=="mle"){
+  plotabn(dag.m = x$abnDag$dag,data.dists = x$abnDag$data.dists,fitted.values.abn.mle = x$coef)
+  }
+  
+  if(x$method=="bayes"){
+    plotabn(dag.m = x$abnDag$dag,data.dists = x$abnDag$data.dists,fitted.values.abn = x$modes)
+    }
+}
+
+
+
 ## EOF

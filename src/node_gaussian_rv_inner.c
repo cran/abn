@@ -440,9 +440,9 @@ int rv_dg_inner_gaus (const gsl_vector *epsilonvec, void *params, gsl_vector *dg
    double n = (double)(Y->size);/** number of observations */
    int i;
    
-   double term3,term2;
+   double /*term3,*/term2;
         
-   term3 = (tau_rv*epsilon)/n;/** correct sign */
+   /*term3 = (tau_rv*epsilon)/n;*/ /** correct sign */
   
    /** now for the more complex term */
    /** the design matrix does not include precisions but does include epsilon, beta includes precisions but not epsilon. To use matrix operations

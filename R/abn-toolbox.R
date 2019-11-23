@@ -305,7 +305,7 @@ essentialGraph <- function(dag, node.names = NULL, PDAG = "minimal") {
         if (grepl("~", as.character(dag)[1], fixed = TRUE)) {
             dag <- formula.abn(f = dag, name = node.names)
         } else {
-            stop("Dag specification must either be a matrix or a formula expresion")
+            stop("Dag specification must either be a matrix or a formula expression")
         }
     }
     

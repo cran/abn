@@ -8,7 +8,7 @@
 \title{Compute the Markov blanket}
 
 \description{
-This function computes the Markov blanket of a set of node given a DAG (Directed Acyclic Graph).
+This function computes the Markov blanket of a set of nodes given a DAG (Directed Acyclic Graph).
 }
 
 
@@ -23,11 +23,13 @@ mb(dag, node, data.dists=NULL)}
 
 
 \details{
-This function return the Markov Blanket of a set of nodes given a DAG. 
+This function returns the Markov Blanket of a set of nodes given a DAG. 
 
 The \code{dag} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement have to start with \code{~}. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in \code{name}. \code{:} is the separtor between either children or parents, \code{|} separates children (left side) and parents (right side), \code{+} separates terms, \code{.} replaces all the variables in \code{name}.
 
 }
+
+\author{Gilles Kratzer}
 
 \examples{
 ## Defining distribution and dag

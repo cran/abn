@@ -15,8 +15,10 @@ fitabn.bayes <- function(dag.m=NULL, data.df=NULL, data.dists=NULL, group.var=NU
                    finite.step.size=1E-07,hessian.params=c(1E-04,1E-02),max.iters.hessian=10,
                    max.hessian.error=1E-04,factor.brent=1E+02, maxiters.hessian.brent=10,num.intervals.brent=100,
                    min.pdf=1E-03,n.grid=100,std.area=TRUE, marginal.quantiles=c(0.025,0.25,0.5,0.75,0.975),max.grid.iter=1000,
-                   marginal.node=NULL, marginal.param=NULL,variate.vec=NULL
+                   marginal.node=NULL, marginal.param=NULL,variate.vec=NULL, seed = 9062019
                   ){
+   
+   set.seed(seed)
    
    ## simple check
    if(!is.null(cor.vars) && is.null(group.var)){stop("must specify the group variable!");}  

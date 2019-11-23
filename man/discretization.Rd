@@ -14,14 +14,14 @@ discretization(data.df = NULL,
                nb.states = FALSE)
 }
 \arguments{
-  \item{data.df}{a data frame containing the data to discretize, binary variables must be declared as factors, other as numeric vector. The data frame must be named.}
+  \item{data.df}{a data frame containing the data to discretize, binary variables must be declared as factors, other as a numeric vector. The data frame must be named.}
     \item{data.dists}{a named list giving the distribution for each node in the network.}
   \item{discretization.method}{a character vector giving the discretization method to use; see details. If a number is provided, the variable will be discretized by equal binning.}
   
-  \item{nb.states}{logical variable to select the output. If set to TRUE a list with the discretized data frame and the number of state of each variable is returned. If set to FALSE only the discretized data frame is returned.}}
+  \item{nb.states}{logical variable to select the output. If set to \code{TRUE} a list with the discretized data frame and the number of state of each variable is returned. If set to FALSE only the discretized data frame is returned.}}
 
 \description{
-This function discretizes data frame of possibly continuous random variables through rules for discretization. The discretization algorithms are unsupervised and univariate. See details for the complete list (the number of state of each random variable could also be provided).
+This function discretizes a data frame of possibly continuous random variables through rules for discretization. The discretization algorithms are unsupervised and univariate. See details for the complete list (the number of state of each random variable could also be provided).
 }
 
 \details{
@@ -34,7 +34,7 @@ range(x) * n^{1/3} / 2 * IQR(x)} The Freedman Diaconis rule is known to be less 
 \deqn{1 + \log_{2}{n} + \log_{2}{1+\frac{|g|}{\sigma_{g}}}}{%
 1 + \log_{2}{n} + \log_{2}{1+\frac{|g|}{\sigma_{g}}}}
 
-is a modification of Sturges' formula which attempts to improve its performance with non-normal data.
+This is a modification of Sturges' formula, which attempts to improve its performance with non-normal data.
 
 \code{sqrt} The number of bins is given by:
 \deqn{\sqrt(n)}{\sqrt(n)}
@@ -48,7 +48,7 @@ is a modification of Sturges' formula which attempts to improve its performance 
 
 \code{terrell-scott} stands for Terrell-Scott's rule. The number of bins is given by: \deqn{(2 n)^{1/3}}{(2 n)^{1/3}}
 
-This is known that Cencov, Rice and Terrell-Scott rules over-estimates k, compared to other rules due to his simplicity.
+This is known that Cencov, Rice, and Terrell-Scott rules over-estimates k, compared to other rules due to his simplicity.
 
 \code{sturges} stands for Sturges's rule. The number of bins is given by: \deqn{1 + \log_2(n)}{1 + \log_2(n)}
 
@@ -56,7 +56,7 @@ This is known that Cencov, Rice and Terrell-Scott rules over-estimates k, compar
 \deqn{range(x) / \sigma(x) n^{-1/3}}{range(x) / \sigma(x) n^{-1/3}}
 }
 
-\value{The discretized dataframe or a list containing the table of
+\value{The discretized data frame or a list containing the table of
   counts for each bin the discretized data frame.}
 
 \author{Gilles Kratzer}

@@ -21,7 +21,7 @@ void calc_node_Score_pois(network *dag, datamatrix *obsdata, int nodeid,  int ve
                                 datamatrix *designmatrix, const double priormean, const double priorsd,
                                 const int maxiters, const double epsabs,int storeModes)
 {
- int i,ss,status,status2,status_inits,index;
+ int i,ss,status,index;
  /*unsigned int k,j;*/
  int iter=0;
  /*unsigned int numparents=0;*/
@@ -99,7 +99,7 @@ void calc_node_Score_pois(network *dag, datamatrix *obsdata, int nodeid,  int ve
     T = gsl_multiroot_fdfsolver_hybridj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
-    status_inits=generate_inits_n_pois(myBeta,&gparams);
+    /*status_inits=*/generate_inits_n_pois(myBeta,&gparams);
   
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
  
@@ -135,7 +135,7 @@ void calc_node_Score_pois(network *dag, datamatrix *obsdata, int nodeid,  int ve
     T = gsl_multiroot_fdfsolver_hybridsj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
-    status_inits=generate_inits_n_pois(myBeta,&gparams);
+    /*status_inits=*/generate_inits_n_pois(myBeta,&gparams);
     /*if(nodeid==11){gsl_vector_set(myBeta,0,-1.007);gsl_vector_set(myBeta,0,1.649);gsl_vector_set(myBeta,0,-0.05411);gsl_vector_set(myBeta,0,2.4);gsl_vector_set(myBeta,0,0.008);gsl_vector_set(myBeta,0,-0.05);}
    */
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
@@ -181,7 +181,7 @@ void calc_node_Score_pois(network *dag, datamatrix *obsdata, int nodeid,  int ve
    n=obsdata->numDataPts;
    m=designmatrix->numparams;
    perm = gsl_permutation_alloc (m);
-   status2=gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
+   /*status2=*/gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
    /*if(status2 != GSL_SUCCESS){logscore= -DBL_MAX; Rprintf("poisson no inversion at node %d\n",nodeid+1);
    } else {*/
      mydet=gsl_linalg_LU_lndet(hessgvalue);/** compute determinant but this might be a nan - overflow?*/

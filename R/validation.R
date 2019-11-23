@@ -41,11 +41,11 @@ validate_abnDag <- function( dag, data.df=NULL, returnDag=TRUE, ...) {
   # dag is either a formula or a matrix 
   
   # we already have a valid container. can beused to extract...  
-  if (class(dag)=="abnDag")  dag <- dag$dag
+  if (inherits(x = dag, what = "abnDag"))  dag <- dag$dag
   
   
   # case of formula
-  if  (class( dag)=="formula") {
+  if  (inherits(x = dag, what = "formula")) {
     if (is.null( data.df))
       stop( 'DAG specification with formula requires a named data frame or named vector')
     

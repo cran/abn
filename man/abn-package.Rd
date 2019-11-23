@@ -14,16 +14,23 @@
 }
 \section{General overview}{What is \pkg{abn}:\cr
 
-Bayesian network modelling is a data analysis technique which is ideally suited to messy, highly correlated and complex datasets. This methodology is rather distinct from other forms of statistical modelling in that its focus is on structure discovery - determining an optimal graphical model which describes the inter-relationships in the underlying processes which generated the data. It is a multivariate technique and can used for one or many dependent variables. This is a data driven approach, as opposed to, rely only on subjective expert opinion to determine how variables of interest are inter-related (for example: structural equation modelling).
+Bayesian network modeling is a data analysis technique that is ideally suited to messy, highly correlated, and complex datasets. This methodology is somewhat distinct from other forms of statistical modeling in that its focus is on structure discovery - determining an optimal graphical model that describes the inter-relationships in the underlying processes which generated the data. It is a multivariate technique and can used for one or many dependent variables. This is a data-driven approach, as opposed to, rely only on subjective expert opinion to determine how variables of interest are inter-related (for example, structural equation modeling).
 
-The R package abn is designed to fit additive Bayesian models to observational datasets. It contains routines to score Bayesian Networks based on Bayesian or information-theoretic formulation of generalized linear models. It is equipped with exact search and greedy search algorithms to select the best network. The Bayesian implementation supports random effects to control for one layer clustering. It supports a possibly mixture of continuous, discrete and count data and input of prior knowledge at a structural level.
+The R package abn is designed to fit additive Bayesian models to observational datasets. It contains routines to score Bayesian Networks based on Bayesian or information-theoretic formulation of generalized linear models. It is equipped with exact search and greedy search algorithms to select the best network. The Bayesian implementation supports random effects to control for one layer clustering. It supports a possible mixture of continuous, discrete, and count data and input of prior knowledge at a structural level.
+
+The web pages \url{http://r-bayesian-networks.org} provide futher case
+studies. See also the files provided in the package directories
+\code{inst/bootstrapping_example} and \code{inst/old_vignette} for more details.    
+
 }
 \references{
-  Lewis, F. I., and Ward, M. P. (2013). Improving epidemiologic data analyses through multivariate regression modelling. Emerging themes in epidemiology,
+Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2019). "Additive Bayesian Network Modelling with the R Package abn". arXiv preprint arXiv:1911.09006.
+
+  Lewis, F. I., and Ward, M. P. (2013). "Improving epidemiologic data analyses through multivariate regression modeling". Emerging themes in epidemiology,
   10(1), 4.
   
-  Kratzer, G., Pittavino, M, Lewis, F. I., and Furrer, R., (2017). abn: an R package for modelling multivariate data using additive Bayesian networks. R
-  package version 1.1.  https://CRAN.R-project.org/package=abn
+  Kratzer, G., Pittavino, M, Lewis, F. I., and Furrer, R., (2017). "abn: an R package for modelling multivariate data using additive Bayesian networks". R
+  package version 2.2.  https://CRAN.R-project.org/package=abn
   }
 
 

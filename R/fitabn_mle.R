@@ -17,8 +17,10 @@ fitabn.mle <- function(dag.m = NULL,
                        centre = TRUE,
                        maxit = 100, 
                        tol = 10^-11,
-                       verbose = FALSE){
+                       verbose = FALSE, seed = 9062019){
 
+  set.seed(seed)
+  
   n <- length(data.dists)
   nobs <- dim(data.df)[1]
   

@@ -29,7 +29,13 @@ The plugin estimator is I(X, Y) = H (X) + H(Y) - H(X, Y), where H() is the entro
 \value{Mutual information estimate.}
 
 \author{Gilles Kratzer}
+
 \seealso{\code{\link{discretization}}}
+
+\references{
+Cover, Thomas M, and Joy A Thomas. (2012). "Elements of Information Theory". John Wiley & Sons.
+}
+
 \examples{
 ## Generate random variable
 Y <- rnorm(n = 100, mean = 0, sd = 2)

@@ -20,7 +20,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
 			    const double priormean, const double priorsd, const double priorgamshape, const double priorgamscale,
                                 const int maxiters, const double epsabs,int storeModes)
 {
- int i,ss,status,status2,status_inits,index;
+ int i,ss,status,index;
  /*unsigned int k,j;*/
  int iter=0;
  /*unsigned int numparents=0;*/
@@ -94,7 +94,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
     iter=0;
     T = gsl_multiroot_fdfsolver_hybridsj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams+1); /** +1 for the precision term */
-    status_inits=generate_gaus_inits(myBeta,&gparams);
+    /*status_inits=*/generate_gaus_inits(myBeta,&gparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
     
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
@@ -125,7 +125,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
     iter=0; 
     T = gsl_multiroot_fdfsolver_hybridj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams+1); /** +1 for the precision term */
-    status_inits=generate_gaus_inits(myBeta,&gparams);
+    /*status_inits=*/generate_gaus_inits(myBeta,&gparams);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
     
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
@@ -173,7 +173,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
    n=obsdata->numDataPts;
    m=designmatrix->numparams+1;
    perm = gsl_permutation_alloc (m);
-   status2=gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
+   /*status2=*/gsl_linalg_LU_decomp(hessgvalue,perm,&ss);
    /*if(status2!= GSL_SUCCESS){logscore= -DBL_MAX;Rprintf("gaussian no inversion at node %d\n",nodeid+1);
    } else {*/
      mydet=gsl_linalg_LU_lndet(hessgvalue);/** compute determinant but this might be a nan - overflow?*/

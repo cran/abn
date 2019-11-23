@@ -14,9 +14,9 @@
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Create a letigimate DAGs}
+\title{Create a legitimate DAGs}
 
-\description{Create a legitimate DAGs in the abn format.}
+\description{Create a legitimate DAG in the abn format.}
 
 \usage{
 create_abnDag( dag, data.df = NULL, data.dists = NULL, ...)

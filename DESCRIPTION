@@ -1,6 +1,6 @@
 Package: abn
-Version: 2.1
-Date: 2019-06-06
+Version: 2.2
+Date: 2019-07-04
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: c(person("Gilles", "Kratzer", role = c("aut", "cre"),
              email = "gilles.kratzer@math.uzh.ch",
@@ -20,8 +20,8 @@ Author: Gilles Kratzer [aut, cre] (<https://orcid.org/0000-0002-5929-8935>),
 Maintainer: Gilles Kratzer <gilles.kratzer@math.uzh.ch>
 Imports: methods, rjags
 LinkingTo: Rcpp, RcppArmadillo
-Depends: nnet, MASS, lme4, R (>= 2.15.1)
-Suggests: INLA, Rgraphviz, R.rsp
+Depends: nnet, MASS, lme4, R (>= 3.5.0)
+Suggests: INLA, Rgraphviz, knitr, R.rsp
 VignetteBuilder: R.rsp
 Additional_repositories: https://inla.r-inla-download.org/R/stable/
 SystemRequirements: Gnu Scientific Library version >= 1.12
@@ -29,8 +29,8 @@ Description: Bayesian network analysis is a form of probabilistic graphical mode
 License: GPL (>= 2)
 LazyData: true
 URL: http://r-bayesian-networks.org
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 NeedsCompilation: yes
-Packaged: 2019-07-03 20:38:19 UTC; Kratzer
+Packaged: 2019-11-22 19:43:46 UTC; Kratzer
 Repository: CRAN
-Date/Publication: 2019-07-04 10:00:03 UTC
+Date/Publication: 2019-11-23 06:20:33 UTC

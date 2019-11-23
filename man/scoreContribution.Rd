@@ -12,9 +12,9 @@
 \alias{scoreContribution}
 \encoding{latin1}
 
-\title{Compute the score contribution of each individual observation in a network.}
+\title{Compute the score's contribution in a network of each observation.}
 
-\description{This function computes the score contribution of each individual observations to the total network score.}
+\description{This function computes the score's contribution of each observation to the total network score.}
 
 
 \usage{
@@ -34,10 +34,10 @@ scoreContribution(object = NULL,
 }
 
 \details{
-This function computes the score contribution of each individual observations to the total network score. This function is available only in the `mle` settings. To do so one uses the \code{\link{glm}} and \code{\link{predict}} functions. This funtion is an attempt to perform diagnostic for an ABN analysis.
+This function computes the score contribution of each observation to the total network score. This function is available only in the `mle` settings. To do so one uses the \code{\link{glm}} and \code{\link{predict}} functions. This function is an attempt to perform diagnostic for an ABN analysis.
 }
 
-\value{A named list that contains the scores controbutions: maximum likelihood, aic, bic, mdl and diagonal values of the hat matrix.}
+\value{A named list that contains the scores contributions: maximum likelihood, aic, bic, mdl and diagonal values of the hat matrix.}
 
 \author{Gilles Kratzer}
 

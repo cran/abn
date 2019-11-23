@@ -18,8 +18,10 @@ buildscorecache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                             epsabs.inner=1e-6,max.iters.inner=100,
                             finite.step.size=1e-7,
                             hessian.params=c(1E-04,1E-02),max.iters.hessian=10,
-                            max.hessian.error=5E-01,factor.brent=1E+02, maxiters.hessian.brent=100,num.intervals.brent=100
+                            max.hessian.error=5E-01,factor.brent=1E+02, maxiters.hessian.brent=100,num.intervals.brent=100, seed=9062019
                   ){
+   set.seed(seed)
+   
    data.df.original <- data.df
    ##max parents
    n <- length(data.dists)

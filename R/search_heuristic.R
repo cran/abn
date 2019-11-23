@@ -270,8 +270,6 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
     
     ## return
     
-    ## todo: inverse detailed score for aic/bic/mdl
-    
     if (score %in% c("bic", "aic", "mdl")) {
             
             out <- list(dags = out.dags, 

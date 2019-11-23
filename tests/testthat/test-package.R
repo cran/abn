@@ -774,3 +774,30 @@ test_that("scoreContribution()", {
     expect_equal(unname(colSums(out$mlik))/1000, unname(unlist(out.fit$mliknode))/1000,tolerance=1e-2)
     
 })
+
+test_that("plotabn()", {
+    
+    #Define distribution list
+    dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", e="binomial", f="multinomial")
+    
+    #Plot from a formula and markov blanket for multinomial node
+    expect_warning(plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f,markov.blanket.node = "b", data.dists  = dist))
+    
+    dist <- list(a = "gaussian", b = "gaussian")
+    
+    data.param <- matrix(data = c(0, 0.5, 0, 0), nrow = 2L, ncol = 2L, byrow = TRUE)
+    
+    # naming
+    colnames(data.param) <- rownames(data.param) <- names(dist)
+    
+    out.sim <- invisible(simulateAbn(data.dists = dist, n.chains = 1, n.adapt = 100, n.thin = 1, n.iter = 100, data.param = data.param, 
+                                     simulate = TRUE, seed = 132,verbose = FALSE))
+    
+    mycache <- invisible(abn:::buildscorecache.mle(data.df = out.sim, data.dists = dist, max.parents = 2, centre = FALSE))
+    
+    dag <- mostprobable(score.cache = mycache)
+    
+    # class abnlearned
+    expect_silent(plotabn(dag.m = dag))
+    
+})

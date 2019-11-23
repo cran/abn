@@ -32,7 +32,7 @@ simulateDag(node.name = NULL,
 }
 
 \details{
-This function generates DAGs by sampling triangular matrices and reorder randomly columns and rows. The network density (\code{nn}) is used column wise as binomial sampling probability. Then the matrix is named using the user provided names.}
+This function generates DAGs by sampling triangular matrices and reorder columns and rows randomly. The network density (\code{nn}) is used column-wise as binomial sampling probability. Then the matrix is named using the user-provided names.}
 
 \value{An object of class \code{abnDag} a named matrix and a named list giving the distribution for each node.}
 

@@ -10,8 +10,13 @@ plotabn <- function(dag.m = NULL, data.dists = NULL, markov.blanket.node = NULL,
     edgedir = "pc", node.fillcolor = "lightblue", edge.color = "black", edge.arrowwise = 0.5, fontsize.node = 10, 
     fontsize.edge = 5, plot = TRUE, node.fillcolor.list = NULL) {
     
+    #while (!is.null(dev.list()))  dev.off()
+    
+    if(!is.null(markov.blanket.node) & ("multinomial" %in% (data.dists))) warning("Multinomial nodes are excluded from markov blanket computation.")
+    
     ## for compatibility purpose
     dag <- dag.m
+    if(inherits(x = dag,what = "abnLearned")){data.dists <- dag$score.cache$data.dists; dag <- dag$dag}
     
     group.var <- NULL
     name <- names(data.dists)
@@ -240,8 +245,11 @@ plotabn <- function(dag.m = NULL, data.dists = NULL, markov.blanket.node = NULL,
         ## =================== Arc Strength ===================
         
         ## Arc strength: plot the AS of the dag arcs
-        
+       
         if (is.matrix(arc.strength)) {
+            if (edgemode != "undirected") {
+            arc.strength <- t(arc.strength)
+            
             min.as <- min(arc.strength[arc.strength > 0])
             max.as <- max(arc.strength[arc.strength > 0])
             
@@ -258,7 +266,7 @@ plotabn <- function(dag.m = NULL, data.dists = NULL, markov.blanket.node = NULL,
             }
             
             # return(lwd.edge)
-        } else {
+        }} else {
             
             lwd.edge <- rep(1, length(names.edges))
         }

@@ -16,9 +16,9 @@
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Expit, Logit and odds}
+\title{Expit, Logit, and odds}
 
-\description{Compute the expit and logit of a numerical vector. Transform odds to probability.}
+\description{Compute the \code{expit} and \code{logit} of a numerical vector. Transform odds to probability.}
 
 \usage{
 expit(x)
