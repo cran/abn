@@ -70,8 +70,8 @@ mydag <- matrix(c(   0,1,0,0,1,0,0, #
 colnames(mydag) <- rownames(mydag) <- names(mydat)
 
 ## create file for processing with graphviz
-tographviz(dag.m=mydag, data.df= mydat, data.dists=mydists,
-           outfile="graph.dot", directed=TRUE)
+tographviz(dag.m=mydag, data.df=mydat, data.dists=mydists,
+           outfile=paste(tempdir(), "graph.dot", sep="/"), directed=TRUE)
 ## and then process using graphviz tools e.g. on linux
 # system("dot -Tpdf -o graph.pdf graph.dot")
 # system("evince graph.pdf")
@@ -85,7 +85,8 @@ mydists <- list(b1="binomial", b2="binomial")
 
 ## create file for processing with graphviz
 tographviz(dag.m=mydag, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
-           group.var="group", outfile="graph.dot", directed=FALSE)
+           group.var="group", 
+           outfile=paste(tempdir(), "graph.dot", sep="/"), directed=FALSE)
 ## and then process using graphviz tools e.g. on linux
 # system("dot -Tpdf -o graph.pdf graph.dot")
 # system("evince graph.pdf");

@@ -4,13 +4,13 @@
 ## Last modified :  
 ##  Purpose: Test the ABN sofware to be maintain backward compatibility
 
-Sys.setenv(R_TESTS = "")
+#Sys.setenv(R_TESTS = "")
 
 context("loading library")
 
 # test_check('abn')
 
-suppressWarnings(library(abn))
+#suppressWarnings(library(abn))
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 ## Historical tests ()
@@ -143,9 +143,9 @@ test_that("buildscorecache", {
     res.abn <- buildscorecache(data.df=mydat,data.dists=mydists,max.parents=3,method="Bayes")
     
   }
-  
+  if(requireNamespace("INLA", quietly = TRUE)){
   expect_error(test_unit(),NA)
-  
+  }
 })
 
 
@@ -303,9 +303,9 @@ test_that("mostprobable", {
     ## get goodness of fit
     #m <- fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,group.var="group",cor.vars=c("b1","b2","b3","b4"))$mlik;
   }
-  
+  if(requireNamespace("INLA", quietly = TRUE)){
   expect_error(test_unit(),NA)
-  
+  }
 })
 
 test_that("search.hillclimber", {
@@ -363,9 +363,9 @@ test_that("search.hillclimber", {
                                  seed=0,verbose=FALSE,timing.on=FALSE);
     
   }
-  
+  if(requireNamespace("INLA", quietly = TRUE)){
   expect_error(test_unit(),NA)
-  
+  }
 })
 
 
@@ -533,9 +533,9 @@ test_that("fitabn", {
     myres.c <- fitabn(dag.m=mydag,data.df=mydat,data.dists=mydists,method="mle",centre=TRUE)
     
     }
-    
+    if(requireNamespace("INLA", quietly = TRUE)){
     expect_error(test_unit(),NA)
-    
+    }
 })
 
 

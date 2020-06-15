@@ -14,20 +14,20 @@ Sys.setenv(R_TESTS = "")
 context("loading library")
 
 # test_check('abn')
-suppressWarnings(require(devtools))
-suppressWarnings(require(testthat))
-suppressWarnings(require(datasets))
-suppressWarnings(require(entropy))
-suppressWarnings(require(boot))
-suppressWarnings(require(moments))
-suppressWarnings(require(mlogit))
-suppressWarnings(require(nnet))
-suppressWarnings(require(stats))
-suppressWarnings(require(AER))
-suppressWarnings(require(brglm2))
-suppressWarnings(require(brglm))
-suppressWarnings(require(arm))
-suppressWarnings(require(abn))
+# suppressWarnings(require(devtools))
+# suppressWarnings(require(testthat))
+# suppressWarnings(require(datasets))
+# suppressWarnings(require(entropy))
+# suppressWarnings(require(boot))
+# suppressWarnings(require(moments))
+# suppressWarnings(require(mlogit))
+# suppressWarnings(require(nnet))
+# suppressWarnings(require(stats))
+# suppressWarnings(require(AER))
+# suppressWarnings(require(brglm2))
+# suppressWarnings(require(brglm))
+# suppressWarnings(require(arm))
+# suppressWarnings(require(abn))
 
 subsetList <- function(myList, elementNames) {
     res <- lapply(elementNames, FUN=function(x) myList[[x]])
@@ -65,7 +65,7 @@ test_that("Test fitabn()", {
 })
 
 test_that("Test buildscorecache.bayes() and hillclimber()", {
-    
+    if(requireNamespace("INLA", quietly = TRUE)){
     load(file = "testdata/buildscorecache_ex1.Rdata")
     # load(file = 'tests/testthat/testdata/buildscorecache_ex1.Rdata')
     
@@ -99,7 +99,7 @@ test_that("Test buildscorecache.bayes() and hillclimber()", {
     expect_that(heur.res.test[[4]], equals(heur.res[[4]]))
     expect_that(heur.res.test[[5]], equals((heur.res[[5]])))
     expect_that(heur.res.test[[6]], equals(heur.res[[6]]))
-    
+    }
 })
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -112,18 +112,20 @@ test_that("Test mostprobable()", {
     
     load(file = "testdata/buildscorecache_ex1.Rdata")
     # load(file = 'tests/testthat/testdata/buildscorecache_ex1.Rdata')
-    
+    if(requireNamespace("INLA", quietly = TRUE)){
     invisible(mycache.test <- abn:::buildscorecache.bayes(data.df = mydat, data.dists = mydists, max.parents = 1))
     expect_silent(mp.dag.test <- mostprobable(score.cache = mycache.test, verbose = FALSE))
+    }
 })
 
 test_that("Test hill.climber()", {
     
     load(file = "testdata/buildscorecache_ex1.Rdata")
     # load(file = 'tests/testthat/testdata/buildscorecache_ex1.Rdata')
-    
+    if(requireNamespace("INLA", quietly = TRUE)){
     invisible(mycache.test <- abn:::buildscorecache.bayes(data.df = mydat, data.dists = mydists, max.parents = 1))
     expect_silent(mp.dag.test <- searchHillclimber(score.cache = mycache, verbose = FALSE))
+    }
 })
 
 test_that("Test fitabn.mle()", {
@@ -143,9 +145,10 @@ test_that("Test fitabn.mle()", {
     m.0.mle <- abn:::fitabn.mle(dag.m = d, data.df = df, data.dists = dist)
     m.0.mle.1 <- fitabn(dag.m = d, data.df = df, data.dists = dist, method = "mle")
     
+    if(requireNamespace("INLA", quietly = TRUE)){
     m.0.bayes <- abn:::fitabn.bayes(dag.m = d, data.df = df, data.dists = dist)
     m.0.bayes.1 <- fitabn(dag.m = d, data.df = df, data.dists = dist, method = "bayes")
-    
+    }
     mydists <- list(b1="binomial",  b2="binomial")
     
     ## test formula statement
@@ -153,19 +156,20 @@ test_that("Test fitabn.mle()", {
     expect_error(fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2)], data.dists = mydists,
                       max.mode.error=0), NA)
     
+    if(requireNamespace("INLA", quietly = TRUE)){
     ## test formula statement in bayes with correlation
     expect_error(fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists = mydists,
                       group.var = "group", cor.vars = c("b1","b2"),
                       max.mode.error=0), NA)
-    
+    }
     expect_error(fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2)], data.dists = mydists, method = "mle"), NA)
     
     
     ## test wrapper fitabn method
     expect_equal(m.0.mle,(m.0.mle.1))
-    
+    if(requireNamespace("INLA", quietly = TRUE)){
     expect_equal(unclass(m.0.bayes),unclass(m.0.bayes.1))
-    
+    }
     m1 <- abn:::fitabn.mle(dag.m = d, data.df = df, data.dists = dist, centre = FALSE)
     m2 <- lm(df[, 1] ~ as.matrix(df[, 2:6]))
     
@@ -265,8 +269,12 @@ test_that("Test fitabn.mle()", {
     expect_that(unname(fit.abn.mle$coef[[3]]), equals(unname(t(coef(summary(multinom(formula = m.1 ~ 1, trace = FALSE)))[, 1]))))
     expect_that(unname(fit.abn.mle$Stderror[[3]]), equals(unname(t(summary(multinom(formula = m.1 ~ 1, trace = FALSE))$standard.errors)), 
         tolerance = 1e-06))
-    expect_that(unname(fit.abn.mle$pvalue[[3]]), equals(unname(t(coeftest(multinom(formula = m.1 ~ 1, trace = FALSE))[, 4])), 
-        tolerance = 1e-04))
+    
+    z <- summary(multinom(formula = m.1 ~ 1, trace = FALSE))$coefficients/summary(multinom(formula = m.1 ~ 1, trace = FALSE))$standard.errors
+    p <- (1 - pnorm(abs(z), 0, 1)) * 2
+    
+    expect_that(unname(fit.abn.mle$pvalue[[3]]), equals(unname(t(p)), 
+        tolerance = 1e-10))
     
     # as response
     
@@ -284,8 +292,12 @@ test_that("Test fitabn.mle()", {
         dta$b, trace = FALSE)))))))
     expect_that(unname(as.vector(fit.abn.mle$Stderror[[3]])), equals(unname(as.vector(summary(multinom(formula = m.1 ~ dta$a + 
         dta$b, trace = FALSE))$standard.errors)), tolerance = 1e-06))
-    expect_that(unname(as.vector(fit.abn.mle$pvalue[[3]])), equals(unname(as.vector(coeftest(multinom(formula = m.1 ~ dta$a + 
-        dta$b, trace = FALSE))[c(1, 4, 2, 5, 3, 6), 4])), tolerance = 1e-06))
+    
+    # 2-tailed Wald z tests to test significance of coefficients
+    z <- summary(multinom(formula = m.1 ~ dta$a + dta$b, trace = FALSE))$coefficients/summary(multinom(formula = m.1 ~ dta$a + dta$b, trace = FALSE))$standard.errors
+    p <- (1 - pnorm(abs(z), 0, 1)) * 2
+    
+    expect_that(unname(as.vector(fit.abn.mle$pvalue[[3]])), equals(unname(as.vector(p)), tolerance = 1e-06))
     
 })
 
@@ -300,25 +312,32 @@ test_that("Test buildscorecache()", {
     
     
     mycache.computed.mle <- abn:::buildscorecache.mle(data.df = df, data.dists = dist, max.parents = 6)
+    if(requireNamespace("INLA", quietly = TRUE)){
     mycache.old <- abn:::buildscorecache.bayes(data.df = df, data.dists = dist, max.parents = 6, dry.run = TRUE)
+    }
     
     mycache.computed.mle.1 <- abn:::buildscorecache.mle(data.df = df, data.dists = dist, max.parents = 3)
+    if(requireNamespace("INLA", quietly = TRUE)){
     mycache.old.1 <- abn:::buildscorecache.bayes(data.df = df, data.dists = dist, max.parents = 3, dry.run = TRUE)
-    
+    }
     mycache.computed.mle.1.1 <- abn:::buildscorecache(data.df = df, data.dists = dist, max.parents = 3,method = "mle")
+    if(requireNamespace("INLA", quietly = TRUE)){
     mycache.old.1.1 <- abn:::buildscorecache(data.df = df, data.dists = dist, max.parents = 3, dry.run = TRUE, method = "bayes")
-
+}
     ## test wrapper buildscorecache method
+    if(requireNamespace("INLA", quietly = TRUE)){
     expect_equal(mycache.computed.mle.1,unclass(mycache.computed.mle.1.1))
     expect_equal(mycache.old.1,unclass(mycache.old.1.1))
-    
+    }
     ## test 
     
     ## dag retain
     mycache.computed.mle.2 <- abn:::buildscorecache.mle(data.df = df, data.dists = dist, dag.banned = NULL, dag.retained = ~Ozone | 
         Solar.R, max.parents = 3, dry.run = TRUE)
+    if(requireNamespace("INLA", quietly = TRUE)){
     mycache.old.2 <- abn:::buildscorecache.bayes(data.df = df, data.dists = dist, max.parents = 3, dry.run = TRUE, dag.retained = ~Ozone | 
         Solar.R, dag.banned = NULL)
+    }
     
     mycache.computed.mle.3 <- abn:::buildscorecache.mle(data.df = df, data.dists = dist, dag.banned = NULL, dag.retained = ~Wind | 
         ., max.parents = 6, dry.run = TRUE)
@@ -333,12 +352,15 @@ test_that("Test buildscorecache()", {
         Solar.R:Wind)
     
     ## test cache
+    if(requireNamespace("INLA", quietly = TRUE)){
     expect_that(mycache.computed.mle$children, equals(mycache.old$children))
     expect_that(mycache.computed.mle$node.defn, equals(mycache.old$node.defn))
     expect_that(mycache.computed.mle.1$children, equals(mycache.old.1$children))
     expect_that(mycache.computed.mle.1$node.defn, equals(mycache.old.1$node.defn))
     expect_that(mycache.computed.mle.2$children, equals(mycache.old.2$children))
     expect_that(mycache.computed.mle.2$node.defn, equals(mycache.old.2$node.defn))
+    }
+    
     expect_that(mycache.computed.mle.3$children, equals(mycache.old.3$children))
     expect_that(mycache.computed.mle.3$node.defn, equals(mycache.old.3$node.defn))
     expect_that(mycache.computed.mle.4$children, equals(mycache.old.4$children))

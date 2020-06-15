@@ -2,9 +2,14 @@
 -- ChangeLog - abn --
 ---------------------------
 
+2020-06-13 Gilles Kratzer & Reinhard Furrer (version 2.2.1)
+	   * Patch for S4 exports not stated in the package
+	   * Testing automatic (testhat.R in tests repository)
+	   * Updated version of the vignette
+
 2019-11-22 Gilles Kratzer & Reinhard Furrer (version 2.2)
 	   * New vignette describing new functionalities!
-	   * Old vignette is store in the﻿directories inst/bootstrapping_example and inst/old_vignette
+	   * Old vignette is store in the﻿ directories inst/bootstrapping_example and inst/old_vignette
 	   * Dataset: FCV
 	   * Methods related to the class abnFit: family, logLik, AIC, BIC, nobs, coef 
 	   * Bugs corrected in plotabn()

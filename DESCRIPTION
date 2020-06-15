@@ -1,16 +1,25 @@
 Package: abn
-Version: 2.2
-Date: 2019-07-04
+Version: 2.2.1
+Date: 2020-06-04
 Title: Modelling Multivariate Data with Additive Bayesian Networks
-Authors@R: c(person("Gilles", "Kratzer", role = c("aut", "cre"),
+Authors@R: 
+    c(person(given = "Gilles",
+             family = "Kratzer",
+             role = c("aut", "cre"),
              email = "gilles.kratzer@math.uzh.ch",
              comment = c(ORCID = "0000-0002-5929-8935")),
-             person("Fraser Ian", "Lewis", role = c("aut"), 
-             email = "fraseriain.lewis@uzh.ch"), 
-             person("Reinhard", "Furrer", role = c("ctb"), 
+      person(given = "Fraser Ian",
+             family = "Lewis",
+             role = "aut",
+             email = "fraseriain.lewis@uzh.ch"),
+      person(given = "Reinhard",
+             family = "Furrer",
+             role = "ctb",
              email = "reinhard.furrer@math.uzh.ch",
              comment = c(ORCID = "0000-0002-6319-2332")),
-             person("Marta", "Pittavino", role = c("ctb"), 
+      person(given = "Marta",
+             family = "Pittavino",
+             role = "ctb",
              email = "marta.pittavino@math.uzh.ch",
              comment = c(ORCID = "0000-0002-1232-1034")))
 Author: Gilles Kratzer [aut, cre] (<https://orcid.org/0000-0002-5929-8935>),
@@ -18,10 +27,10 @@ Author: Gilles Kratzer [aut, cre] (<https://orcid.org/0000-0002-5929-8935>),
   Reinhard Furrer [ctb] (<https://orcid.org/0000-0002-6319-2332>),
   Marta Pittavino [ctb] (<https://orcid.org/0000-0002-1232-1034>)
 Maintainer: Gilles Kratzer <gilles.kratzer@math.uzh.ch>
-Imports: methods, rjags
+Imports: methods, rjags, boot, entropy, moments, brglm
 LinkingTo: Rcpp, RcppArmadillo
 Depends: nnet, MASS, lme4, R (>= 3.5.0)
-Suggests: INLA, Rgraphviz, knitr, R.rsp
+Suggests: INLA, Rgraphviz, knitr, R.rsp, testthat
 VignetteBuilder: R.rsp
 Additional_repositories: https://inla.r-inla-download.org/R/stable/
 SystemRequirements: Gnu Scientific Library version >= 1.12
@@ -31,6 +40,6 @@ LazyData: true
 URL: http://r-bayesian-networks.org
 RoxygenNote: 6.1.1
 NeedsCompilation: yes
-Packaged: 2019-11-22 19:43:46 UTC; Kratzer
+Packaged: 2020-06-14 20:27:26 UTC; Kratzer
 Repository: CRAN
-Date/Publication: 2019-11-23 06:20:33 UTC
+Date/Publication: 2020-06-15 12:30:03 UTC

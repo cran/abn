@@ -1,6 +1,6 @@
-8c834da1848ca4fbc9559b430314b953 *ChangeLog
-4412cc899818ac6110d5949f128e8ab2 *DESCRIPTION
-02455f3d5dbed331f1e42f79c4eebc42 *NAMESPACE
+444de1dc9b51c596dcf608747bf8f733 *ChangeLog
+96fb0bec318f6faa75c7d65b0b31a5af *DESCRIPTION
+89b37d3ca9cc1cff895f42c063922e6c *NAMESPACE
 0b68e3f18bdf726fb516f35f43ca8867 *R/RcppExports.R
 e6535eb8a42c5dedf75fc9a85a5e0986 *R/abn-infotheo.R
 9e8017f495d0f0ceb2734ceeb0249ede *R/abn-internal.R
@@ -45,11 +45,11 @@ e38fdd887d54cbe99ef5b613dff90d03 *inst/bootstrapping_example/bootstrapping.R
 a3ab0e8daccd8c480e4fc7bd793877b9 *inst/bootstrapping_example/bootstrapping.bash
 01b6cf87e28c79ffeec9122be04c87ea *inst/bootstrapping_example/pigs_model.bug
 fa8c44e1a46659dd842fdb016d27a5d2 *inst/bootstrapping_example/pigs_post_params.Rds
-2d7a0964cfdc9d64870a443c0d5b4bae *inst/doc/abn_v2.2.pdf
+b27be3123c34b7ca1d2971f1a19c9f14 *inst/doc/abn_v2.2.pdf
 18baad20385eb6b4501ed865c3028e78 *inst/doc/abn_v2.2.pdf.asis
 15a80dc3c2707e0b538df36797fb096d *inst/old_vignette/abn.bib
-7fedd18d4995ef38c1bbc1570bc5cb6b *inst/old_vignette/abn_v2.2.Rnw
-f375526b20e1b1c0d1e6e57ea3f9e1b9 *inst/old_vignette/abn_v2.2.pdf
+7fedd18d4995ef38c1bbc1570bc5cb6b *inst/old_vignette/abn_v2.2.1.Rnw
+f375526b20e1b1c0d1e6e57ea3f9e1b9 *inst/old_vignette/abn_v2.2.1.pdf
 8d8c3b38738d83a01586f21db16a35a4 *inst/old_vignette/figures/Bootstrapping.png
 540b610a1ecc3c31cf91bd9c9daa8747 *inst/old_vignette/figures/ComparisonOfNetworkScore.pdf
 3c7c89e5a700f7341b836086f7e6cebc *inst/old_vignette/figures/DAG_cycle.pdf
@@ -94,7 +94,7 @@ cdd67237a96bfdab51d9d7d0b680d782 *man/search_heuristic.Rd
 287e74c2099167b3d9fe0322cc3a0f2f *man/search_hillclimber.Rd
 21f9fdbc2af67ca0cc0a085af00bab4e *man/simulate-abn.Rd
 a030c880a34841f30c0b631b0e9cd70c *man/simulate-dag.Rd
-f016bc9b7d4774359031bff39b85471f *man/tographviz.Rd
+cda7778f90c5cae812aef77372898ba2 *man/tographviz.Rd
 9ce2fa2e4efd561673349f8ac43cb372 *man/var33.Rd
 96b3de3864450e45ef62a245b0ef93ff *src/Makevars.in
 8bfbf7a9b23a9469fb89f604d3069e90 *src/Makevars.win
@@ -150,8 +150,10 @@ f1f6d07541b221b2d610126938cc8230 *src/searchhill.c
 f3a78447e2b41334bad0c3ec61ff9b33 *src/structs.h
 01604a3278d85782c9e9fca0fa380d61 *src/utility.c
 55115b631bd67070f8e4f0cc765d01f1 *src/utility.h
-dfddecdd86f0e0a0980eab3a54a2eb02 *tests/testthat/test-backward-compatibility.R
-7f1c4860d4fa57e6dd065ca645b93763 *tests/testthat/test-package.R
+37a54752854657c8f676011db52cf1f1 *tests/testhat.R
+cdf8ff96f73e81982ead480cc4e7d06c *tests/testthat/Rplots.pdf
+cda11c0b6a65712be3ac77bc749797c5 *tests/testthat/test-backward-compatibility.R
+a53bcd8bba68e989a381aba8774b54e0 *tests/testthat/test-package.R
 f27d0a3586670830209a0c2146e464d6 *tests/testthat/test-validate.R
 020c08f2bbecf5867806bbb66f7d9a2f *tests/testthat/testdata/buildscorecache_ex1.Rdata
 fbacfb6c4f374153922b9638a8fd27f0 *tests/testthat/testdata/buildscorecache_ex1_.Rdata
