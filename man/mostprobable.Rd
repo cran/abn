@@ -56,32 +56,8 @@ Further information about \bold{abn} can be found at:\cr
 
 \examples{
 \dontrun{
-## Use a subset of a built-in simulated data set
-mydat <- ex0.dag.data[,c("b1","b2","g1","g2","p1","p2")]
-
-## Setup distribution list for each node
-mydists <- list(b1="binomial", b2="binomial",
-              g1="gaussian", g2="gaussian",
-              p1="poisson", p2="poisson")
-
-## Parent limits
-max.par <- list("b1"=1, "b2"=1, "g1"=1, "g2"=0, "p1"=1, "p2"=2)
-
-## Now build cache with structural constrains:
-##   now ban arc from b2 to b1 
-##   always retain arc from g2 to g1
-
-mycache <- buildscorecache(data.df=mydat, data.dists=mydists,
-                     dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par)
-
-## Now find the globally best DAG
-mp.dag <- mostprobable(score.cache=mycache)
-
-## Get the corresponding best goodness-of-fit network score
-fitabn(object = mp.dag)$mlik
-
 ##############################
-## Second example 
+## Example 1
 ##############################
 
 ## this data comes with abn see ?ex1.dag.data
@@ -122,26 +98,26 @@ true.dag["g3",c("g1","b2")] <- 1
 fitabn(dag.m = true.dag, data.df = mydat, data.dists=mydists)$mlik
 
 #################################################################
-## example 3 - models with random effects
+## Example 2 - models with random effects
 #################################################################
 
 ## this data comes with abn see ?ex3.dag.data
-mydat <- ex3.dag.data[,c(1:4,14)] 
+# mydat <- ex3.dag.data[,c(1:4,14)] 
 
-mydists <- list(b1="binomial", b2="binomial", b3="binomial",
-              b4="binomial")
+# mydists <- list(b1="binomial", b2="binomial", b3="binomial",
+#              b4="binomial")
 
 ## This takes a few seconds
-mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
-               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
-               max.parents=2, which.nodes=c(1:4))
+# mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
+#               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
+#               max.parents=2, which.nodes=c(1:4))
 
 ## find the most probable DAG
-mp.dag <- mostprobable(score.cache=mycache.mixed)
+# mp.dag <- mostprobable(score.cache=mycache.mixed)
 
 ## get goodness of fit
-fitabn(object = mp.dag, data.df = mydat, data.dists = mydists,
-      group.var = "group", cor.vars = c("b1","b2","b3","b4"))$mlik
+# fitabn(object = mp.dag, data.df = mydat, data.dists = mydists,
+#      group.var = "group", cor.vars = c("b1","b2","b3","b4"))$mlik
 }}
 
 \keyword{models}

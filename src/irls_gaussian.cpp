@@ -43,7 +43,7 @@ aic = - 2 * ll + 2 * df;
 
 bic = - 2 * ll + log(n) * df;
 
-
+mdl = 1;
 
 return Rcpp::List::create(
   Rcpp::Named("coefficients") = x,

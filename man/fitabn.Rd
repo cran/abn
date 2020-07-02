@@ -158,11 +158,12 @@ mydag["b3","g1"] <- 1 # b3<-g1
 mydag["b4","b1"] <- 1 # b4<-b1
 mydag["p4","g1"] <- 1 # p4<-g1
 
-myres <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists)
-
-## Or equivalentelly using the formula statement
+# fit  using the formula statement 
 myres <- fitabn(dag.m = ~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1,
                 data.df = mydat, data.dists = mydists)
+
+## Or equivalentelly using the formula statement
+# myres <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists)
 
 print(myres$mlik) ## a much weaker fit than full independence DAG
 
@@ -236,38 +237,38 @@ cbind(INLA = unlist(myres.inla[1:3]), C = unlist(myres.c[1:3]),
 ## with random effects as it is far faster, but may not be reliable
 ## see http://r-bayesian-networks.org
 
-# INLA's estimates of the marginals, using high n.grid=500
-# as this makes the plots smoother - see below.
-myres.inla <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], 
-                     data.dists = mydists,
-                     group.var = "group", cor.vars = c("b1", "b2"),
-                     compute.fixed = TRUE, n.grid = 500, 
-                     control = list(max.mode.error = 100, max.hessian.error = 10E-02))
+## INLA's estimates of the marginals, using high n.grid=500
+## as this makes the plots smoother - see below.
+## myres.inla <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], 
+#                      data.dists = mydists,
+#                      group.var = "group", cor.vars = c("b1", "b2"),
+#                      compute.fixed = TRUE, n.grid = 500, 
+#                      control = list(max.mode.error = 100, max.hessian.error = 10E-02))
 
 ## this is NOT recommended - marginal density estimation using fitabn in mixed models
 ## is really just for diagnostic purposes, better to use fitabn.inla() here
 ## but here goes...be patient
-myres.c <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists = mydists,
-                  group.var = "group", cor.vars=c("b1", "b2"), compute.fixed = TRUE,
-                  control = list(max.mode.error = 0, max.hessian.error = 10E-02))
+# myres.c <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists = mydists,
+#                   group.var = "group", cor.vars=c("b1", "b2"), compute.fixed = TRUE,
+#                   control = list(max.mode.error = 0, max.hessian.error = 10E-02))
 
 ## compare marginals between internal and INLA.   
-par(mfrow=c(2,3))
+# par(mfrow=c(2,3))
 ## 5 parameters - two intercepts, one slope, two group level precisions
-plot(myres.inla$marginals$b1[[1]], type="l", col="blue")
-lines(myres.c$marginals$b1[[1]], col="brown", lwd=2)
-plot(myres.inla$marginals$b1[[2]], type="l", col="blue")
-lines(myres.c$marginals$b1[[2]], col="brown", lwd=2)
+# plot(myres.inla$marginals$b1[[1]], type="l", col="blue")
+# lines(myres.c$marginals$b1[[1]], col="brown", lwd=2)
+# plot(myres.inla$marginals$b1[[2]], type="l", col="blue")
+# lines(myres.c$marginals$b1[[2]], col="brown", lwd=2)
 ## the precision of group-level random effects
-plot(myres.inla$marginals$b1[[3]],type="l", col="blue", xlim=c(0,2))
-lines(myres.c$marginals$b1[[3]],col="brown",lwd=2)
-plot(myres.inla$marginals$b2[[1]],type="l", col="blue")
-lines(myres.c$marginals$b2[[1]],col="brown",lwd=2)
-plot(myres.inla$marginals$b2[[1]], type="l", col="blue")
-lines(myres.c$marginals$b2[[1]], col="brown", lwd=2)
+# plot(myres.inla$marginals$b1[[3]],type="l", col="blue", xlim=c(0,2))
+# lines(myres.c$marginals$b1[[3]],col="brown",lwd=2)
+# plot(myres.inla$marginals$b2[[1]],type="l", col="blue")
+# lines(myres.c$marginals$b2[[1]],col="brown",lwd=2)
+# plot(myres.inla$marginals$b2[[1]], type="l", col="blue")
+# lines(myres.c$marginals$b2[[1]], col="brown", lwd=2)
 ## the precision of group-level random effects
-plot(myres.inla$marginals$b2[[2]], type="l", col="blue", xlim=c(0,2))
-lines(myres.c$marginals$b2[[2]], col="brown", lwd=2)
+# plot(myres.inla$marginals$b2[[2]], type="l", col="blue", xlim=c(0,2))
+# lines(myres.c$marginals$b2[[2]], col="brown", lwd=2)
 
 ### these are very similar although not exactly identical
 

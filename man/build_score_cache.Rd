@@ -192,10 +192,10 @@ max.par <- 2
 ## modes estimated using internal code) and a message is given that internal code
 ## will be used in place of INLA's results.
 
-mycache <- buildscorecache(data.df=mydat, data.dists=mydists, group.var="group",
-                         cor.vars=c("b1","b2","b3","b4","b5","b6","b7",
-                                    "b8","b9","b10","b11","b12","b13"),
-                         max.parents=max.par, which.nodes=c(1))
+# mycache <- buildscorecache(data.df=mydat, data.dists=mydists, group.var="group",
+#                         cor.vars=c("b1","b2","b3","b4","b5","b6","b7",
+#                                    "b8","b9","b10","b11","b12","b13"),
+#                         max.parents=max.par, which.nodes=c(1))
 }
 mydat <- ex0.dag.data[,c("b1","b2","g1","g2","b3","g3")] ## take a subset of cols
 

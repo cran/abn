@@ -83,6 +83,8 @@ bic = - 2 * ll + log(nobs) * df;
 //sse
 e = (b - A*x);
 ssr = accu(e.t()*e);
+
+mdl = 1;
     
 //return
 return Rcpp::List::create(

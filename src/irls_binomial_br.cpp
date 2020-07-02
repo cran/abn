@@ -84,6 +84,8 @@ bic = - 2 * ll + log(nobs) * df;
 e = (b - A*x);
 ssr = accu(e.t()*e);
 
+mdl = 1;
+
 //return
 return Rcpp::List::create(
   Rcpp::Named("coefficients") = x,

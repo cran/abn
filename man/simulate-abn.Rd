@@ -92,7 +92,7 @@ diag(data.param.var) <- c(10,20,30,40,0,0)
 plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot = FALSE)
 
 ## Simulate the data
-simulateAbn(data.dists=dist, n.chains=1, n.thin=1, n.iter=1000,
+out <- simulateAbn(data.dists=dist, n.chains=1, n.thin=1, n.iter=1000,
             data.param=data.param, data.param.var=data.param.var)
 }
 
