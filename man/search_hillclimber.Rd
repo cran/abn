@@ -85,9 +85,9 @@ mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
 mycache <- buildscorecache(data.df = mydat, data.dists = mydists, 
                            max.parents = 2);
 
-# now peform 100 greedy searches
+# now peform 10 greedy searches
 heur.res <- searchHillclimber(score.cache = mycache,
-                 num.searches = 100, timing.on = FALSE)
+                 num.searches = 10, timing.on = FALSE)
 plotabn(dag.m = heur.res$consensus, data.dists = mydists)
 
 ###########################
@@ -101,15 +101,15 @@ mydists <- list(b1="binomial", b2="binomial", b3="binomial",
               b4="binomial")
 
 ## This takes a few seconds
-mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
-               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
-               max.parents=2, which.nodes=c(1:4))
+# mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
+#               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
+#               max.parents=2, which.nodes=c(1:4))
 
 ## Now peform 50 greedy searches
-heur.res <- searchHillclimber(score.cache = mycache.mixed, num.searches = 50,
-                              timing.on = FALSE)
+# heur.res <- searchHillclimber(score.cache = mycache.mixed, num.searches = 50,
+#                              timing.on = FALSE)
 ##  Plot the majority consensus network
-plotabn(dag.m = heur.res$consensus, data.dists = mydists)
+# plotabn(dag.m = heur.res$consensus, data.dists = mydists)
 
 }}
 

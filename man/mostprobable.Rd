@@ -71,7 +71,7 @@ mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
 ## assum no constraints in ban nor retain
 
 ## parent limits
-max.par <- list("b1"=4,"p1"=4,"g1"=4,"b2"=4,"p2"=4,"b3"=4,"g2"=4,"b4"=4,"b5"=4,"g3"=4)
+max.par <- list("b1"=0,"p1"=0,"g1"=1,"b2"=1,"p2"=2,"b3"=3,"g2"=3,"b4"=2,"b5"=2,"g3"=2)
 ## now build cache
 mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = max.par)
 

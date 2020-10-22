@@ -237,7 +237,12 @@ plotabn <- function(dag.m = NULL, data.dists = NULL, markov.blanket.node = NULL,
             label.edge <- tmp
             # return(label.edge)
             
+        } else {
+            
+            label.edge <- rep(" ", length(names.edges))
+            
         }
+        
         
         class(label.edge) <- "character"
         names(label.edge) <- names.edges

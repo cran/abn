@@ -159,33 +159,33 @@ mydag["b4","b1"] <- 1 # b4<-b1
 mydag["p4","g1"] <- 1 # p4<-g1
 
 # fit  using the formula statement 
+#  including the creation of the graph of the DAG via Rgraphviz 
 myres <- fitabn(dag.m = ~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1,
-                data.df = mydat, data.dists = mydists)
+                data.df = mydat, data.dists = mydists,
+                create.graph = TRUE)
 
 ## Or equivalentelly using the formula statement
-# myres <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists)
+# myres <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists,
+#              create.graph = TRUE)
 
 print(myres$mlik) ## a much weaker fit than full independence DAG
 
-## Now also create the graph of the DAG via Rgraphviz 
-myres <- fitabn(dag.m = mydag,data.df = mydat, data.dists = mydists,
-                  create.graph = TRUE)
 plotabn(dag.m = mydag, data.dists = mydists, fitted.values.abn = myres$modes)
 
 ## A simple plot of some posterior densities the algorithm which chooses 
 ## density points is very simple any may be rather sparse so also recompute 
-## the density over an equally spaced grid of 100 points between the two 
+## the density over an equally spaced grid of 50 points between the two 
 ## end points which had at f=min.pdf
 ## max.mode.error = 0 foces to use the internal c code
 myres.c <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists, 
-                  compute.fixed = TRUE, n.grid = 100, max.mode.error = 0)
+                  compute.fixed = TRUE, n.grid = 50, max.mode.error = 0)
 
 print(names(myres.c$marginals)) ## gives all the different parameter names
 
 ## Repeat but use INLA for the numerics using max.mode.error=100
 ## as using internal code is the default here rather than INLA 
 myres.inla <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists,
-                     compute.fixed = TRUE, n.grid = 100, max.mode.error = 100)
+                     compute.fixed = TRUE, n.grid = 50, max.mode.error = 100)
 
 ## Plot posterior densities
 par(mfrow=c(2,2), mai=c(.7,.7,.2,.1))
@@ -214,10 +214,7 @@ myres.c <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists
                   max.mode.error=0)
 print(myres.c) ## show all the output 
 
-## compare modes for node b1 with glmer()
-require(MASS)
-require(lme4)
-
+## compare mode for node b1 with glmer(), lme4::glmer is automatically attached.
 m1 <- glmer(b1 ~ 1 + b2 + (1|group), 
             family = "binomial", data = ex3.dag.data[,c(1,2,14)])
 

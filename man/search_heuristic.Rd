@@ -106,7 +106,7 @@ mydists<-list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
 
 mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = 2)
 
-## Now peform 100 greedy searches
+## Now peform 10 greedy searches
 heur.res <- searchHeuristic(score.cache = mycache, data.dists = mydists,
               start.dag = "random", num.searches = 10,
               max.steps = 50)

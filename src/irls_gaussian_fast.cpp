@@ -78,7 +78,6 @@ bic = - 2 * ll + log(n) * df;
 // } else {
 // mdl = (n/2) * log((accu(b.t()*b))/n) + 0.5 * log(n);
 // }
-
 mdl = 1;
 
 return Rcpp::List::create(

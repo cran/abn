@@ -144,8 +144,8 @@ test_that("buildscorecache", {
     
   }
   if(requireNamespace("INLA", quietly = TRUE)){
-  expect_error(test_unit(),NA)
-  }
+    expect_error(test_unit(),NA)
+  } else expect_equal(1,1)
 })
 
 
@@ -304,8 +304,8 @@ test_that("mostprobable", {
     #m <- fitabn(dag.m=mp.dag,data.df=mydat,data.dists=mydists,group.var="group",cor.vars=c("b1","b2","b3","b4"))$mlik;
   }
   if(requireNamespace("INLA", quietly = TRUE)){
-  expect_error(test_unit(),NA)
-  }
+    expect_error(test_unit(),NA)
+  } else expect_equal(1,1)
 })
 
 test_that("search.hillclimber", {
@@ -364,14 +364,14 @@ test_that("search.hillclimber", {
     
   }
   if(requireNamespace("INLA", quietly = TRUE)){
-  expect_error(test_unit(),NA)
-  }
+    expect_error(test_unit(),NA)
+  } else expect_equal(1,1)
 })
 
 
 test_that("fitabn", {
 
-    test_unit <- function(){
+  test_unit <- function(){
         ## use built-in simulated data set
         
         mydat <- ex0.dag.data[,c("b1","b2","b3","g1","b4","p2","p4")];## take a subset of cols
@@ -533,9 +533,9 @@ test_that("fitabn", {
     myres.c <- fitabn(dag.m=mydag,data.df=mydat,data.dists=mydists,method="mle",centre=TRUE)
     
     }
-    if(requireNamespace("INLA", quietly = TRUE)){
+  if(requireNamespace("INLA", quietly = TRUE)){
     expect_error(test_unit(),NA)
-    }
+  } else expect_equal(1,1)
 })
 
 

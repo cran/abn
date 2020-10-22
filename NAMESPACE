@@ -35,14 +35,14 @@ importFrom("rjags",coda.samples, jags.model)
 importFrom("stats", "IQR", "cor", "nobs", "rbinom", "dbinom", "dist", "dnorm", "dpois", "glm","predict.glm", "sigma")
 importFrom("utils", "tail", "combn")
 importFrom("nnet", "multinom", "nnet.default")
-import("MASS")
+# import("MASS")
 importFrom("lme4", "glmer", "VarCorr")
 
-#tests
-importFrom("boot",logit, inv.logit)
-importFrom("entropy", discretize2d, entropy.empirical, mi.empirical)
-importFrom("moments", skewness)
-importFrom("brglm", brglm)
+#Used in /tests/  not necessary to import
+#importFrom("boot",logit, inv.logit)
+#importFrom("entropy", discretize2d, entropy.empirical, mi.empirical)
+#importFrom("moments", skewness)
+#importFrom("brglm", brglm)
 
 S3method(print, abnDag)
 S3method(print, abnCache)

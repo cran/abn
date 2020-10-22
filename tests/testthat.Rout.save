@@ -25,18 +25,11 @@ Type 'q()' to quit R.
 > test_check("abn")
 Loading required package: abn
 Loading required package: nnet
-Loading required package: MASS
 Loading required package: lme4
 Loading required package: Matrix
-
-error: solve(): solution not found
-
-error: solve(): solution not found
-Step1. completed max alpha_i(S) for all i and S
-Total sets g(S) to be evaluated over: 4
 ══ testthat results  ═══════════════════════════════════════════════════════════
 [ OK: 201 | SKIPPED: 0 | WARNINGS: 0 | FAILED: 0 ]
 > 
 > proc.time()
    user  system elapsed 
-136.782   0.468 137.270 
+123.203   0.120 123.301 

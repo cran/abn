@@ -152,30 +152,7 @@ abline(0, 1)
 
 
 #################################################################
-## Example 2 - much bigger problem using glm - may take a while
-#################################################################
-
-mydat <- ex2.dag.data ## this data comes with abn see ?ex2.dag.data
-
-## setup distribution list for each node
-mydists <- list(b1="binomial", g1="gaussian", p1="poisson",
-                b2="binomial", g2="gaussian", p2="poisson",
-                b3="binomial", g3="gaussian", p3="poisson",
-                b4="binomial", g4="gaussian", p4="poisson",
-                b5="binomial", g5="gaussian", p5="poisson",
-                b6="binomial", g6="gaussian", p6="poisson")
-
-
-## no explicit ban or retain restrictions set so do not need to supply ban
-##  or retain matrices
-
-## now build cache using internal code just for nodes 1,2 and 3
-## e.g. "b1", "p1" and "g1" 
-mycache.c <- buildscorecache(data.df=mydat, data.dists=mydists,
-                         max.parents=2, which.nodes=c(1:3))
-
-###################################################################
-## Example 3 - grouped data - random effects example e.g. glmm
+## Example 2 - grouped data - random effects example e.g. glmm
 ###################################################################
 
 mydat <- ex3.dag.data ## this data comes with abn see ?ex3.dag.data
