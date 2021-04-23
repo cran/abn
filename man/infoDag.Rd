@@ -54,10 +54,8 @@ dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian")
 colnames(dag) <- rownames(dag) <- names(dist)
     
 infoDag(dag)
+plot(createAbnDag(dag))
 
-\dontrun{
-plot(create_abnDag(dag))
-}
 }
 
 \keyword{utilities}

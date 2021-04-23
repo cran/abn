@@ -1,7 +1,7 @@
 ############################################################################### buildscorecache.mle.R --- Author : Gilles Kratzer Last modified : 08/03/2017 Last modified : 18/03/2017 (mycache) Last modified : 20/10/2017 Multinomial
 
 ## fit a given DAG to data
-buildscorecache.mle <- function(data.df = NULL, data.dists = NULL, max.parents = NULL, adj.vars = NULL, cor.vars = NULL, dag.banned = NULL, dag.retained = NULL, which.nodes = NULL, maxit = 100, 
+buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents = NULL, adj.vars = NULL, cor.vars = NULL, dag.banned = NULL, dag.retained = NULL, which.nodes = NULL, maxit = 100, 
     tol = 10^-8, centre = TRUE, defn.res = NULL, dry.run = FALSE, verbose = FALSE, seed = 9062019) {
     
     set.seed(seed)

@@ -26,12 +26,29 @@
 ##    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ######################################################################
 
-mostprobable <- function(score.cache=NULL, prior.choice=1, score="mlik", verbose = TRUE) {
+
+mostprobable <- function(...) {
+    .Deprecated("mostProbable")#, msg="'mostprobable' is deprecated.\n Use 'mostProbable' instead but note that arguments have slightly changed.")
+    mostProbable(...)
+}
+
+
+
+mostProbable <- function(score.cache, score="mlik", prior.choice=1,
+                         verbose=TRUE, ...) {
+
+    if (!inherits(score.cache,"abnCache")) {
+        stop("score.cache should be an object of class 'abnCache' ")
+    }  
+    score <- c("mlik","aic","bic",
+               "mdl")[pmatch(tolower(score), c("mlik","aic","bic","mdl"))][1]
+    if (is.na(score)) stop("wrong specification of 'score'.")
+ 
+    
     
   if(score=="aic"){score.cache$mlik <- (-score.cache$aic)}
   if(score=="bic"){score.cache$mlik <- (-score.cache$bic)}
   if(score=="mdl"){score.cache$mlik <- (-score.cache$mdl)}
-  if(score=="mit"){score.cache$mlik <- (-score.cache$mit)}
   
     data.df <- score.cache$data.df[,names(score.cache$data.dists)]; ## n.b. this might be adjusted from original data.df ! when adjusting for random effect
 
@@ -68,10 +85,8 @@ mostprobable <- function(score.cache=NULL, prior.choice=1, score="mlik", verbose
     junk <- gc(FALSE)
     ## some garbage collection 
     
-    out <- list("dag" = (loc.res), "score.cache" = score.cache, "score" = score)
-    
+    out <- list(dag=(loc.res), score.cache=score.cache, score=score)
     class(out) <- c("abnMostprobable","abnLearned")
-    
     return(out)
     
 }

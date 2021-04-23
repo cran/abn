@@ -9,7 +9,7 @@
 ###############################################################################
 
 ## fit a given DAG to data
-fitabn.mle <- function(dag.m = NULL,
+fitAbn.mle <- function(dag = NULL,
                        data.df = NULL, 
                        data.dists = NULL,
                        adj.vars = NULL,
@@ -24,16 +24,16 @@ fitabn.mle <- function(dag.m = NULL,
   n <- length(data.dists)
   nobs <- dim(data.df)[1]
   
-  #test for dag.m
-  if(!is.null(dag.m)){
-    if(is.matrix(dag.m)){
+  #test for dag
+  if(!is.null(dag)){
+    if(is.matrix(dag)){
       ## run a series of checks on the DAG passed
-      dag.m <- check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
+      dag <- check.valid.dag(dag.m=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
     } else {
-      if(grepl('~',as.character(dag.m)[1],fixed = TRUE)){
-        dag.m <- formula.abn(f = dag.m,name = colnames(data.df))
+      if(grepl('~',as.character(dag)[1],fixed = TRUE)){
+        dag <- formula.abn(f = dag,name = colnames(data.df))
         ## run a series of checks on the DAG passed
-        dag.m <- check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
+        dag <- check.valid.dag(dag.m=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
       }
     }}
   else {
@@ -46,10 +46,10 @@ fitabn.mle <- function(dag.m = NULL,
   #test same order for data.frame and data.dist
   if(is.null(names(data.dists)))stop("data.dist is not a named vector")
   if(is.null(names(data.df)))stop("data.df is not a named data frame")
-  if(is.null(colnames(dag.m)) | is.null(rownames(dag.m)))stop("dag.m is not a named matrix")
+  if(is.null(colnames(dag)) | is.null(rownames(dag)))stop("dag is not a named matrix")
                         
-  if(Reduce("|", names(data.dists)!=names(data.dists[names(data.df)])) | Reduce("|", names(data.dists)!=names(data.dists[colnames(dag.m)]))){
-    stop("data.dists, data.df and dag.m do not have the same names or the same names' order")
+  if(Reduce("|", names(data.dists)!=names(data.dists[names(data.df)])) | Reduce("|", names(data.dists)!=names(data.dists[colnames(dag)]))){
+    stop("data.dists, data.df and dag do not have the same names or the same names' order")
   }
   
   if((!is.null(adj.vars) & !is.null(cor.vars)) & !(is.null(cor.vars[adj.vars]))){stop("cor.vars contains adj.vars, please remove them")}
@@ -79,7 +79,7 @@ fitabn.mle <- function(dag.m = NULL,
     cor.vars <- colnames(data.df)
     cor.vars <- cor.vars[-adj.vars]}
   
-  dag.m[cor.vars,adj.vars] <- 1
+  dag[cor.vars,adj.vars] <- 1
   }
   
     coef.out <- list()
@@ -117,7 +117,7 @@ fitabn.mle <- function(dag.m = NULL,
           }
     }
     
-    dag.m.multi <- dag.m[,rep(1:n, repetition.multi)]
+    dag.multi <- dag[,rep(1:n, repetition.multi)]
     
     ##-----------------------------
     ##start loop for the regression
@@ -125,14 +125,14 @@ fitabn.mle <- function(dag.m = NULL,
     
     if(verbose){cat("Start estimation loop.")}
     
-    for(i in 1:length(dag.m[1,])){
+    for(i in 1:length(dag[1,])){
       
       Y <- data.matrix(data.df[,i])
       
-      if("multinomial" %in% data.dists[as.logical(dag.m[i,])]){
-        X <- data.matrix(data.df.multi[,as.logical(dag.m.multi[i,])])
+      if("multinomial" %in% data.dists[as.logical(dag[i,])]){
+        X <- data.matrix(data.df.multi[,as.logical(dag.multi[i,])])
       }else{
-        X <- data.matrix(cbind(rep(1,length(data.df[,1])),data.df[,as.logical(dag.m[i,])]))
+        X <- data.matrix(cbind(rep(1,length(data.df[,1])),data.df[,as.logical(dag[i,])]))
       }
       
       num.na <- 0
@@ -199,11 +199,11 @@ fitabn.mle <- function(dag.m = NULL,
       ll.out.tmp[[paste(names(data.dists[i]))]] <- fit$loglik
       aic.out.tmp[[paste(names(data.dists[i]))]] <- fit$aic
       bic.out.tmp[[paste(names(data.dists[i]))]] <- fit$bic
-      mdl.out.tmp[[paste(names(data.dists[i]))]] <- fit$bic + (1 + sum(dag.m.multi[i,] - num.na)) * log(n)
+      mdl.out.tmp[[paste(names(data.dists[i]))]] <- fit$bic + (1 + sum(dag.multi[i,] - num.na)) * log(n)
       
       sse.out[[i]] <- fit$sse
       
-      deg.freedom <- (length(data.df[,1])-(sum(dag.m.multi[i,])+1))
+      deg.freedom <- (length(data.df[,1])-(sum(dag.multi[i,])+1))
       
       #var.out[[i]] <- X
       mse.out[[i]] <- (fit$sse/deg.freedom)
@@ -262,48 +262,48 @@ fitabn.mle <- function(dag.m = NULL,
       
       if(data.dists[[i]]!="multinomial"){
 
-        if("multinomial" %in% data.dists[as.logical(dag.m[i,])]){
-          colnames(coef.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
-          colnames(var.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
-          colnames(pvalue[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
+        if("multinomial" %in% data.dists[as.logical(dag[i,])]){
+          colnames(coef.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
+          colnames(var.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
+          colnames(pvalue[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
         }else{
-          colnames(coef.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag.m[i,])])
-          colnames(var.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag.m[i,])])
-          colnames(pvalue[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag.m[i,])])
+          colnames(coef.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag[i,])])
+          colnames(var.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag[i,])])
+          colnames(pvalue[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag[i,])])
         }
       }
         if(data.dists[[i]]=="multinomial"){
-          if("multinomial" %in% data.dists[as.logical(dag.m[i,])]){
-            colnames(coef.out[[i]]) <- c(as.vector(outer(names(data.df.multi)[as.logical(dag.m.multi[i,])], fit$names.coef, paste, sep=".")))
-            colnames(var.out[[i]]) <- c(as.vector(outer(names(data.df.multi)[as.logical(dag.m.multi[i,])], fit$names.coef, paste, sep=".")))
-            colnames(pvalue[[i]]) <- c(as.vector(outer(names(data.df.multi)[as.logical(dag.m.multi[i,])], fit$names.coef, paste, sep=".")))
+          if("multinomial" %in% data.dists[as.logical(dag[i,])]){
+            colnames(coef.out[[i]]) <- c(as.vector(outer(names(data.df.multi)[as.logical(dag.multi[i,])], fit$names.coef, paste, sep=".")))
+            colnames(var.out[[i]]) <- c(as.vector(outer(names(data.df.multi)[as.logical(dag.multi[i,])], fit$names.coef, paste, sep=".")))
+            colnames(pvalue[[i]]) <- c(as.vector(outer(names(data.df.multi)[as.logical(dag.multi[i,])], fit$names.coef, paste, sep=".")))
           }else{
-            colnames(coef.out[[i]]) <- c(paste(names(data.df)[i],"|intercept.",fit$names.coef,sep = ""),as.vector(outer(names(data.df)[as.logical(dag.m[i,])], fit$names.coef, paste, sep=".")))
-            colnames(var.out[[i]]) <- c(paste(names(data.df)[i],"|intercept.",fit$names.coef,sep = ""),as.vector(outer(names(data.df)[as.logical(dag.m[i,])], fit$names.coef, paste, sep=".")))
-            colnames(pvalue[[i]]) <- c(paste(names(data.df)[i],"|intercept.",fit$names.coef,sep = ""),as.vector(outer(names(data.df)[as.logical(dag.m[i,])], fit$names.coef, paste, sep=".")))
+            colnames(coef.out[[i]]) <- c(paste(names(data.df)[i],"|intercept.",fit$names.coef,sep = ""),as.vector(outer(names(data.df)[as.logical(dag[i,])], fit$names.coef, paste, sep=".")))
+            colnames(var.out[[i]]) <- c(paste(names(data.df)[i],"|intercept.",fit$names.coef,sep = ""),as.vector(outer(names(data.df)[as.logical(dag[i,])], fit$names.coef, paste, sep=".")))
+            colnames(pvalue[[i]]) <- c(paste(names(data.df)[i],"|intercept.",fit$names.coef,sep = ""),as.vector(outer(names(data.df)[as.logical(dag[i,])], fit$names.coef, paste, sep=".")))
           }
         }
       
       
       
-      if((("multinomial" %in% data.dists[as.logical(dag.m[i,])]) & (data.dists[[i]]!="multinomial"))){
-        colnames(coef.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
-        colnames(var.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
-        colnames(pvalue[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
+      if((("multinomial" %in% data.dists[as.logical(dag[i,])]) & (data.dists[[i]]!="multinomial"))){
+        colnames(coef.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
+        colnames(var.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
+        colnames(pvalue[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
       }
       #ok
       if(!("multinomial" %in% data.dists)){
-        colnames(coef.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag.m[i,])])
-        colnames(var.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag.m[i,])])
-        colnames(pvalue[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag.m[i,])])
+        colnames(coef.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag[i,])])
+        colnames(var.out[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag[i,])])
+        colnames(pvalue[[i]]) <- c(paste(names(data.df)[i],"|intercept",sep = ""),names(data.df)[as.logical(dag[i,])])
       }
       
-      # if(("multinomial" %in% data.dists[as.logical(dag.m[i,])]) & (data.dists[[i]]=="multinomial")){
-      #   colnames(coef.out[[i]]) <- c(paste(names(data.df.multi)[as.logical(dag.m.multi[i,])],fit$names.coef))
-      #   colnames(var.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
-      #   colnames(pvalue[[i]]) <- c(names(data.df.multi)[as.logical(dag.m.multi[i,])])
+      # if(("multinomial" %in% data.dists[as.logical(dag[i,])]) & (data.dists[[i]]=="multinomial")){
+      #   colnames(coef.out[[i]]) <- c(paste(names(data.df.multi)[as.logical(dag.multi[i,])],fit$names.coef))
+      #   colnames(var.out[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
+      #   colnames(pvalue[[i]]) <- c(names(data.df.multi)[as.logical(dag.multi[i,])])
       # }
-      # if(data.dists[[i]]=="multinomial" & !("multinomial" %in% data.dists[as.logical(dag.m[i,])])){
+      # if(data.dists[[i]]=="multinomial" & !("multinomial" %in% data.dists[as.logical(dag[i,])])){
       # 
       # }
     }#EOF loop Regression
@@ -316,7 +316,7 @@ fitabn.mle <- function(dag.m = NULL,
     #lapply(l, function(x) replace(x, which(is.na(x)), 0))
     out[["method"]] <- "mle"
     
-    out[["abnDag"]] <- create_abnDag(dag.m, data.df = data.df, data.dists = data.dists)
+    out[["abnDag"]] <- createAbnDag(dag, data.df = data.df, data.dists = data.dists)
      
     out[["mliknode"]] <- ll.out.tmp
     out[["mlik"]] <- Reduce("+",ll.out.tmp)

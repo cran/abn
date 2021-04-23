@@ -1,6 +1,6 @@
 
-R Under development (unstable) (2020-06-04 r78644) -- "Unsuffered Consequences"
-Copyright (C) 2020 The R Foundation for Statistical Computing
+R Under development (unstable) (2021-03-25 r80120) -- "Unsuffered Consequences"
+Copyright (C) 2021 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -24,6 +24,33 @@ Type 'q()' to quit R.
 Loading required package: nnet
 Loading required package: lme4
 Loading required package: Matrix
+Loading required package: Rgraphviz
+Loading required package: graph
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,
+    tapply, union, unique, unsplit, which.max, which.min
+
+Loading required package: grid
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
@@ -41,11 +68,45 @@ Loading required package: Matrix
 > ### ** Examples
 > 
 > ## Citations:
-> citation('abn')
+> print(citation('abn'), bibtex=TRUE)
 
 To cite `abn` modelling approach and `abn` package in publication use,
 select the most appropriate among:
+
 --------------------------------------------------------------------------------------------------------
+
+To cite use of the Bayesian and MLE implementation of `abn` in
+publications use:
+
+  Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R.
+  (2019). Additive Bayesian Network Modelling with the R Package abn.
+  arXiv preprint arXiv:1911.09006
+
+A BibTeX entry for LaTeX users is
+
+  @Article{,
+    title = {Additive {B}ayesian Network Modelling with the {R} Package {abn}},
+    author = {Gilles Kratzer and Fraser Iain Lewis and Arianna Comin and Marta Pittavino and Reinhard Furrer},
+    year = {2019},
+    journal = {arXiv preprint arXiv:1911.09006},
+  }
+
+To cite an example of a typical ABN analysis in publications use:
+
+  Kratzer, G. and Lewis, F.I. and Willi, B. and Meli, M.L. and Boretti,
+  F.S. and Hofmann-Lehmann, R. and Torgerson, P. and Furrer, R. and
+  Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline
+  Calicivirus Infection Among Cats in Switzerland. Frontiers in
+  Veterinary Science, 7,73
+
+A BibTeX entry for LaTeX users is
+
+  @Article{,
+    title = {{B}ayesian {N}etwork {M}odeling {A}pplied to {F}eline {C}alicivirus {I}nfection {A}mong {C}ats in {S}witzerland},
+    author = {Gilles Kratzer and Fraser Iain Lewis and Barbara Willi and Marina Meli and Felicitas Boretti and Regina Hofmann-Lehmann and Paul Torgerson and Reinhard Furrer and Sonja Hartnack},
+    year = {2020},
+    journal = {Frontiers in Veterinary Science},
+  }
 
 To cite use of `abn` underlaying methodology in applied research for
 publications use:
@@ -54,30 +115,45 @@ publications use:
   analyses through multivariate regression modelling. Emerging themes
   in epidemiology, 10(1), 4.
 
-To cite use of the Bayesian implementation of `abn` in publications
-use:
+A BibTeX entry for LaTeX users is
 
-  Kratzer, G., Lewis, F.I.,Comin, A., Pittavino, M. and Furrer, R.
-  (2019). Additive Bayesian Network Modelling with the R Package abn.
-  arXiv preprint arXiv:1911.09006
-
-To cite use of the MLE implementation `abn` in publications use:
-
-  Kratzer, G. and Furrer, R. (2018). Information-Theoretic Scoring
-  Rules to Learn Additive Bayesian Network Applied to Epidemiology.
-  arXiv preprint arXiv:1808.01126
+  @Article{,
+    title = {Improving epidemiologic data analyses through multivariate regression modelling},
+    author = {Lewis Fraser Iain and Ward Michael P},
+    journal = {Emerging themes in epidemiology},
+    volume = {10},
+    number = {1},
+    pages = {4},
+    year = {2013},
+    publisher = {BioMed Central},
+  }
 
 To cite use of the R package `abn` in publications use:
 
-  Kratzer, G. , Pittavino, M, Lewis, F.I. and Furrer, R. (2019). abn:
+  Kratzer, G. , Pittavino, M, Lewis, F.I. and Furrer, R. (2020). abn:
   an R package for modelling multivariate data using additive Bayesian
-  networks. R package version 2.2.
+  networks. R package version 2.4.
   https://CRAN.R-project.org/package=abn
 
-To see these entries in BibTeX format, use 'print(<citation>,
-bibtex=TRUE)', 'toBibtex(.)', or set
-'options(citation.bibtex.max=999)'.
+A BibTeX entry for LaTeX users is
 
+  @Manual{,
+    title = {abn: an {R} package for modelling multivariate data using additive {B}ayesian networks},
+    author = {Gilles Kratzer and Marta Pittavino and Fraser Iain Lewis and Reinhard Furrer},
+    year = {2020},
+    note = {R package version 2.4},
+    url = {https://CRAN.R-project.org/package=abn},
+  }
+
+> 
+> 
+> ## Installing the R package Rgraphviz:
+> # if (!requireNamespace("BiocManager", quietly = TRUE))
+> #     install.packages("BiocManager")
+> # BiocManager::install("Rgraphviz")
+> 
+> ## README.md in the directory `bootstrapping_example/`:
+> # edit(file=paste0( path.package('abn'),'/bootstrapping_example/README.md'))
 > 
 > 
 > 
@@ -87,10 +163,10 @@ bibtex=TRUE)', 'toBibtex(.)', or set
 > 
 > flush(stderr()); flush(stdout())
 > 
-> ### Name: buildscorecache
+> ### Name: buildScoreCache
 > ### Title: Build a cache of goodness of fit metrics for each node in a DAG,
 > ###   possibly subject to user-defined restrictions
-> ### Aliases: buildscorecache
+> ### Aliases: buildScoreCache
 > ### Keywords: models
 > 
 > ### ** Examples
@@ -115,13 +191,13 @@ bibtex=TRUE)', 'toBibtex(.)', or set
 > ##D 
 > ##D ## now build the cache of pre-computed scores accordingly to the structural constraints
 > ##D 
-> ##D res.c <- buildscorecache(data.df=mydat, data.dists=mydists,
+> ##D res.c <- buildScoreCache(data.df=mydat, data.dists=mydists,
 > ##D               dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par)
 > ##D 
 > ##D 
 > ##D ## repeat but using R-INLA. The mlik's should be virtually identical.
 > ##D ## now build cache
-> ##D res.inla <- buildscorecache(data.df=mydat, data.dists=mydists,
+> ##D res.inla <- buildScoreCache(data.df=mydat, data.dists=mydists,
 > ##D               dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par,
 > ##D               max.mode.error=100)
 > ##D 
@@ -148,7 +224,7 @@ bibtex=TRUE)', 'toBibtex(.)', or set
 > ##D ## modes estimated using internal code) and a message is given that internal code
 > ##D ## will be used in place of INLA's results.
 > ##D 
-> ##D # mycache <- buildscorecache(data.df=mydat, data.dists=mydists, group.var="group",
+> ##D # mycache <- buildScoreCache(data.df=mydat, data.dists=mydists, group.var="group",
 > ##D #                         cor.vars=c("b1","b2","b3","b4","b5","b6","b7",
 > ##D #                                    "b8","b9","b10","b11","b12","b13"),
 > ##D #                         max.parents=max.par, which.nodes=c(1))
@@ -160,9 +236,9 @@ bibtex=TRUE)', 'toBibtex(.)', or set
 +               g2="gaussian", b3="binomial", g3="gaussian")
 >              
 > ## now build cache of scores (goodness of fits for each node)
-> res.mle <- buildscorecache(data.df=mydat, data.dists=mydists,
+> res.mle <- buildScoreCache(data.df=mydat, data.dists=mydists,
 +                            max.parents=3, method="mle")
-> res.abn <- buildscorecache(data.df=mydat, data.dists=mydists,
+> res.abn <- buildScoreCache(data.df=mydat, data.dists=mydists,
 +                            max.parents=3, method="Bayes")
 > 
 > #plot(-res.mle$bic, res.abn$mlik)
@@ -184,7 +260,7 @@ bibtex=TRUE)', 'toBibtex(.)', or set
 > 
 > test.m <- matrix(data = c(0,1,0,
 +                           0,0,0,
-+                           0,0,0), nrow = 3, ncol = 3)
++                           1,0,0), nrow = 3, ncol = 3)
 >     
 > ref.m <- matrix(data = c(0,0,0,
 +                           1,0,0,
@@ -194,31 +270,31 @@ bibtex=TRUE)', 'toBibtex(.)', or set
 >                           
 > compareDag(ref = ref.m, test = test.m)
 $TPR
-[1] 0
+[1] 0.5
 
 $FPR
 [1] 0.1428571
 
 $Accuracy
-[1] 0.6666667
+[1] 0.7777778
 
 $FDR
-[1] 2
+[1] 0.5
 
 $`G-measure`
-[1] 0
+[1] 0.5
 
 $`F1-score`
-[1] 0
+[1] 2
 
 $PPV
-[1] 0
+[1] 0.5
 
 $FOR
-[1] 2
+[1] 0.5
 
 $`Hamming-distance`
-[1] 2
+[1] 1
 
 > 
 > 
@@ -231,16 +307,18 @@ $`Hamming-distance`
 > 
 > ### Name: createDag
 > ### Title: Create a legitimate DAGs
-> ### Aliases: createDag create_abnDag
+> ### Aliases: createDag createAbnDag
 > ### Keywords: utilities
 > 
 > ### ** Examples
 > 
-> create_abnDag( ~a+b|a, data.df=c("a"=1, "b"=1))
+> createAbnDag( ~a+b|a, data.df=c("a"=1, "b"=1))
   a b
 a 0 0
 b 1 0
 Class 'abnDag'.
+> 
+> plot( createAbnDag( matrix( c(0,1,0,0),2,2))) 
 > 
 > 
 > 
@@ -427,16 +505,16 @@ Class 'abnDag'.
 > flush(stderr()); flush(stdout())
 > 
 > ### Name: essentialGraph
-> ### Title: Plot an ABN graphic
+> ### Title: Construct the essential graph
 > ### Aliases: essentialGraph
 > ### Keywords: utilities
 > 
 > ### ** Examples
 > 
 > dag <- matrix(c(0,0,0, 1,0,0, 1,1,0), nrow = 3, ncol = 3)
-> dist <- list(a="gaussian", b="gaussian", c="gaussian")     
+> dist <- list(a="gaussian", b="gaussian", c="gaussian")
 > colnames(dag) <- rownames(dag) <- names(dist)
->                           
+> 
 > essentialGraph(dag)
   a b c
 a 0 1 1
@@ -453,30 +531,32 @@ c 0 1 0
 > 
 > ### Name: fitabn
 > ### Title: Fit an additive Bayesian network model
-> ### Aliases: fitabn
+> ### Aliases: fitAbn
 > ### Keywords: models
 > 
 > ### ** Examples
 > 
+> 
+> ## Built-in dataset with a subset of cols  
+> mydat <- ex0.dag.data[,c("b1","b2","b3","g1","b4","p2","p4")] 
+> 
+> 
+> ## setup distribution list for each node
+> mydists <- list(b1="binomial", b2="binomial", b3="binomial", g1="gaussian",
++               b4="binomial", p2="poisson", p4="poisson")
+> 
+> ## Null model - all independent variables
+> mydag.empty <- matrix(0, nrow=7, ncol=7)
+> colnames(mydag.empty) <- rownames(mydag.empty) <- names(mydat)
+> 
+> ## Now fit the model to calculate its goodness-of-fit
+> myres <- fitAbn(dag=mydag.empty, data.df=mydat, data.dists=mydists)
+> 
+> ## Log-marginal likelihood goodness-of-fit for complete DAG
+> print(myres$mlik) 
+[1] -2855.45
+> 
 > ## Not run: 
-> ##D ## Built-in dataset with a subset of cols  
-> ##D mydat <- ex0.dag.data[,c("b1","b2","b3","g1","b4","p2","p4")] 
-> ##D 
-> ##D 
-> ##D ## setup distribution list for each node
-> ##D mydists <- list(b1="binomial", b2="binomial", b3="binomial", g1="gaussian",
-> ##D               b4="binomial", p2="poisson", p4="poisson")
-> ##D 
-> ##D ## Null model - all independent variables
-> ##D mydag.empty <- matrix(0, nrow=7, ncol=7)
-> ##D colnames(mydag.empty) <- rownames(mydag.empty) <- names(mydat)
-> ##D 
-> ##D ## Now fit the model to calculate its goodness-of-fit
-> ##D myres <- fitabn(dag.m = mydag.empty, data.df = mydat, data.dists = mydists)
-> ##D 
-> ##D ## Log-marginal likelihood goodness-of-fit for complete DAG
-> ##D print(myres$mlik) 
-> ##D 
 > ##D ## Now repeat but include some dependencies first
 > ##D mydag <- mydag.empty 
 > ##D mydag["b1","b2"] <- 1 # b1<-b2 
@@ -489,32 +569,32 @@ c 0 1 0
 > ##D 
 > ##D # fit  using the formula statement 
 > ##D #  including the creation of the graph of the DAG via Rgraphviz 
-> ##D myres <- fitabn(dag.m = ~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1,
-> ##D                 data.df = mydat, data.dists = mydists,
-> ##D                 create.graph = TRUE)
+> ##D myres <- fitAbn(dag=~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1,
+> ##D                 data.df=mydat, data.dists=mydists,
+> ##D                 create.graph=TRUE)
 > ##D 
 > ##D ## Or equivalentelly using the formula statement
-> ##D # myres <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists,
-> ##D #              create.graph = TRUE)
+> ##D # myres <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists,
+> ##D #              create.graph=TRUE)
 > ##D 
 > ##D print(myres$mlik) ## a much weaker fit than full independence DAG
 > ##D 
-> ##D plotabn(dag.m = mydag, data.dists = mydists, fitted.values.abn = myres$modes)
+> ##D plotAbn(dag=mydag, data.dists=mydists, fitted.values.abn=myres$modes)
 > ##D 
 > ##D ## A simple plot of some posterior densities the algorithm which chooses 
 > ##D ## density points is very simple any may be rather sparse so also recompute 
 > ##D ## the density over an equally spaced grid of 50 points between the two 
 > ##D ## end points which had at f=min.pdf
-> ##D ## max.mode.error = 0 foces to use the internal c code
-> ##D myres.c <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists, 
-> ##D                   compute.fixed = TRUE, n.grid = 50, max.mode.error = 0)
+> ##D ## max.mode.error=0 foces to use the internal c code
+> ##D myres.c <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists, 
+> ##D                   compute.fixed=TRUE, n.grid=50, max.mode.error=0)
 > ##D 
 > ##D print(names(myres.c$marginals)) ## gives all the different parameter names
 > ##D 
 > ##D ## Repeat but use INLA for the numerics using max.mode.error=100
 > ##D ## as using internal code is the default here rather than INLA 
-> ##D myres.inla <- fitabn(dag.m = mydag, data.df = mydat, data.dists = mydists,
-> ##D                      compute.fixed = TRUE, n.grid = 50, max.mode.error = 100)
+> ##D myres.inla <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists,
+> ##D                      compute.fixed=TRUE, n.grid=50, max.mode.error=100)
 > ##D 
 > ##D ## Plot posterior densities
 > ##D par(mfrow=c(2,2), mai=c(.7,.7,.2,.1))
@@ -538,26 +618,26 @@ c 0 1 0
 > ##D ## Compute marginal likelihood - use internal code via max.mode.error=0
 > ##D ## as using INLA is the default here.
 > ##D ## Model where b1 <- b2
-> ##D myres.c <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists = mydists,
-> ##D                   group.var = "group", cor.vars = c("b1","b2"),
+> ##D myres.c <- fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
+> ##D                   group.var="group", cor.vars=c("b1","b2"),
 > ##D                   max.mode.error=0)
 > ##D print(myres.c) ## show all the output 
 > ##D 
 > ##D ## compare mode for node b1 with glmer(), lme4::glmer is automatically attached.
 > ##D m1 <- glmer(b1 ~ 1 + b2 + (1|group), 
-> ##D             family = "binomial", data = ex3.dag.data[,c(1,2,14)])
+> ##D             family="binomial", data=ex3.dag.data[,c(1,2,14)])
 > ##D 
 > ##D print(myres.c$modes$b1) ## almost identical to lme4 n.b. glmer() gives variance
-> ##D ##                         fitabn gives precision=1/variance
+> ##D ##                         fitAbn gives precision=1/variance
 > ##D 
 > ##D ## Compare with INLA estimate
-> ##D myres.inla <- fitabn(dag.m = ~b1|b2,data.df=ex3.dag.data[,c(1,2,14)],
-> ##D                      data.dists = mydists, group.var = "group", cor.vars = c("b1","b2"),
-> ##D                      compute.fixed = FALSE, max.mode.error = 100)
+> ##D myres.inla <- fitAbn(dag=~b1|b2,data.df=ex3.dag.data[,c(1,2,14)],
+> ##D                      data.dists=mydists, group.var="group", cor.vars=c("b1","b2"),
+> ##D                      compute.fixed=FALSE, max.mode.error=100)
 > ##D 
 > ##D ## Compare log marginal likelihoods for each node and total DAG:
-> ##D cbind(INLA = unlist(myres.inla[1:3]), C = unlist(myres.c[1:3]), 
-> ##D              Delta = unlist(myres.inla[1:3]) - unlist(myres.c[1:3]))
+> ##D cbind(INLA=unlist(myres.inla[1:3]), C=unlist(myres.c[1:3]), 
+> ##D              Delta=unlist(myres.inla[1:3]) - unlist(myres.c[1:3]))
 > ##D 
 > ##D ## Now for marginals - INLA is strongly preferable for estimating marginals for nodes 
 > ##D ## with random effects as it is far faster, but may not be reliable
@@ -565,18 +645,18 @@ c 0 1 0
 > ##D 
 > ##D ## INLA's estimates of the marginals, using high n.grid=500
 > ##D ## as this makes the plots smoother - see below.
-> ##D ## myres.inla <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], 
-> ##D #                      data.dists = mydists,
-> ##D #                      group.var = "group", cor.vars = c("b1", "b2"),
-> ##D #                      compute.fixed = TRUE, n.grid = 500, 
-> ##D #                      control = list(max.mode.error = 100, max.hessian.error = 10E-02))
+> ##D ## myres.inla <- fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], 
+> ##D #                      data.dists=mydists,
+> ##D #                      group.var="group", cor.vars=c("b1", "b2"),
+> ##D #                      compute.fixed=TRUE, n.grid=500, 
+> ##D #                      control=list(max.mode.error=100, max.hessian.error=10E-02))
 > ##D 
-> ##D ## this is NOT recommended - marginal density estimation using fitabn in mixed models
-> ##D ## is really just for diagnostic purposes, better to use fitabn.inla() here
+> ##D ## this is NOT recommended - marginal density estimation using fitAbn in mixed models
+> ##D ## is really just for diagnostic purposes, better to use fitAbn.inla() here
 > ##D ## but here goes...be patient
-> ##D # myres.c <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists = mydists,
-> ##D #                   group.var = "group", cor.vars=c("b1", "b2"), compute.fixed = TRUE,
-> ##D #                   control = list(max.mode.error = 0, max.hessian.error = 10E-02))
+> ##D # myres.c <- fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
+> ##D #                   group.var="group", cor.vars=c("b1", "b2"), compute.fixed=TRUE,
+> ##D #                   control=list(max.mode.error=0, max.hessian.error=10E-02))
 > ##D 
 > ##D ## compare marginals between internal and INLA.   
 > ##D # par(mfrow=c(2,3))
@@ -601,11 +681,11 @@ c 0 1 0
 > ##D ## use internal code but only to compute a single parameter over a specified grid
 > ##D ## This can be necessary if the simple auto grid finding functions does a poor job
 > ##D 
-> ##D #myres.c <- fitabn(dag.m = ~b1|b2, data.df = ex3.dag.data[,c(1,2,14)], data.dists = mydists,
-> ##D #                  group.var = "group", cor.vars = c("b1", "b2"), 
-> ##D #                  centre = FALSE, compute.fixed = TRUE,
-> ##D #                  marginal.node = 1, marginal.param = 3,## precision term in node 1
-> ##D #                  variate.vec = seq(0.05, 1.5, len=25), max.hessian.error = 10E-02)
+> ##D #myres.c <- fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
+> ##D #                  group.var="group", cor.vars=c("b1", "b2"), 
+> ##D #                  centre=FALSE, compute.fixed=TRUE,
+> ##D #                  marginal.node=1, marginal.param=3,## precision term in node 1
+> ##D #                  variate.vec=seq(0.05, 1.5, len=25), max.hessian.error=10E-02)
 > ##D 
 > ##D #par(mfrow=c(1,2))
 > ##D #plot(myres.c$marginals[[1]], type="l", col="blue")## still fairly sparse
@@ -626,11 +706,11 @@ c 0 1 0
 > ##D 
 > ##D 
 > ##D ## now fit the model to calculate its goodness of fit
-> ##D myres.mle <- fitabn(dag.m = ~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1, 
-> ##D                     data.df = mydat, data.dists = mydists, method = "mle")
+> ##D myres.mle <- fitAbn(dag=~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1, 
+> ##D                     data.df=mydat, data.dists=mydists, method="mle")
 > ##D 
-> ##D myres.bayes <- fitabn(dag.m = ~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1, 
-> ##D                       data.df = mydat, data.dists = mydists, method = "bayes")
+> ##D myres.bayes <- fitAbn(dag=~b1|b2+b2|p4+g1+g1|p2+b3|g1+b4|b1+p4|g1, 
+> ##D                       data.df=mydat, data.dists=mydists, method="bayes")
 > ##D 
 > ##D ## print the output
 > ##D ## MLE
@@ -640,7 +720,7 @@ c 0 1 0
 > ##D print(myres.bayes)
 > ##D 
 > ##D ## plot the model with parameter estimates
-> ##D plotabn(dag.m = mydag, data.dists = mydists, fitted.values.abn.mle = myres.bayes$modes)
+> ##D plotAbn(dag=mydag, data.dists=mydists, fitted.values.abn.mle=myres.bayes$modes)
 > ## End(Not run)
 > 
 > 
@@ -683,10 +763,9 @@ $parent.average
 $children.average
 [1] 1.25
 
+> plot(createAbnDag(dag))
+dev.new(): using pdf(file="Rplots1.pdf")
 > 
-> ## Not run: 
-> ##D plot(create_abnDag(dag))
-> ## End(Not run)
 > 
 > 
 > 
@@ -751,24 +830,23 @@ Initializing model
 > ### ** Examples
 > 
 > ## Defining distribution and dag
-> dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", e="binomial", 
-+                f="binomial")
+> dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian",
++              e="binomial", f="binomial")
 > dag <- matrix(c(0,1,1,0,1,0,
 +     0,0,1,1,0,1, 
 +     0,0,0,0,0,0, 
 +     0,0,0,0,0,0, 
 +     0,0,0,0,0,1, 
-+     0,0,0,0,0,0), nrow = 6L, ncol = 6L, byrow = TRUE)
->     
++     0,0,0,0,0,0), nrow = 6L, ncol = 6L, byrow = TRUE)    
 > colnames(dag) <- rownames(dag) <- names(dist)
 >     
-> mb(dag, node = "b", data.dists = dist)
+> mb(dag, node = "b")
 [1] "a" "c" "d" "f" "e"
-> mb(dag, node = "e", data.dists = dist)
-[1] "a" "f" "b" "c"
-> mb(dag, node = c("b","e"), data.dists = dist)
+> mb(dag, node = c("b","e"))
 [1] "a" "c" "d" "f" "e" "b"
 > 
+> mb(~a|b:c:e+b|c:d:f+e|f, node = "e", data.dists = dist)
+[1] "a" "f" "b" "c"
 > 
 > 
 > 
@@ -806,7 +884,7 @@ Initializing model
 > 
 > ### Name: mostprobable
 > ### Title: Find most probable DAG structure
-> ### Aliases: mostprobable
+> ### Aliases: mostProbable
 > ### Keywords: models
 > 
 > ### ** Examples
@@ -817,7 +895,7 @@ Initializing model
 > ##D ##############################
 > ##D 
 > ##D ## this data comes with abn see ?ex1.dag.data
-> ##D mydat <- ex1.dag.data 
+> ##D mydat <- ex1.dag.data
 > ##D 
 > ##D ## setup distribution list for each node
 > ##D mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
@@ -829,19 +907,19 @@ Initializing model
 > ##D ## parent limits
 > ##D max.par <- list("b1"=0,"p1"=0,"g1"=1,"b2"=1,"p2"=2,"b3"=3,"g2"=3,"b4"=2,"b5"=2,"g3"=2)
 > ##D ## now build cache
-> ##D mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = max.par)
+> ##D mycache <- buildScoreCache(data.df=mydat, data.dists=mydists, max.parents=max.par)
 > ##D 
 > ##D ## Find the globally best DAG
-> ##D mp.dag <- mostprobable(score.cache=mycache)
-> ##D fitabn(object=mp.dag)$mlik
+> ##D mp.dag <- mostProbable(score.cache=mycache)
+> ##D fitAbn(object=mp.dag)$mlik
 > ##D 
 > ##D ## plot the best model
-> ##D myres <- fitabn(object=mp.dag,create.graph=TRUE)
+> ##D myres <- fitAbn(object=mp.dag,create.graph=TRUE)
 > ##D 
-> ##D plotabn(dag.m = mp.dag$dag, data.dists = mydists)#, fitted.values.abn = myres)
+> ##D plotAbn(dag=mp.dag$dag, data.dists=mydists)#, fitted.values.abn=myres)
 > ##D 
 > ##D ## fit the known true DAG
-> ##D true.dag <- matrix(data=0,ncol=10, nrow = 10)
+> ##D true.dag <- matrix(data=0,ncol=10, nrow=10)
 > ##D colnames(true.dag) <- rownames(true.dag) <- names(mydists)
 > ##D 
 > ##D true.dag["p2",c("b1","p1")] <- 1
@@ -851,29 +929,29 @@ Initializing model
 > ##D true.dag["b5",c("g1","g2")] <- 1
 > ##D true.dag["g3",c("g1","b2")] <- 1
 > ##D 
-> ##D fitabn(dag.m = true.dag, data.df = mydat, data.dists=mydists)$mlik
+> ##D fitAbn(dag=true.dag, data.df=mydat, data.dists=mydists)$mlik
 > ##D 
 > ##D #################################################################
 > ##D ## Example 2 - models with random effects
 > ##D #################################################################
 > ##D 
 > ##D ## this data comes with abn see ?ex3.dag.data
-> ##D # mydat <- ex3.dag.data[,c(1:4,14)] 
+> ##D # mydat <- ex3.dag.data[,c(1:4,14)]
 > ##D 
 > ##D # mydists <- list(b1="binomial", b2="binomial", b3="binomial",
 > ##D #              b4="binomial")
 > ##D 
 > ##D ## This takes a few seconds
-> ##D # mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
-> ##D #               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
+> ##D # mycache.mixed <- buildScoreCache(data.df=mydat, data.dists=mydists,
+> ##D #               group.var="group", cor.vars=c("b1","b2","b3","b4"),
 > ##D #               max.parents=2, which.nodes=c(1:4))
 > ##D 
 > ##D ## find the most probable DAG
-> ##D # mp.dag <- mostprobable(score.cache=mycache.mixed)
+> ##D # mp.dag <- mostProbable(score.cache=mycache.mixed)
 > ##D 
 > ##D ## get goodness of fit
-> ##D # fitabn(object = mp.dag, data.df = mydat, data.dists = mydists,
-> ##D #      group.var = "group", cor.vars = c("b1","b2","b3","b4"))$mlik
+> ##D # fitAbn(object=mp.dag, data.df=mydat, data.dists=mydists,
+> ##D #      group.var="group", cor.vars=c("b1","b2","b3","b4"))$mlik
 > ## End(Not run)
 > 
 > 
@@ -885,7 +963,7 @@ Initializing model
 > 
 > ### Name: plotabn
 > ### Title: Plot an ABN graphic
-> ### Aliases: plotabn
+> ### Aliases: plotAbn
 > ### Keywords: models hplot
 > 
 > ### ** Examples
@@ -905,26 +983,18 @@ Initializing model
 > colnames(arc.strength) <- rownames(arc.strength) <- names(dist)
 > 
 > #Plot from a formula
-> plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist)
+> plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist)
 > 
 > #Plot form a matrix
-> plotabn(dag.m = arc.strength, data.dist = dist)
-> 
-> #Creating adjency matrix
-> plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, plot = FALSE)
-  a b c d e f
-a 0 1 1 0 1 0
-b 0 0 1 1 0 1
-c 0 0 0 0 0 0
-d 0 0 0 0 0 0
-e 0 0 0 0 0 1
-f 0 0 0 0 0 0
+> plotAbn(dag = arc.strength, data.dist = dist)
 > 
 > #Arc strength
-> plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, arc.strength = arc.strength)
+> plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, arc.strength = arc.strength)
+Warning in plot.window(xlim = c(getX(bl), getX(ur)), ylim = c(getY(bl),  :
+  "arc.strength" is not a graphical parameter
 > 
 > #Markov blanket
-> plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, markov.blanket.node = "e")
+> plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, markov.blanket.node = "e")
 > 
 > 
 > 
@@ -950,10 +1020,10 @@ f 0 0 0 0 0 0
 > mydists <- list(b1="binomial", g1="gaussian", p1="poisson")
 > 
 > ## now build cache
-> mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = 2, method = "mle")
+> mycache <- buildScoreCache(data.df = mydat, data.dists = mydists, max.parents = 2, method = "mle")
 > 
 > ## Find the globally best DAG
-> mp.dag <- mostprobable(score.cache=mycache, score="bic", verbose = FALSE)
+> mp.dag <- mostProbable(score.cache=mycache, score="bic", verbose = FALSE)
 > 
 > out <- scoreContribution(object = mp.dag)
 > 
@@ -986,11 +1056,11 @@ f 0 0 0 0 0 0
 > ##D mydat <- ex1.dag.data ## this data comes with abn see ?ex1.dag.data
 > ##D 
 > ##D ## setup distribution list for each node
-> ##D mydists<-list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial", 
+> ##D mydists<-list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
 > ##D               p2="poisson", b3="binomial", g2="gaussian", b4="binomial",
 > ##D               b5="binomial", g3="gaussian")
 > ##D 
-> ##D mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = 2)
+> ##D mycache <- buildScoreCache(data.df = mydat, data.dists = mydists, max.parents = 2)
 > ##D 
 > ##D ## Now peform 10 greedy searches
 > ##D heur.res <- searchHeuristic(score.cache = mycache, data.dists = mydists,
@@ -998,7 +1068,7 @@ f 0 0 0 0 0 0
 > ##D               max.steps = 50)
 > ##D 
 > ##D ## Plot (one) dag
-> ##D plotabn(heur.res$dags[[1]], data.dists = mydists)
+> ##D plotAbn(heur.res$dags[[1]], data.dists = mydists)
 > ## End(Not run)
 > 
 > 
@@ -1011,7 +1081,7 @@ f 0 0 0 0 0 0
 > ### Name: searchHillclimber
 > ### Title: Find high scoring directed acyclic graphs using heuristic
 > ###   search.
-> ### Aliases: search.hillclimber searchHillclimber
+> ### Aliases: searchHillClimber
 > ### Keywords: models
 > 
 > ### ** Examples
@@ -1022,42 +1092,42 @@ f 0 0 0 0 0 0
 > ##D ##############################################
 > ##D 
 > ##D ## this data comes with abn see ?ex1.dag.data
-> ##D mydat <- ex1.dag.data 
+> ##D mydat <- ex1.dag.data
 > ##D 
 > ##D ## setup distribution list for each node
 > ##D mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
 > ##D               p2="poisson", b3="binomial", g2="gaussian", b4="binomial",
 > ##D               b5="binomial", g3="gaussian")
 > ##D 
-> ##D ## Build cache may take some minutes for buildscorecache() 
-> ##D mycache <- buildscorecache(data.df = mydat, data.dists = mydists, 
-> ##D                            max.parents = 2);
+> ##D ## Build cache may take some minutes for buildScoreCache()
+> ##D mycache <- buildScoreCache(data.df=mydat, data.dists=mydists,
+> ##D                            max.parents=2);
 > ##D 
 > ##D # now peform 10 greedy searches
-> ##D heur.res <- searchHillclimber(score.cache = mycache,
-> ##D                  num.searches = 10, timing.on = FALSE)
-> ##D plotabn(dag.m = heur.res$consensus, data.dists = mydists)
+> ##D heur.res <- searchHillClimber(score.cache=mycache,
+> ##D                  num.searches=10, timing.on=FALSE)
+> ##D plotAbn(dag=heur.res$consensus, data.dists=mydists)
 > ##D 
 > ##D ###########################
 > ##D ## example 2 - glmm example
 > ##D ###########################
 > ##D 
 > ##D ## this data comes with abn see ?ex1.dag.data
-> ##D mydat <- ex3.dag.data[,c(1:4,14)] 
+> ##D mydat <- ex3.dag.data[,c(1:4,14)]
 > ##D 
 > ##D mydists <- list(b1="binomial", b2="binomial", b3="binomial",
 > ##D               b4="binomial")
 > ##D 
 > ##D ## This takes a few seconds
-> ##D # mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
-> ##D #               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
+> ##D # mycache.mixed <- buildScoreCache(data.df=mydat, data.dists=mydists,
+> ##D #               group.var="group", cor.vars=c("b1","b2","b3","b4"),
 > ##D #               max.parents=2, which.nodes=c(1:4))
 > ##D 
 > ##D ## Now peform 50 greedy searches
-> ##D # heur.res <- searchHillclimber(score.cache = mycache.mixed, num.searches = 50,
-> ##D #                              timing.on = FALSE)
+> ##D # heur.res <- searchHillClimber(score.cache=mycache.mixed, num.searches=50,
+> ##D #                              timing.on=FALSE)
 > ##D ##  Plot the majority consensus network
-> ##D # plotabn(dag.m = heur.res$consensus, data.dists = mydists)
+> ##D # plotAbn(dag=heur.res$consensus, data.dists=mydists)
 > ##D 
 > ## End(Not run)
 > 
@@ -1092,14 +1162,7 @@ f 0 0 0 0 0 0
 > diag(data.param.var) <- c(10,20,30,40,0,0)
 > 
 > ## Plot the dag
-> plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot = FALSE)
-  a b c d e f
-a 0 1 1 0 1 0
-b 0 0 1 1 0 1
-c 0 0 0 0 0 0
-d 0 0 0 0 0 0
-e 0 0 0 0 0 1
-f 0 0 0 0 0 0
+> plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist)
 > 
 > ## Simulate the data
 > out <- simulateAbn(data.dists=dist, n.chains=1, n.thin=1, n.iter=1000,
@@ -1135,10 +1198,10 @@ Initializing model
 > ## Example using Ozon entries:
 > dist <- list(Ozone="gaussian",   Solar.R="gaussian",  Wind="gaussian", 
 +              Temp="gaussian",    Month="gaussian",    Day="gaussian")
-> out <- simulateDag(node.name = names(dist), data.dists = dist, nn = 0.8)
-> ## Not run: 
-> ##D plot(out)
-> ## End(Not run)
+> out <- simulateDag(node.name = names(dist), data.dists = dist, edge.density = 0.8)
+> plot(out)
+dev.new(): using pdf(file="Rplots2.pdf")
+> 
 > 
 > 
 > 
@@ -1150,7 +1213,7 @@ Initializing model
 > 
 > ### Name: tographviz
 > ### Title: Convert a DAG into graphviz format
-> ### Aliases: tographviz
+> ### Aliases: tographviz toGraphviz
 > ### Keywords: device
 > 
 > ### ** Examples
@@ -1178,10 +1241,10 @@ Initializing model
 > ##D colnames(mydag) <- rownames(mydag) <- names(mydat)
 > ##D 
 > ##D ## create file for processing with graphviz
-> ##D tographviz(dag.m=mydag, data.df=mydat, data.dists=mydists,
-> ##D            outfile=paste(tempdir(), "graph.dot", sep="/"), directed=TRUE)
+> ##D outfile <- paste(tempdir(), "graph.dot", sep="/")
+> ##D toGraphviz(dag=mydag, data.df=mydat, data.dists=mydists, outfile=outfile)
 > ##D ## and then process using graphviz tools e.g. on linux
-> ##D # system("dot -Tpdf -o graph.pdf graph.dot")
+> ##D # system(paste( "dot -Tpdf -o graph.pdf", outfile))
 > ##D # system("evince graph.pdf")
 > ##D 
 > ##D ## Example using data with a group variable  where b1<-b2
@@ -1192,12 +1255,13 @@ Initializing model
 > ##D mydists <- list(b1="binomial", b2="binomial")
 > ##D 
 > ##D ## create file for processing with graphviz
-> ##D tographviz(dag.m=mydag, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
+> ##D outfile <- paste(tempdir(), "graph.dot", sep="/")
+> ##D toGraphviz(dag=mydag, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
 > ##D            group.var="group", 
-> ##D            outfile=paste(tempdir(), "graph.dot", sep="/"), directed=FALSE)
+> ##D            outfile=outfile, directed=FALSE)
 > ##D ## and then process using graphviz tools e.g. on linux
-> ##D # system("dot -Tpdf -o graph.pdf graph.dot")
-> ##D # system("evince graph.pdf");
+> ##D # system(paste( "dot -Tpdf -o graph.pdf", outfile))
+> ##D # system("evince graph.pdf")
 > ## End(Not run)
 > 
 > 
@@ -1250,10 +1314,10 @@ Initializing model
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  2.284 0.097 2.355 0 0 
+Time elapsed:  2.594 0.234 2.536 0 0 
 > grDevices::dev.off()
-null device 
-          1 
+pdf 
+  2 
 > ###
 > ### Local variables: ***
 > ### mode: outline-minor ***

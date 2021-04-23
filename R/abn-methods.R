@@ -1,15 +1,15 @@
-############################################################################### 
+###############################################################################
 ## abn-methods.R ---
-## Author : Gilles Kratzer & Reinhard Furrer 
+## Author : Gilles Kratzer & Reinhard Furrer
 ## Document created : 21/05/2019
-############################################################################### 
+###############################################################################
 
 
 ##-------------------------------------------------------------------------
 ## abnDag
 ##-------------------------------------------------------------------------
 
-# print 
+# print
 
 print.abnDag <- function(x, ...){
   print(x$dag)
@@ -20,10 +20,10 @@ print.abnDag <- function(x, ...){
 # summary
 
 summary.abnDag <- function(object, ...) {
-  
+
   su <- infoDag(object$dag)
   return(su)
-  
+
 }
 
 
@@ -32,10 +32,8 @@ summary.abnDag <- function(object, ...) {
 plot.abnDag <- function(x, new=TRUE, ...){
   if (new) dev.new()
   on.exit(dev.flush())
-  
-  if (!requireNamespace("Rgraphviz", quietly = TRUE)) {
-    stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install.")
-  }
+
+  # Rgraphviz:
   mygraph <- new("graphAM", adjMat = t(x$dag), edgemode = "directed")
   g <- Rgraphviz::plot(x = mygraph)
   invisible(g)
@@ -49,20 +47,20 @@ plot.abnDag <- function(x, new=TRUE, ...){
 # print
 
 print.abnCache <- function(x, ...){
-  
+
   cat("Number of nodes in the network:",max(x$children), "\n\n")
   if(x$method=="bayes"){
     cat("Distribution of the marginal likelihood: \n")
     print(summary(x[["mlik"]]), digits=3)
-  } 
-  
+  }
+
   if(x$method=="mle"){
     cat(" Distribution of the aic: \n")
     print(summary(x[["aic"]]), digits=3)
-    
+
     cat("\n Distribution of the bic: \n")
     print(summary(x[["bic"]]), digits=3)
-    
+
     cat("\n Distribution of the mdl: \n")
     print(summary(x[["mdl"]]), digits=3)
   }
@@ -73,24 +71,24 @@ print.abnCache <- function(x, ...){
 ## abnHeuristic
 ##-------------------------------------------------------------------------
 
-# print 
+# print
 
 print.abnHeuristic <- function(x, ...){
   cat("Best DAG' score found with",x$algo,"algorithm with", x$num.searches,"different searches limited to" , x$max.steps,"steps:\n")
   print(max(unlist(x$scores)), digits=2)
-  
+
   cat("\n Score distribution: \n")
   print(summary(unlist(x[["scores"]])), digits=2)
-  
+
   invisible(x)
 }
 
 # plot
 
 plot.abnHeuristic <- function(x, ...){
-  
+
   df <- unlist(x$scores)
-  
+
   par(mfrow=c(1,2))
   plot(NULL, lty=1, xlab="Index of heuristic search", ylab="BN score", ylim = range(df), xlim = c(1,length(df)))
   for(i in 1:length(df)){
@@ -102,12 +100,12 @@ plot.abnHeuristic <- function(x, ...){
   }
   points(x = which.max(df), y = df[which.max(df)], col="red", pch=19)
   title("Networks final score")
-  
-  
+
+
   L <- (x$detailed.score)
-  
+
   test <- array(unlist(L), dim = c(nrow(L[[1]]), ncol(L[[1]]), length(L)))
-  
+
   plot(NULL,lty=1, xlab="Number of Steps",ylab="BN score", ylim = range(test), xlim = c(1,length(test[,,1])))
   for(i in 1:length(L)){
     if(sum(i==order(df,decreasing = FALSE)[1:10])){
@@ -129,20 +127,18 @@ plot.abnHeuristic <- function(x, ...){
 
 print.abnHillClimber <- function(x, ...){
   print(x$consensus)
-  cat("Consensus DAG from 'search.hillclimber'  (class 'abnHillClimber').\n")
+  cat("Consensus DAG from 'searchHillClimber'  (class 'abnHillClimber').\n")
   invisible(x)
 }
 
 # plot
 
 plot.abnHillClimber <- function(x, new=TRUE, ...){
-  
+
   if (new) dev.new()
   on.exit(dev.flush())
-  
-  if (!requireNamespace("Rgraphviz", quietly = TRUE)) {
-    stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install.")
-  }
+
+  # Rgraphviz
   mygraph <- new("graphAM", adjMat = x$consensus, edgemode = "directed")
   g <- Rgraphviz::plot(x = mygraph)
   invisible(g)
@@ -153,26 +149,26 @@ plot.abnHillClimber <- function(x, new=TRUE, ...){
 ## abnMostprobable
 ##-------------------------------------------------------------------------
 
-# print 
+# print
 
 print.abnMostprobable <- function(x, ...){
-  
+
   print(x$dag)
-  cat("Consensus DAG from 'mostprobable', can be use with 'fitabn'.\n")
+  cat("Consensus DAG from 'mostProbable', can be use with 'fitAbn'.\n")
   invisible(x)
 }
 
 # summary
 
 summary.abnMostprobable <- function(object, ...){
-  cat("Optimal DAG from 'mostprobable':\n")
+  cat("Optimal DAG from 'mostProbable':\n")
   print(object$dag)
   cat( paste0("Calculated on ", dim(object$score.cache$data.df)[1], " observations.\n"))
-  cat( paste0("(Cache length ", length(object$score.cache$mlik), '.)\n'))      
+  cat( paste0("(Cache length ", length(object$score.cache$mlik), '.)\n'))
   invisible( object)
 }
 
-  
+
 
 # plot
 
@@ -180,11 +176,8 @@ plot.abnMostprobable <- function(x, new=TRUE, ...){
 
   if (new) dev.new()
   on.exit(dev.flush())
-  
-  if (!requireNamespace("Rgraphviz", quietly = TRUE)) {
-    stop("library Rgraphviz is not available!\nRgraphviz is available as part of the bioconductor project - see http://www.bioconductor.org/install.")
-  }
-  
+
+  # Rgraphviz:
   mygraph <- new("graphAM", adjMat = t(x$dag), edgemode = "directed")
   g <- Rgraphviz::plot(x = mygraph)
   invisible(g)
@@ -194,55 +187,55 @@ plot.abnMostprobable <- function(x, new=TRUE, ...){
 ## abnFit
 ##-------------------------------------------------------------------------
 
-# print 
+# print
 
 print.abnFit <- function(x, ...){
-  
+
   if(x$method=="mle"){
     cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n\n")
     print(x$coef, digits=3)
-    cat("Number of nodes in the network:",length(x$coef), ".\n")
+    cat(paste0("Number of nodes in the network:",length(x$coef), ".\n"))
   }
-  
+
   if(x$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n\n")
     print(x$modes, digits=3)
-    cat("Number of nodes in the network:",length(x$modes), ".\n")
+    cat(paste0("Number of nodes in the network: ",length(x$modes), ".\n"))
   }
-  
+
   invisible(x)
 }
 
-# summary 
+# summary
 
 summary.abnFit <- function(object, ...){
-  
+
   if(object$method=="mle"){
     cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n")
     print(object$coef, digits=3)
 
     cat("Number of nodes in the network:",length(object$modes), ".\n")
-  
+
     cat("The AIC network score per node is: \n")
     print(unlist(object[["aicnode"]]), digits=3)
-    
+
     cat("\n The BIC network score per node is: \n")
     print(unlist(object[["bicnode"]]), digits=3)
-    
+
     cat("\n The MDL network score per node is: \n")
     print(unlist(object[["mdlnode"]]), digits=3)
   }
-  
+
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n")
     print(object$modes, digits=3)
-    
-   cat("Number of nodes in the network:",length(object$modes), ".\n\n")  
+
+   cat("Number of nodes in the network:",length(object$modes), ".\n\n")
 
    cat("The network score per node is:\n")
    print(unlist(object[1:length(object$modes)]))
   }
-  
+
   invisible(object)
 }
 
@@ -253,101 +246,99 @@ coef.abnFit <- function(object, ...){
     cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n")
     print(object$coef, digits=3)
   }
-  
+
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n")
     print(object$modes, digits=3)
   }
-  
+
   invisible(object)
-  
+
 }
 
 
 
 AIC.abnFit <- function(object, ...){
-  
+
   if(object$method=="mle"){
-    
+
     cat("The ABN model was fitted using an mle approach. The AIC network score per node is: \n")
     print(unlist(object[["aicnode"]]), digits=3)
-    
+
   }
-  
+
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. AIC does not make sense but the network score per node is is is:\n")
     print(unlist(object[1:length(object$modes)]))
   }
-  
+
   invisible(object)
-  
-  
+
+
 }
 
 BIC.abnFit <- function(object, ...){
-  
+
   if(object$method=="mle"){
-    
+
     cat("The ABN model was fitted using an mle approach. The BIC network score per node is: \n")
     print(unlist(object[["bicnode"]]), digits=3)
-    
+
   }
-  
+
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. BIC does not make sense but the network score per node is is is:\n")
     print(unlist(object[1:length(object$modes)]))
   }
-  
+
   invisible(object)
 }
 
 
 logLik.abnFit <- function(object, ...){
-  
+
   if(object$method=="mle"){
-    
+
     cat("The ABN model was fitted using an mle approach. The loglikelihood network score per node is: \n")
     print(unlist(object[["mliknode"]]), digits=3)
-    
+
   }
-  
+
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. Loglikelihood does not make sense but the network score per node is is is:\n")
     print(unlist(object[1:length(object$modes)]))
   }
-  
+
   invisible(object)
 }
 
 
 
 family.abnFit <- function(object, ...){
-  
-  cat("All link functions are canonical: \n 
+
+  cat("All link functions are canonical: \n
       gaussian node = identy, binomial node = logit, Poisson node = log and multinomial node = logit.\n\n")
-  
+
   print(unlist(object$abnDag$data.dists))
-  
+
   invisible(object)
 }
 
 
 nobs.abnFit <- function(object, ...){
-  
-  print(dim(object$abnDag$data.df)[1])
-  
-  invisible(object)
+  nrow(object$abnDag$data.df)
 }
 
 plot.abnFit <- function(x, which ="abnFit", ...){
-  
+
+  if (which != "abnFit") stop('Function type not implemented yet. Use which="abnFit"')
+
   if(x$method=="mle"){
-  plotabn(dag.m = x$abnDag$dag,data.dists = x$abnDag$data.dists,fitted.values.abn.mle = x$coef)
+    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values.abn = x$coef, ...)
+  } else {
+    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values.abn = x$modes, ...)
   }
-  
-  if(x$method=="bayes"){
-    plotabn(dag.m = x$abnDag$dag,data.dists = x$abnDag$data.dists,fitted.values.abn = x$modes)
-    }
+  invisible(g)
 }
 
 

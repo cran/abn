@@ -89,7 +89,7 @@ data.param.var <- matrix(0, nrow = 6L, ncol = 6L)
 diag(data.param.var) <- c(10,20,30,40,0,0)
 
 ## Plot the dag
-plotabn(dag.m = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot = FALSE)
+plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist)
 
 ## Simulate the data
 out <- simulateAbn(data.dists=dist, n.chains=1, n.thin=1, n.iter=1000,

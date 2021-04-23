@@ -8,18 +8,26 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_permutation.h> 
-/** pass a DAG definition from R and this returns an error if it contains a cycle ***/
+/** pass a DAG definition from R and this returns the value one if it contains a cycle ***/
 /** MAIN FUNCTION **/
 SEXP checkforcycles(SEXP R_dag, SEXP R_dagdim)
 {
 
-network dag;
-cycle cyclestore;
-make_dag(&dag,asInteger(R_dagdim),R_dag,0, (SEXP)NULL, (int*)NULL,(SEXP)NULL);
-init_hascycle(&cyclestore,&dag); /** initialise storage but needs to be passed down through generate_random_dag etc */
-if(hascycle(&cyclestore,&dag)){error("DAG definition is not acyclic!");}
-
-return(R_NilValue);
+  network dag;
+  cycle cyclestore;
+  SEXP err = PROTECT(allocVector(INTSXP, 1));
+  
+  INTEGER(err)[0] = 0;
+  make_dag(&dag, asInteger(R_dagdim), R_dag, 0, (SEXP)NULL, (int*)NULL,(SEXP)NULL);
+  init_hascycle(&cyclestore, &dag); /** initialise storage but needs to be passed down through generate_random_dag etc */
+  if (hascycle(&cyclestore, &dag)) {
+    /*       Rprintf("well then\n");  */
+    INTEGER(err)[0] = 1;
+    /* using `error(msg)` does not work as variables will not be properly freed/cleaned. */
+  }
+  free_dag(&dag);
+  UNPROTECT(1);
+  return(err);
 }
 /** END OF MAIN **/
 
@@ -157,7 +165,8 @@ while(success){
 	     nodesexamined++;
          success=1;/** repeat cycle check within while loop **/}
          
-}
+ }
+ gsl_permutation_free(p);
          
 }
 

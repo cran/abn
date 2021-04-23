@@ -33,21 +33,20 @@ The \code{dag} can be provided using a formula statement (similar to glm). A typ
 
 \examples{
 ## Defining distribution and dag
-dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", e="binomial", 
-               f="binomial")
+dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian",
+             e="binomial", f="binomial")
 dag <- matrix(c(0,1,1,0,1,0,
     0,0,1,1,0,1, 
     0,0,0,0,0,0, 
     0,0,0,0,0,0, 
     0,0,0,0,0,1, 
-    0,0,0,0,0,0), nrow = 6L, ncol = 6L, byrow = TRUE)
-    
+    0,0,0,0,0,0), nrow = 6L, ncol = 6L, byrow = TRUE)    
 colnames(dag) <- rownames(dag) <- names(dist)
     
-mb(dag, node = "b", data.dists = dist)
-mb(dag, node = "e", data.dists = dist)
-mb(dag, node = c("b","e"), data.dists = dist)
+mb(dag, node = "b")
+mb(dag, node = c("b","e"))
 
+mb(~a|b:c:e+b|c:d:f+e|f, node = "e", data.dists = dist)
 }
 \keyword{utilities}
 \concept{DAG}

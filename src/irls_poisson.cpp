@@ -82,8 +82,11 @@ bic = - 2 * ll + log(nobs) * df;
     
 //sse
 e = (b - A*x);
-ssr = accu(e.t()*e);
-
+    //TEST GK 21.03.2021
+//ssr = accu(e.t()*e);
+    ssr = arma::accu(e.t()*e);
+    
+    
 mdl = 1;
     
 //return

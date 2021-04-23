@@ -1,10 +1,10 @@
-%                               -*- Mode: Rd -*- 
-% search.heuristic.Rd --- 
+%                               -*- Mode: Rd -*-
+% search.heuristic.Rd ---
 % Author          : Gilles Kratzer
 % Created On      : 04/07/2018
 % Last Modified By: 17/07/2018
 % Last Modified On: 21/11/2019
-% Update Count    : 
+% Update Count    :
 % Status          : Unknown, Use with caution!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -19,41 +19,36 @@
 \description{A flexible implementation of multiple greedy search algorithms to find high scoring network (DAG)}
 
 \usage{
-searchHeuristic(score.cache = NULL,
-               score = "mlik",
-               num.searches = 1,
+searchHeuristic(score.cache, score = "mlik",
+               num.searches = 1, seed = 42, start.dag = NULL,
                max.steps = 100,
-               seed = 42,
-               verbose = FALSE,
-               start.dag = NULL,
-               algo = "hc",
-               tabu.memory = 10,
-               temperature = 0.9, ...)
-}  
+               algo = "hc", tabu.memory = 10, temperature = 0.9,
+               verbose = FALSE, ...)
+}
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{score.cache}{output from \code{buildscorecache()}.}
+  \item{score.cache}{output from \code{buildScoreCache()}.}
   \item{score}{which score should be used to score the network. Possible choices are \code{aic, bic, mdl, mlik}.}
   \item{num.searches}{a positive integer giving the number of different search to run, see details.}
-  \item{max.steps}{a constant giving the number of search steps per search, see details.}
   \item{seed}{a non-negative integer which sets the seed.}
-  \item{verbose}{extra output, see output for details.}
   \item{start.dag}{a DAG given as a matrix, see details for format, which can be used to explicity provide a starting point for the structural search.}
+  \item{max.steps}{a constant giving the number of search steps per search, see details.}
   \item{algo}{which heuristic algorithm should be used. Possible choices are: \code{hc, tabu, sa}.}
   \item{tabu.memory}{a non-negative integer number to set the memory of the \code{tabu} search.}
   \item{temperature}{a real number giving the update in temperature for
     the \code{sa} (simulated annealing) search algorithm.}
-  \item{\dots}{additional arguments passed for optimization.}
+  \item{verbose}{if TRUE then provides some additional output.}
+  \item{...}{further arguments passed to or from other methods.}
 }
 
 
 \details{
 
-This function is a flexible implementation of multiple greedy heuristic algorithms, particularly well adapted to the \code{abn} framework. It targets multi-random restarts heuristic algorithms. The user can select the \code{num.searches} and the maximum number of steps within by \code{max.steps}. The optimization algorithm within each search is relatively rudimentary. 
+This function is a flexible implementation of multiple greedy heuristic algorithms, particularly well adapted to the \code{abn} framework. It targets multi-random restarts heuristic algorithms. The user can select the \code{num.searches} and the maximum number of steps within by \code{max.steps}. The optimization algorithm within each search is relatively rudimentary.
 
 The function \code{searchHeuristic} is different from the \code{\link{searchHillclimber}} in the sense that this function is fully written in R, whereas the \code{\link{searchHillclimber}} is written in C and thus expected to be faster. The function \code{\link{searchHillclimber}} at each hill-climbing step consider every information from the pre-computed scores cache while the function \code{\link{searchHeuristic}} performs a local stepwise optimization. This function chooses a structural move (or edge move) and compute the score's change. On this point, it is closer to the MCMCMC algorithm from Madigan and York (1995) and Giudici and Castelo (2003) with a single edge move.
 
-If the user select \code{random}, then a random valid DAG is selected. The routine used favourise low density structure. The function implements three algorithm selected with the parameter \code{algo}: \code{hc}, \code{tabu} or \code{sa}. 
+If the user select \code{random}, then a random valid DAG is selected. The routine used favourise low density structure. The function implements three algorithm selected with the parameter \code{algo}: \code{hc}, \code{tabu} or \code{sa}.
 
 If \code{algo=hc}:
 The Hill-climber algorithm (\code{hc}) is a single move algorithm. At each Hill-climbing step within a search an arc is attempted to be added. The new score is computed and compared to the previous network's score.
@@ -62,10 +57,10 @@ If \code{algo=tabu}:
 The same algorithm is as with \code{hc} is used, but a list of banned moves is computed. The parameter \code{tabu.memory} controls the length of the tabu list. The idea is that the classical Hill-climber algorithm is inefficient when it should cross low probability regions to unblock from a local maximum and reaching a higher score peak. By forcing the algorithm to choose some not already used moves, this will force the algorithm to escape the local maximum.
 
 If \code{algo=sa}:
-This variant of the heuristic search algorithm is based on simulated annealing described by Metropolis et al. (1953). Some accepted moves could result in a decrease of the network score. The acceptance rate can be monitored with the parameter \code{temperature}.    
+This variant of the heuristic search algorithm is based on simulated annealing described by Metropolis et al. (1953). Some accepted moves could result in a decrease of the network score. The acceptance rate can be monitored with the parameter \code{temperature}.
 }
 
-\value{An object of class \code{abnHeuristic} (which extends the class \code{abnLearnd}) and contains list with entires: 
+\value{An object of class \code{abnHeuristic} (which extends the class \code{abnLearnd}) and contains list with entires:
 \item{dags}{a list of DAGs}
 \item{scores}{a vector giving the network score for the locally optimal network for each search}
 \item{detailed.score}{a vector giving the evolution of the network score for the all the random restarts}
@@ -84,7 +79,7 @@ Madigan, D. and York, J. (1995) "Bayesian graphical models for discrete data". I
 Giudici, P. and Castelo, R. (2003). "Improving Markov chain Monte Carlo model search for data mining". Machine Learning, 50:127158.
 
 Metropolis, N., Rosenbluth, A. W., Rosenbluth, M. N., Teller, A. H., & Teller, E. (1953). "Equation of state calculations by fast computing machines". The journal of chemical physics, 21(6), 1087-1092.
-  
+
 Further information about \pkg{abn} can be found at:\cr
   \url{http://r-bayesian-networks.org}}
 
@@ -100,11 +95,11 @@ Further information about \pkg{abn} can be found at:\cr
 mydat <- ex1.dag.data ## this data comes with abn see ?ex1.dag.data
 
 ## setup distribution list for each node
-mydists<-list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial", 
+mydists<-list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
               p2="poisson", b3="binomial", g2="gaussian", b4="binomial",
               b5="binomial", g3="gaussian")
 
-mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = 2)
+mycache <- buildScoreCache(data.df = mydat, data.dists = mydists, max.parents = 2)
 
 ## Now peform 10 greedy searches
 heur.res <- searchHeuristic(score.cache = mycache, data.dists = mydists,
@@ -112,7 +107,7 @@ heur.res <- searchHeuristic(score.cache = mycache, data.dists = mydists,
               max.steps = 50)
 
 ## Plot (one) dag
-plotabn(heur.res$dags[[1]], data.dists = mydists)
+plotAbn(heur.res$dags[[1]], data.dists = mydists)
 }}
 
 \keyword{models}

@@ -133,7 +133,9 @@ UNPROTECT(1);
 return(listresults);
 #endif
 
- 
+/** test for free any memory not used */
+     free_dag(&dag);
+
 UNPROTECT(1);
 /*Rprintf("posterior=%f\n",REAL(posterior)[0]);*/
 return(posterior);

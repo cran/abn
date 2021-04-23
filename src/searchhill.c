@@ -130,6 +130,14 @@ if(timingon){start = clock();}
 
 gsl_rng_free (r);
 
+/** test for free any memory not used */
+     free_dag(&dag_scratch);
+     free_dag(&dag_best);
+     free_dag(&dagretain);
+    
+    /** TEST GK 20.03.2021*/
+    free_dag(&dag_cur);
+    
 UNPROTECT(1);
 
 return(listresults);

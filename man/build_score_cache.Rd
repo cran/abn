@@ -1,4 +1,4 @@
-% buildscorecache.Rd --- 
+% buildScoreCache.Rd --- 
 % Author           : Fraser Lewis & Gilles Kratzer
 % Created on :       03/08/2012 
 % Last modification : 01/12/2016
@@ -6,9 +6,9 @@
 % Last modification : 21/05/2019 (GK)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\name{buildscorecache}
+\name{buildScoreCache}
 
-\alias{buildscorecache}
+\alias{buildScoreCache}
 
 \title{Build a cache of goodness of fit metrics for each node in a DAG, possibly subject to user-defined restrictions}
 
@@ -17,7 +17,7 @@
 }
 
 \usage{
-buildscorecache(data.df = NULL, data.dists = NULL, method = "bayes",
+buildScoreCache(data.df = NULL, data.dists = NULL, method = "bayes",
    group.var = NULL, adj.vars = NULL, cor.vars = NULL, dag.banned = NULL,
    dag.retained = NULL, max.parents = NULL, which.nodes=NULL,
    defn.res = NULL, centre = TRUE, dry.run = FALSE,
@@ -64,13 +64,13 @@ The function computes a cache of scores based on possible restrictions (maximum 
 
 If \code{method="Bayes"}:
 
-This function is used to calculate all individual node scores (log marginal likelihoods). This cache can then be fed into a model search algorithm. This function is very similar to \code{\link{fitabn}} - see that help page for details of the type of models used and in particular \code{data.dists} specification - but rather than fit a single complete DAG \code{buildscorecache} iterates over all different parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents), where this can differ from node to node. In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied, they are assumed to be empty matrices, i.e., no arcs banned or retained. Note that only rudimentary consistency checking is done here, and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
+This function is used to calculate all individual node scores (log marginal likelihoods). This cache can then be fed into a model search algorithm. This function is very similar to \code{\link{fitAbn}} - see that help page for details of the type of models used and in particular \code{data.dists} specification - but rather than fit a single complete DAG \code{buildScoreCache} iterates over all different parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents), where this can differ from node to node. In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied, they are assumed to be empty matrices, i.e., no arcs banned or retained. Note that only rudimentary consistency checking is done here, and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
 
-The variable \code{which.nodes} is to allow the computation to be separated by node, for example, over different CPUs using say \code{R CMD BATCH}. This may useful and indeed likely essential with larger problems or those with random effects. Note that in this case, the results must then be combined back into a list of identical formats to that produced by an individual call to \code{buildscorecache}, comprising of all nodes (in the same order as the columns in \code{data.df}) before sending it to any search routines. Using \code{dry.run} can be useful here.  
+The variable \code{which.nodes} is to allow the computation to be separated by node, for example, over different CPUs using say \code{R CMD BATCH}. This may useful and indeed likely essential with larger problems or those with random effects. Note that in this case, the results must then be combined back into a list of identical formats to that produced by an individual call to \code{buildScoreCache}, comprising of all nodes (in the same order as the columns in \code{data.df}) before sending it to any search routines. Using \code{dry.run} can be useful here.  
 
 If \code{method="mle"}:
 
-This function is used to calculate all individual Information-Theoretic node scores. The possible Information-theoretic based network scores computed in \code{buildscorecache} are the maximum likelihood (mlik, called marginal likelihood in this context as it is computed node wise), the Akaike Information Criteria (aic), the Bayesian Information Criteria (bic) and the Minimum distance Length (mdl). The classical definitions of those metrics are given in Kratzer and Furrer (2018). This function computes a cache that can be fed into a model search algorithm. This function is very similar to \code{\link{fitabn}} with \code{method="mle"} - see that help page for details of the type of models used and in particular \code{data.dists} specification - but rather than fit a single complete DAG \code{buildscorecache} iterates over all admissible parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents). In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied they are assumed to be empty matrices, i.e., no arcs banned or retained. Note that only rudimentary consistency checking is done here, and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
+This function is used to calculate all individual Information-Theoretic node scores. The possible Information-theoretic based network scores computed in \code{buildScoreCache} are the maximum likelihood (mlik, called marginal likelihood in this context as it is computed node wise), the Akaike Information Criteria (aic), the Bayesian Information Criteria (bic) and the Minimum distance Length (mdl). The classical definitions of those metrics are given in Kratzer and Furrer (2018). This function computes a cache that can be fed into a model search algorithm. This function is very similar to \code{\link{fitAbn}} with \code{method="mle"} - see that help page for details of the type of models used and in particular \code{data.dists} specification - but rather than fit a single complete DAG \code{buildScoreCache} iterates over all admissible parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents). In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied they are assumed to be empty matrices, i.e., no arcs banned or retained. Note that only rudimentary consistency checking is done here, and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
 
 The control argument is a list that can supply any of the following components: 
 
@@ -98,7 +98,7 @@ The control argument is a list that can supply any of the following components:
 }
 
 
-The numerical routines used here are identical to those in \code{\link{fitabn}} and see that help page for further details and also the quality assurance section on the \url{http://r-bayesian-networks.org} of the abn website for more details.
+The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \url{http://r-bayesian-networks.org} of the abn website for more details.
  
 }
 
@@ -136,13 +136,13 @@ max.par <- list("b1"=2, "b2"=2, "g1"=2, "g2"=2, "b3"=2, "g3"=2)
 
 ## now build the cache of pre-computed scores accordingly to the structural constraints
 
-res.c <- buildscorecache(data.df=mydat, data.dists=mydists,
+res.c <- buildScoreCache(data.df=mydat, data.dists=mydists,
               dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par)
 
 
 ## repeat but using R-INLA. The mlik's should be virtually identical.
 ## now build cache
-res.inla <- buildscorecache(data.df=mydat, data.dists=mydists,
+res.inla <- buildScoreCache(data.df=mydat, data.dists=mydists,
               dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par,
               max.mode.error=100)
 
@@ -169,7 +169,7 @@ max.par <- 2
 ## modes estimated using internal code) and a message is given that internal code
 ## will be used in place of INLA's results.
 
-# mycache <- buildscorecache(data.df=mydat, data.dists=mydists, group.var="group",
+# mycache <- buildScoreCache(data.df=mydat, data.dists=mydists, group.var="group",
 #                         cor.vars=c("b1","b2","b3","b4","b5","b6","b7",
 #                                    "b8","b9","b10","b11","b12","b13"),
 #                         max.parents=max.par, which.nodes=c(1))
@@ -181,9 +181,9 @@ mydists <- list(b1="binomial", b2="binomial", g1="gaussian",
               g2="gaussian", b3="binomial", g3="gaussian")
              
 ## now build cache of scores (goodness of fits for each node)
-res.mle <- buildscorecache(data.df=mydat, data.dists=mydists,
+res.mle <- buildScoreCache(data.df=mydat, data.dists=mydists,
                            max.parents=3, method="mle")
-res.abn <- buildscorecache(data.df=mydat, data.dists=mydists,
+res.abn <- buildScoreCache(data.df=mydat, data.dists=mydists,
                            max.parents=3, method="Bayes")
 
 #plot(-res.mle$bic, res.abn$mlik)

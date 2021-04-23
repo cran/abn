@@ -129,7 +129,11 @@ for(i=0;i<LENGTH(R_whichnodes);i++){/** for each node passed get all network sco
     }
 }	 
 	 
-	 
+/** test for free any memory not used */
+     free_dag(&dag);
+     free_dag(&dagban);
+     free_dag(&dagretain);
+     
 	 
 UNPROTECT(1);
 

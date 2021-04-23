@@ -1,7 +1,26 @@
-citHeader("To cite `abn` modelling approach and `abn` package in publication use, select the most appropriate among:
+citHeader("To cite `abn` modelling approach and `abn` package in publication use, select the most appropriate among:\n
 --------------------------------------------------------------------------------------------------------
-
 ")
+
+citEntry(entry = "Article",
+  title        = "Additive {B}ayesian Network Modelling with the {R} Package {abn}",
+  author       = personList(as.person("Gilles Kratzer"),as.person("Fraser Iain Lewis"), as.person("Arianna Comin"), as.person("Marta Pittavino"), as.person("Reinhard Furrer")),
+  year         = "2019",
+  journal      ="arXiv preprint arXiv:1911.09006",
+  header       = "To cite use of the Bayesian and MLE implementation of `abn` in publications use:",
+  textVersion  =
+  paste("Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2019). Additive Bayesian Network Modelling with the R Package abn. arXiv preprint arXiv:1911.09006")
+)
+
+citEntry(entry = "Article",
+  title        = "{B}ayesian {N}etwork {M}odeling {A}pplied to {F}eline {C}alicivirus {I}nfection {A}mong {C}ats in {S}witzerland",
+  author       = personList(as.person("Gilles Kratzer"),as.person("Fraser Iain Lewis"), as.person("Barbara Willi"), as.person("Marina Meli"), as.person("Felicitas Boretti"), as.person("Regina Hofmann-Lehmann"), as.person("Paul Torgerson"), as.person("Reinhard Furrer"), as.person("Sonja Hartnack")),
+  year         = "2020",
+  journal      ="Frontiers in Veterinary Science",
+  header       = "To cite an example of a typical ABN analysis in publications use:",
+  textVersion  =
+  paste("Kratzer, G. and Lewis, F.I. and Willi, B. and Meli, M.L. and Boretti, F.S. and Hofmann-Lehmann, R. and Torgerson, P. and Furrer, R. and Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Frontiers in Veterinary Science, 7,73")
+)
 
 citEntry(entry = "Article",
   title        = "Improving epidemiologic data analyses through multivariate regression modelling",
@@ -17,34 +36,14 @@ header       = "To cite use of `abn` underlaying methodology in applied research
   paste("Lewis, F. I., & Ward, M. P. (2013). Improving epidemiologic data analyses through multivariate regression modelling. Emerging themes in epidemiology, 10(1), 4.")
   )
 
-citEntry(entry = "Article",
-  title        = "Additive {B}ayesian Network Modelling with the {R} Package {abn}",
-  author       = personList(as.person("Gilles Kratzer"),as.person("Fraser Iain Lewis"), as.person("Arianna Comin"), as.person("Marta Pittavino"), as.person("Reinhard Furrer")),
-  year         = "2019",
-  journal      ="arXiv preprint arXiv:1911.09006",
-  header       = "To cite use of the Bayesian implementation of `abn` in publications use:",
-  textVersion  =
-  paste("Kratzer, G., Lewis, F.I.,Comin, A., Pittavino, M. and Furrer, R. (2019). Additive Bayesian Network Modelling with the R Package abn. arXiv preprint arXiv:1911.09006")
-)
-
-citEntry(entry = "Article",
-  title        = "Information-Theoretic Scoring Rules to Learn Additive {B}ayesian Network Applied to Epidemiology",
-  author       = personList(as.person("Gilles Kratzer"), as.person("Reinhard Furrer")),
-  year         = "2018",
-  journal      ="arXiv preprint arXiv:1808.01126",
-  header       = "To cite use of the MLE implementation `abn` in publications use:",
-  textVersion  =
-  paste("Kratzer, G. and Furrer, R. (2018). Information-Theoretic Scoring Rules to Learn Additive Bayesian Network Applied to Epidemiology. arXiv preprint arXiv:1808.01126")
-)
-
 citEntry(entry = "Manual",
     title = "abn: an {R} package for modelling multivariate data using additive {B}ayesian networks",
     author = personList(as.person("Gilles Kratzer"), as.person("Marta Pittavino"), as.person("Fraser Iain Lewis"), as.person("Reinhard Furrer")),
-    year = "2019",
-    note = "R package version 2.2",
+    year = "2020",
+    note = "R package version 2.4",
     url = "https://CRAN.R-project.org/package=abn",
     header       = "To cite use of the R package `abn` in publications use:",
   textVersion  =
-  paste("Kratzer, G. , Pittavino, M, Lewis, F.I. and Furrer, R. (2019). abn: an R package for modelling multivariate data using additive Bayesian networks. R package version 2.2.
+  paste("Kratzer, G. , Pittavino, M, Lewis, F.I. and Furrer, R. (2020). abn: an R package for modelling multivariate data using additive Bayesian networks. R package version 2.4.
   https://CRAN.R-project.org/package=abn")
 )

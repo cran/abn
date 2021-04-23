@@ -1,11 +1,10 @@
 export(
-       "tographviz",
-       "fitabn",
-       "buildscorecache",
-       "mostprobable",
-       "search.hillclimber",
-       "searchHillclimber",
-       "plotabn",
+       "toGraphviz",
+       "fitAbn",              "fitabn",
+       "buildScoreCache",     "buildscorecache",
+       "mostProbable",        "mostprobable",
+       "searchHillClimber",   "searchHillclimber",
+       "plotAbn", "plotabn",
        "simulateAbn",
        "logit",
        "expit",
@@ -22,7 +21,7 @@ export(
        "entropyData",
        "miData",
        "scoreContribution",
-       "create_abnDag"
+       "createAbnDag"
         )
 
 useDynLib(abn)
@@ -37,6 +36,8 @@ importFrom("utils", "tail", "combn")
 importFrom("nnet", "multinom", "nnet.default")
 # import("MASS")
 importFrom("lme4", "glmer", "VarCorr")
+importFrom("Rgraphviz", "layoutGraph", "renderGraph", "plot", "buildEdgeList")
+
 
 #Used in /tests/  not necessary to import
 #importFrom("boot",logit, inv.logit)

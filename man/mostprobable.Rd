@@ -1,15 +1,15 @@
-%                               -*- Mode: Rd -*- 
-% mostprobable.Rd --- 
+%                               -*- Mode: Rd -*-
+% mostprobable.Rd ---
 % Author          : Fraser Lewis
-% Created On      : 
+% Created On      :
 % Last Modified By: Marta Pittavino
 % Last Modified On: Gilles Kratzer
-% Update Count    : 
+% Update Count    :
 % Status          : Unknown, Use with caution!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \name{mostprobable}
-\alias{mostprobable}
+\alias{mostProbable}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
@@ -18,28 +18,30 @@
 \description{Find most probable DAG structure using exact order based approach due to Koivisto and Sood, 2004}
 
 \usage{
-mostprobable(score.cache, prior.choice=1, score="mlik", verbose=TRUE) 
+mostProbable(score.cache, score="mlik", prior.choice=1,
+             verbose=TRUE, ...)
 }
-    
+
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{score.cache}{object of class \code{abnCache} typically outputted by from \code{buildscorecache()}.} 
+  \item{score.cache}{object of class \code{abnCache} typically outputted by from \code{buildScoreCache()}.}
+  \item{score}{which score should be used to score the network. Possible choices are \code{aic, bic, mdl, mlik}.}
   \item{prior.choice}{an integer, 1 or 2, where 1 is a uniform structural prior and 2 uses a weighted prior, see details}
-  \item{score}{character giving which network score should be used to select the structure.}
   \item{verbose}{if TRUE then provides some additional output.}
+  \item{...}{further arguments passed to or from other methods.}
 }
 
 
 \details{
-  The procedure runs the exact order based structure discovery approach of Koivisto and Sood (2004) to find the most probable posterior network (DAG). The local.score is the node cache, as created using \code{\link{buildscorecache}} (or manually provided the same format is used). Note that the scope of this search is given by the options used in local.score, for example, by restricting the number of parents or the ban or retain constraints given there. 
+  The procedure runs the exact order based structure discovery approach of Koivisto and Sood (2004) to find the most probable posterior network (DAG). The local.score is the node cache, as created using \code{\link{buildScoreCache}} (or manually provided the same format is used). Note that the scope of this search is given by the options used in local.score, for example, by restricting the number of parents or the ban or retain constraints given there.
 
-This routine can take a long time to complete and is highly sensitive to the number of nodes in the network. It is recommended to use this on a reduced data set to get an idea as to the computational practicality of this approach.  In particular, memory usage can quickly increase to beyond what may be available. For additive models, problems comprising up to 20 nodes are feasible on most machines. Memory requirements can increase considerably after this, but then so does the run time making this less practical. It is recommended that some form of over-modeling adjustment is performed on this resulting DAG (unless dealing with vast numbers of observations), for example, using parametric bootstrapping, which is straightforward to implement in MCMC engines such as JAGS or WinBUGS. See the case studies at \url{http://r-bayesian-networks.org} 
+This routine can take a long time to complete and is highly sensitive to the number of nodes in the network. It is recommended to use this on a reduced data set to get an idea as to the computational practicality of this approach.  In particular, memory usage can quickly increase to beyond what may be available. For additive models, problems comprising up to 20 nodes are feasible on most machines. Memory requirements can increase considerably after this, but then so does the run time making this less practical. It is recommended that some form of over-modeling adjustment is performed on this resulting DAG (unless dealing with vast numbers of observations), for example, using parametric bootstrapping, which is straightforward to implement in MCMC engines such as JAGS or WinBUGS. See the case studies at \url{http://r-bayesian-networks.org}
 or the files provided in the package directories \code{inst/bootstrapping_example} and \code{inst/old_vignette}
-for details.    
+for details.
 
-The parameter \code{prior.choice} determines the prior used within each node for a given choice of parent combination. In Koivisto and Sood (2004) p.554, a form of prior is used, which assumes that the prior probability for parent combinations comprising of the same number of parents are all equal. Specifically, that the prior probability for parent set G with cardinality |G| is proportional to 1/[n-1 choose |G|] where there are n total nodes. Note that this favors parent combinations with either very low or very high cardinality, which may not be appropriate. This prior is used when \code{prior.choice=2}. When \code{prior.choice=1} an uninformative prior is used where parent combinations of all cardinalities are equally likely. The latter is equivalent to the structural prior used in the heuristic searches e.g., \code{searchHillclimber} or \code{searchHeuristic}.   
+The parameter \code{prior.choice} determines the prior used within each node for a given choice of parent combination. In Koivisto and Sood (2004) p.554, a form of prior is used, which assumes that the prior probability for parent combinations comprising of the same number of parents are all equal. Specifically, that the prior probability for parent set G with cardinality |G| is proportional to 1/[n-1 choose |G|] where there are n total nodes. Note that this favors parent combinations with either very low or very high cardinality, which may not be appropriate. This prior is used when \code{prior.choice=2}. When \code{prior.choice=1} an uninformative prior is used where parent combinations of all cardinalities are equally likely. The latter is equivalent to the structural prior used in the heuristic searches e.g., \code{searchHillclimber} or \code{searchHeuristic}.
 
-Note that the network score (log marginal likelihood) of the most probable DAG is not returned as it can easily be computed using \code{\link{fitabn}}, see examples below.  
+Note that the network score (log marginal likelihood) of the most probable DAG is not returned as it can easily be computed using \code{\link{fitAbn}}, see examples below.
 
 }
 
@@ -61,7 +63,7 @@ Further information about \bold{abn} can be found at:\cr
 ##############################
 
 ## this data comes with abn see ?ex1.dag.data
-mydat <- ex1.dag.data 
+mydat <- ex1.dag.data
 
 ## setup distribution list for each node
 mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
@@ -73,19 +75,19 @@ mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
 ## parent limits
 max.par <- list("b1"=0,"p1"=0,"g1"=1,"b2"=1,"p2"=2,"b3"=3,"g2"=3,"b4"=2,"b5"=2,"g3"=2)
 ## now build cache
-mycache <- buildscorecache(data.df = mydat, data.dists = mydists, max.parents = max.par)
+mycache <- buildScoreCache(data.df=mydat, data.dists=mydists, max.parents=max.par)
 
 ## Find the globally best DAG
-mp.dag <- mostprobable(score.cache=mycache)
-fitabn(object=mp.dag)$mlik
+mp.dag <- mostProbable(score.cache=mycache)
+fitAbn(object=mp.dag)$mlik
 
 ## plot the best model
-myres <- fitabn(object=mp.dag,create.graph=TRUE)
+myres <- fitAbn(object=mp.dag,create.graph=TRUE)
 
-plotabn(dag.m = mp.dag$dag, data.dists = mydists)#, fitted.values.abn = myres)
+plotAbn(dag=mp.dag$dag, data.dists=mydists)#, fitted.values.abn=myres)
 
 ## fit the known true DAG
-true.dag <- matrix(data=0,ncol=10, nrow = 10)
+true.dag <- matrix(data=0,ncol=10, nrow=10)
 colnames(true.dag) <- rownames(true.dag) <- names(mydists)
 
 true.dag["p2",c("b1","p1")] <- 1
@@ -95,29 +97,29 @@ true.dag["b4",c("g1","p2")] <- 1
 true.dag["b5",c("g1","g2")] <- 1
 true.dag["g3",c("g1","b2")] <- 1
 
-fitabn(dag.m = true.dag, data.df = mydat, data.dists=mydists)$mlik
+fitAbn(dag=true.dag, data.df=mydat, data.dists=mydists)$mlik
 
 #################################################################
 ## Example 2 - models with random effects
 #################################################################
 
 ## this data comes with abn see ?ex3.dag.data
-# mydat <- ex3.dag.data[,c(1:4,14)] 
+# mydat <- ex3.dag.data[,c(1:4,14)]
 
 # mydists <- list(b1="binomial", b2="binomial", b3="binomial",
 #              b4="binomial")
 
 ## This takes a few seconds
-# mycache.mixed <- buildscorecache(data.df = mydat, data.dists = mydists,
-#               group.var = "group", cor.vars = c("b1","b2","b3","b4"),
+# mycache.mixed <- buildScoreCache(data.df=mydat, data.dists=mydists,
+#               group.var="group", cor.vars=c("b1","b2","b3","b4"),
 #               max.parents=2, which.nodes=c(1:4))
 
 ## find the most probable DAG
-# mp.dag <- mostprobable(score.cache=mycache.mixed)
+# mp.dag <- mostProbable(score.cache=mycache.mixed)
 
 ## get goodness of fit
-# fitabn(object = mp.dag, data.df = mydat, data.dists = mydists,
-#      group.var = "group", cor.vars = c("b1","b2","b3","b4"))$mlik
+# fitAbn(object=mp.dag, data.df=mydat, data.dists=mydists,
+#      group.var="group", cor.vars=c("b1","b2","b3","b4"))$mlik
 }}
 
 \keyword{models}

@@ -70,7 +70,7 @@ Further information about \pkg{abn} can be found at:\cr
 \examples{
 test.m <- matrix(data = c(0,1,0,
                           0,0,0,
-                          0,0,0), nrow = 3, ncol = 3)
+                          1,0,0), nrow = 3, ncol = 3)
     
 ref.m <- matrix(data = c(0,0,0,
                           1,0,0,

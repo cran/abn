@@ -729,7 +729,11 @@ int generate_inits_n_pois(gsl_vector *myBeta,struct fnparams *gparams){
     haveError=gsl_linalg_LU_invert (mattmp3, perm, mattmp4);/** mattmp4 is now inv (X^T X) */  
     if(!haveError){/** no error */
       /** copy Y into vectmp1long and +1 and take logs since poisson has log link - this is a fudge */ 
-      for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+adj));} /** NOTE -  +1.0 or 0.1 give different reliablity*/
+      /** for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+adj));} /** NOTE -  +1.0 or 0.1 give different reliablity*/
+       
+       /**test GK**/ 
+          
+   for(i=0;i<vectmp1long->size;i++){gsl_vector_set(vectmp1long,i,log(gsl_vector_get(Y,i)+0.1));} /** NOTE -  +1.0 or 0.1 give different reliablity*/
       
     gsl_blas_dgemv (CblasTrans, 1.0, X, vectmp1long, 0.0, vectmp1); /** X^T Y */
     gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2); 

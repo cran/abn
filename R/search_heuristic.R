@@ -9,14 +9,20 @@
 ##-------------------------------------------------------------------------
 
 
-searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1, max.steps = 100, seed = 42, verbose = FALSE, start.dag = NULL, algo = "hc", tabu.memory = 10, temperature = 0.9, 
-    ...) {
-    
-    ## method abnCache
+searchHeuristic <- function(score.cache, score="mlik",
+                            num.searches=1, seed=42, start.dag=NULL,
+                            max.steps=100,
+                            algo="hc", tabu.memory=10, temperature=0.9,
+                            verbose=FALSE,  ...) {
     
     if (!inherits(score.cache,"abnCache")) {
         stop("score.cache should be an object of class 'abnCache' ")
     }
+    score <- c("mlik","aic","bic",
+               "mdl")[pmatch(tolower(score), c("mlik","aic","bic","mdl"))][1]
+    if (is.na(score)) stop("wrong specification of 'score'.")
+   
+
     
     data.dists <- score.cache$data.dists
     if(is.vector(score.cache$max.parents)){
@@ -29,7 +35,6 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
     
     ## function
     resample <- function(x, ...) x[sample.int(length(x), ...)]
-    
     n.var <- length(data.dists)
     
     ## output
@@ -41,7 +46,7 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
     
     
     ## seeding
-    set.seed(seed = seed)
+    set.seed(seed=seed)
     
     for (searchIndex in 1:num.searches) {
         if (verbose) 
@@ -50,7 +55,7 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
         temperature.update <- 1
         
         ## Initializing matrix
-        dag.tmp <- matrix(data = 0, nrow = n.var, ncol = n.var)
+        dag.tmp <- matrix(data=0, nrow=n.var, ncol=n.var)
         
         ## start zero matrix
         if (!is.null(start.dag)) {
@@ -73,7 +78,7 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
         
         ## score init dag
         
-        score.init <- vector(mode = "numeric", length = n.var)
+        score.init <- vector(mode="numeric", length=n.var)
         
         if (score %in% c("bic", "aic", "mdl")) {
             sc <- cbind(score.cache$node.defn[, as.numeric(colnames(dag.tmp))], -score.cache[[score]])
@@ -145,7 +150,7 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
                 out <- NULL
             
             
-            memory <- matrix(data = 0, nrow = tabu.memory, ncol = 2)
+            memory <- matrix(data=0, nrow=tabu.memory, ncol=2)
             prob <- c(0, 0)
             
             while (steps < max.steps) {
@@ -272,28 +277,24 @@ searchHeuristic <- function(score.cache = NULL, score = "mlik", num.searches = 1
     
     if (score %in% c("bic", "aic", "mdl")) {
             
-            out <- list(dags = out.dags, 
-                 scores = lapply(X = out.scores, FUN = function(x) {
+            out <- list(dags=out.dags, 
+                 scores=lapply(X=out.scores, FUN=function(x) {
                      -x
-                 }), detailed.score = lapply(X = out.detailed, FUN = function(x) {
+                 }), detailed.score=lapply(X=out.detailed, FUN=function(x) {
                      -x
-                 }), score = score, score.cache = score.cache, num.searches = num.searches, max.steps = max.steps,algorithm = algo
+                 }), score=score, score.cache=score.cache, num.searches=num.searches, max.steps=max.steps,algorithm=algo
             )
             
             class(out) <- c("abnHeuristic", "mle")
             
             return(out)
-            
-            #return(list(dag = out.dags[[which.max(unlist(out.scores))]], score = -max(unlist(out.scores))))
-        
     } else {
-        out <- list(dags = out.dags, scores = out.scores, detailed.score = out.detailed,
-                    score = score, score.cache = score.cache, num.searches = num.searches, max.steps = max.steps,algorithm = algo)
+        out <- list(dags=out.dags, scores=out.scores, detailed.score=out.detailed,
+                    score=score, score.cache=score.cache, num.searches=num.searches,
+                    max.steps=max.steps,algorithm=algo)
         class(out) <- c("abnHeuristic", "bayes")
-            return(out)
-
-            #return(list(dag = out.dags[[which.max(unlist(out.scores))]], score = max(unlist(out.scores))))
-        }
+        return(out)
+    }
 
     
 }  #eof

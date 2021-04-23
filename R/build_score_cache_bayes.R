@@ -7,7 +7,7 @@
 ###############################################################################
 
 ## fit a given DAG to data
-buildscorecache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL, cor.vars=NULL,
+buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL, cor.vars=NULL,
                             dag.banned=NULL, dag.retained=NULL,
                             max.parents=NULL,
                             which.nodes=NULL,defn.res=NULL,dry.run=FALSE,

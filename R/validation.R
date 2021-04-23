@@ -2,7 +2,7 @@
 # Ported function to check the various classes. Mostly refers to abn-internal.R
 
 
-create_abnDag <- function( dag, data.df=NULL, data.dists=NULL, ...) {
+createAbnDag <- function( dag, data.df=NULL, data.dists=NULL, ...) {
   
   if (!is.null(data.dists))   
     data.dists <- validate_dists(data.dists, returnDists=TRUE)
@@ -12,7 +12,12 @@ create_abnDag <- function( dag, data.df=NULL, data.dists=NULL, ...) {
   }else{
     dag <- validate_abnDag(dag, data.df=data.df, returnDag=TRUE)
   }
-  
+
+    if (is.null( dimnames( dag))) {
+        dag <- provideDimnames(dag,base=list(letters))
+        validate_abnDag( dag) 
+    }
+    
   out <- list( dag=dag, data.df=data.df, data.dists=data.dists) 
   class( out) <- "abnDag"
   
@@ -38,9 +43,9 @@ validate_dists <- function(data.dists, returnDists=TRUE,...) {
 
 validate_abnDag <- function( dag, data.df=NULL, returnDag=TRUE, ...) {
   
-  # dag is either a formula or a matrix 
+  # dag is either a formula, a matrix  or an object of class 'abnDag'
   
-  # we already have a valid container. can beused to extract...  
+  # we already have a valid container. can be used to extract...  
   if (inherits(x = dag, what = "abnDag"))  dag <- dag$dag
   
   
@@ -73,7 +78,8 @@ validate_abnDag <- function( dag, data.df=NULL, returnDag=TRUE, ...) {
     }
     
     res <- .Call("checkforcycles", as.integer(dag), dimm[1], PACKAGE = "abn")
-    
+    if (res!=0) stop("DAG contains at least one cycle.")
+   
     if( returnDag) return( dag) else return( TRUE)
   }   else {
     stop( "DAG specification with should be via formula or matrix")

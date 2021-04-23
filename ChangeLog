@@ -2,6 +2,13 @@
 -- ChangeLog - abn --
 ---------------------------
 
+2020-10-31 Gilles Kratzer & Reinhard Furrer (version 2.4.0)
+	   * Update on citations
+	   * Update on ORCID number
+
+2020-10-22 Gilles Kratzer & Reinhard Furrer (version 2.3.0)
+	   * Requirement for use of R>=4.0.0
+
 2020-06-13 Gilles Kratzer & Reinhard Furrer (version 2.2.1)
 	   * Patch for S4 exports not stated in the package
 	   * Testing automatic (testhat.R in tests repository)

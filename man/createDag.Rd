@@ -10,7 +10,7 @@
 
 \name{createDag}
 \alias{createDag}
-\alias{create_abnDag}
+\alias{createAbnDag}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
@@ -19,10 +19,8 @@
 \description{Create a legitimate DAG in the abn format.}
 
 \usage{
-create_abnDag( dag, data.df = NULL, data.dists = NULL, ...)
+createAbnDag( dag, data.df = NULL, data.dists = NULL, ...)
 }
-    
-%- maybe also `usage' for other objects documented here.
 \arguments{
 \item{dag}{a matrix or a formula specifying a DAG, see \sQuote{Details}.}
 \item{data.df}{named dataframe or named vector.}
@@ -30,17 +28,23 @@ create_abnDag( dag, data.df = NULL, data.dists = NULL, ...)
 \item{...}{further arguments passed to or from other methods.}
 }
 
-\details{An object of class \code{class(abn)} contains a named matrix describing the DAG and possibly additional objects such as the associated distributions of the nodes. 
+\details{An object of class \code{class(abnDag)} contains a named matrix describing the DAG and possibly additional objects such as the associated distributions of the nodes. 
 
 If the dag is specified with a formula, either \code{data.df} or
-\code{data.dists} is required with the \code{.} quantifier.  
+\code{data.dists} is required with the \code{.} quantifier.
+
+If the dag is specified with an unnamed matrix and both \code{data.df} and
+\code{data.dists} are missing,  lower-case letters of the Roman alphabet
+are used for the node names.
 }
 
 \value{An object of class \code{abnDag} containing a named matrix and a named list giving the distribution for each node.}
 
 
 \examples{
-create_abnDag( ~a+b|a, data.df=c("a"=1, "b"=1))
+createAbnDag( ~a+b|a, data.df=c("a"=1, "b"=1))
+
+plot( createAbnDag( matrix( c(0,1,0,0),2,2))) 
 }
 
 \keyword{utilities}

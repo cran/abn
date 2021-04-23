@@ -10,6 +10,7 @@
 
 \name{tographviz}
 \alias{tographviz}
+\alias{toGraphviz}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
@@ -19,15 +20,15 @@
 
 
 \usage{
-tographviz(dag.m, data.df, data.dists, group.var=NULL, outfile, directed=TRUE)
+toGraphviz(dag, data.df=NULL, data.dists=NULL, group.var=NULL, outfile, directed=TRUE)
 }
 
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{dag.m}{a matrix defining a DAG.}
+  \item{dag}{a matrix defining a DAG.}
   \item{data.df}{a data frame containing the data used for learning the network.}
-  \item{data.dists}{a list with named arguments matching the names of the data frame which gives the distribution family for each variable. See \code{fitabn} for details.} 
-  \item{group.var}{only applicable for mixed models and gives the column name in \code{data.df} of the grouping variable (which must be a factor denoting group membership). See \code{fitabn} for details.}
+  \item{data.dists}{a list with named arguments matching the names of the data frame which gives the distribution family for each variable. See \code{fitAbn} for details.} 
+  \item{group.var}{only applicable for mixed models and gives the column name in \code{data.df} of the grouping variable (which must be a factor denoting group membership). See \code{fitAbn} for details.}
   \item{outfile}{a character string giving the filename which will contain the graphviz graph.}
   \item{directed}{logical; if TRUE, a directed acyclic graph is produced, otherwise an undirected graph.}
 }
@@ -70,10 +71,10 @@ mydag <- matrix(c(   0,1,0,0,1,0,0, #
 colnames(mydag) <- rownames(mydag) <- names(mydat)
 
 ## create file for processing with graphviz
-tographviz(dag.m=mydag, data.df=mydat, data.dists=mydists,
-           outfile=paste(tempdir(), "graph.dot", sep="/"), directed=TRUE)
+outfile <- paste(tempdir(), "graph.dot", sep="/")
+toGraphviz(dag=mydag, data.df=mydat, data.dists=mydists, outfile=outfile)
 ## and then process using graphviz tools e.g. on linux
-# system("dot -Tpdf -o graph.pdf graph.dot")
+# system(paste( "dot -Tpdf -o graph.pdf", outfile))
 # system("evince graph.pdf")
 
 ## Example using data with a group variable  where b1<-b2
@@ -84,12 +85,13 @@ colnames(mydag) <- rownames(mydag) <- names(ex3.dag.data[,c(1,2)])
 mydists <- list(b1="binomial", b2="binomial")
 
 ## create file for processing with graphviz
-tographviz(dag.m=mydag, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
+outfile <- paste(tempdir(), "graph.dot", sep="/")
+toGraphviz(dag=mydag, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
            group.var="group", 
-           outfile=paste(tempdir(), "graph.dot", sep="/"), directed=FALSE)
+           outfile=outfile, directed=FALSE)
 ## and then process using graphviz tools e.g. on linux
-# system("dot -Tpdf -o graph.pdf graph.dot")
-# system("evince graph.pdf");
+# system(paste( "dot -Tpdf -o graph.pdf", outfile))
+# system("evince graph.pdf")
 }
 
 }
