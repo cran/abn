@@ -63,3 +63,7 @@ mi_cpp <- function(joint_dist) {
     .Call('_abn_mi_cpp', PACKAGE = 'abn', joint_dist)
 }
 
+rank_cpp <- function(A) {
+    .Call('_abn_rank_cpp', PACKAGE = 'abn', A)
+}
+

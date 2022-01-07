@@ -326,7 +326,8 @@ check.valid.parents <- function(data.df = NULL, max.parents = NULL, group.var) {
         return(max.parents.int)
     }
 
-    stop("max.parents is not valid")
+    stop("'max.parents' is not valid: length data: ",dim(data.df)[2],
+         ", length max.parents: ",length(max.parents))
 
 }
 

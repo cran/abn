@@ -15,7 +15,7 @@ fitabn <- function(...) {
 
 
 
-fitAbn <- function(object=NULL, dag=NULL, data.df=NULL, data.dists=NULL, method="bayes", group.var=NULL, adj.vars=NULL, cor.vars=NULL,  centre=TRUE, create.graph=FALSE, compute.fixed=FALSE,
+fitAbn <- function(object=NULL, dag=NULL, data.df=NULL, data.dists=NULL, method=NULL, group.var=NULL, adj.vars=NULL, cor.vars=NULL,  centre=TRUE, create.graph=FALSE, compute.fixed=FALSE,
     control=list(), verbose=FALSE, ...) {
 
 
@@ -30,8 +30,16 @@ fitAbn <- function(object=NULL, dag=NULL, data.df=NULL, data.dists=NULL, method=
         # group.var <- object$group.var
         # cor.vars <- object$cor.vars
         # adj.vars <- object$adj.vars
-    }
 
+        fitmethod <- object$method
+    } else  fitmethod <- NULL
+
+    if (is.null(method))  {
+        method <- if (is.null(fitmethod)) "bayes" else fitmethod
+    }else{
+        if (verbose & (!is.null(fitmethod)))
+            if (method != fitmethod) cat("Fitting and learned methods differ!\n")
+    }
 
 
     ## start tests

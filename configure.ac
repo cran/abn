@@ -1,4 +1,4 @@
-AC_INIT([abn], 2.0)
+AC_INIT([abn],[2.6-0])
 
 ## Use gsl-config to find arguments for compiler and linker flags
 ##
@@ -17,4 +17,5 @@ fi
 AC_SUBST(GSL_CFLAGS)
 AC_SUBST(GSL_LIBS)
 
-AC_OUTPUT(src/Makevars)
+AC_CONFIG_FILES([src/Makevars])
+AC_OUTPUT

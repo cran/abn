@@ -41,28 +41,30 @@ arma::vec z(nobs);
 for (int i = 0; i < maxit; ++i) {
   eta = A * x;
   
-   for (int j=0; j < nobs; ++j) {
-     g[j] = exp(eta[j]);
-   }
-    gprime = g;
-    
-  z = eta+(b-g)/gprime;
+  W = exp(eta);
   
-  W = gprime % gprime;
-  W /= g;
+   // for (int j=0; j < nobs; ++j) {
+   //   g[j] = exp(eta[j]);
+   // }
+    // gprime = g;
+    
+  z = eta+(b-W)/W;
+  
+  // W = gprime % gprime;
+  // W /= g;
   xold = x;
   
   //coefficients
   varmatrix = A.t()*(W % A.each_col());
-  x = arma::solve(varmatrix, A.t()*(W % z));
+  x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::likely_sympd);
   
-if(sqrt(arma::dot(x-xold,x-xold)) < tol){
+if(sqrt(pow(arma::norm(x-xold), 2)) < tol){
  break;
 }}
 
 arma::vec e;
 //double ssr;
-e = (b - A*x);
+e = (b - eta);
 //ssr = accu(e.t()*e);
 
 df = A.n_cols;
@@ -71,7 +73,7 @@ df = A.n_cols;
     for (int j = 0; j < nobs; ++j) {
       f[j] = log(factorial_fast(1.0 * b[j]));
       }
-    ll = arma::accu(b % (A * x) - exp(A * x) - f);
+    ll = arma::accu(b % (eta) - exp(eta) - f);
     
 aic = - 2 * ll + 2 * df;
 

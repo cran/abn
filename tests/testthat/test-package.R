@@ -269,7 +269,7 @@ test_that("Test buildScoreCache()", {
     expect_that(mycache.computed.mle.4$node.defn, equals(mycache.old.4$node.defn))
 
     ## which.nodes
-    expect_error(abn:::buildScoreCache.mle(data.df=df, data.dists=dist[1:5], max.parents=6, which.nodes=1:5), NA)
+    expect_error(abn:::buildScoreCache.mle(data.df=df, data.dists=dist[1:5], max.parents=6, which.nodes=1:6))
 
     ## max.parents
     expect_equal(abn:::buildScoreCache.mle(data.df=df, data.dists=dist[1:5], max.parents=6, which.nodes=1:5), abn:::buildScoreCache.mle(data.df=df,
@@ -323,19 +323,19 @@ test_that("Test buildScoreCache()", {
     mycache <- invisible(abn:::buildScoreCache.mle(data.df=out.sim, data.dists=dist, max.parents=2, centre=FALSE))
 
     # mLik
-    expect_that(mycache$mlik[1], equals(as.numeric(logLik(glm(formula=out.sim$a ~ 1, family=binomial)))))
-    expect_that(mycache$mlik[2], equals(as.numeric(logLik(glm(formula=out.sim$a ~ 1 + out.sim$b, family=binomial)))))
-    expect_that(mycache$mlik[3], equals(as.numeric(logLik(glm(formula=out.sim$b ~ 1, family=binomial)))))
+    expect_that(mycache$mlik[1], equals(as.numeric(logLik(glm(formula=out.sim$a ~ 1, family=binomial))), tolerance = 0.00005))
+    expect_that(mycache$mlik[2], equals(as.numeric(logLik(glm(formula=out.sim$a ~ 1 + out.sim$b, family=binomial))), tolerance = 0.00005))
+    expect_that(mycache$mlik[3], equals(as.numeric(logLik(glm(formula=out.sim$b ~ 1, family=binomial))), tolerance = 0.00005))
 
     # AIC
-    expect_that(mycache$aic[1], equals(as.numeric(AIC(glm(formula=out.sim$a ~ 1, family=binomial)))))
-    expect_that(mycache$aic[2], equals(as.numeric(AIC(glm(formula=out.sim$a ~ 1 + out.sim$b, family=binomial)))))
-    expect_that(mycache$aic[3], equals(as.numeric(AIC(glm(formula=out.sim$b ~ 1, family=binomial)))))
+    expect_that(mycache$aic[1], equals(as.numeric(AIC(glm(formula=out.sim$a ~ 1, family=binomial))), tolerance = 0.00005))
+    expect_that(mycache$aic[2], equals(as.numeric(AIC(glm(formula=out.sim$a ~ 1 + out.sim$b, family=binomial))), tolerance = 0.00005))
+    expect_that(mycache$aic[3], equals(as.numeric(AIC(glm(formula=out.sim$b ~ 1, family=binomial))), tolerance = 0.00005))
 
     # BIC
-    expect_that(mycache$bic[1], equals(as.numeric(BIC(glm(formula=out.sim$a ~ 1, family=binomial)))))
-    expect_that(mycache$bic[2], equals(as.numeric(BIC(glm(formula=out.sim$a ~ 1 + out.sim$b, family=binomial)))))
-    expect_that(mycache$bic[3], equals(as.numeric(BIC(glm(formula=out.sim$b ~ 1, family=binomial)))))
+    expect_that(mycache$bic[1], equals(as.numeric(BIC(glm(formula=out.sim$a ~ 1, family=binomial))), tolerance = 0.00005))
+    expect_that(mycache$bic[2], equals(as.numeric(BIC(glm(formula=out.sim$a ~ 1 + out.sim$b, family=binomial))), tolerance = 0.00005))
+    expect_that(mycache$bic[3], equals(as.numeric(BIC(glm(formula=out.sim$b ~ 1, family=binomial))), tolerance = 0.00005))
 
     # Poisson
     dist <- list(a="poisson", b="poisson")

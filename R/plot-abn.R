@@ -19,7 +19,8 @@ plotabn <- function(...) {
 plotAbn <- function(dag, data.dists=NULL, markov.blanket.node=NULL,
                     fitted.values=NULL, digits=2, edge.strength=NULL,
                     edge.direction="pc", edge.color="black", edge.arrowsize=0.5, edge.fontsize=5,
-                    node.fontsize=10, node.fillcolor=c("lightblue","brown3","chartreuse3"), node.fillcolor.list=NULL, node.shape=c("circle","box","ellipse","diamond"),
+                    node.fontsize=10, node.fillcolor=c("lightblue","brown3","chartreuse3"),
+                    node.fillcolor.list=NULL, node.shape=c("circle","box","ellipse","diamond"),
                     plot=TRUE , ... )       {
 
     # Actually, the plot argument is wrong! i do not need the adjacency structure only. I need all but the plotting. i.e., all but the rendering of the graph.

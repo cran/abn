@@ -1,12 +1,12 @@
-%                               -*- Mode: Rd -*- 
-% tographviz.Rd --- 
+%                               -*- Mode: Rd -*-
+% tographviz.Rd ---
 % Author          : Fraser Lewis
-% Created On      : 
+% Created On      :
 % Last Modified By: Marta Pittavino
 % Last Modified On: 19/09/2014
-% Update Count    : 
+% Update Count    :
 % Status          : Unknown, Use with caution!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \name{tographviz}
 \alias{tographviz}
@@ -27,7 +27,7 @@ toGraphviz(dag, data.df=NULL, data.dists=NULL, group.var=NULL, outfile, directed
 \arguments{
   \item{dag}{a matrix defining a DAG.}
   \item{data.df}{a data frame containing the data used for learning the network.}
-  \item{data.dists}{a list with named arguments matching the names of the data frame which gives the distribution family for each variable. See \code{fitAbn} for details.} 
+  \item{data.dists}{a list with named arguments matching the names of the data frame which gives the distribution family for each variable. See \code{fitAbn} for details.}
   \item{group.var}{only applicable for mixed models and gives the column name in \code{data.df} of the grouping variable (which must be a factor denoting group membership). See \code{fitAbn} for details.}
   \item{outfile}{a character string giving the filename which will contain the graphviz graph.}
   \item{directed}{logical; if TRUE, a directed acyclic graph is produced, otherwise an undirected graph.}
@@ -36,7 +36,7 @@ toGraphviz(dag, data.df=NULL, data.dists=NULL, group.var=NULL, outfile, directed
 \details{
 Graphviz (\url{http://www.graphviz.org}) is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG, or the undirected graph, so this can be plotted using graphviz. Graphviz is available as an R package, \code{Rgraphviz}, through the Bioconductor project \url{http://www.bioconductor.org/} (and requires a working installation of graphviz). Binary nodes will appear as squares, Gaussian as ovals and Poisson nodes as diamonds in the resulting graphviz network diagram. There are many other shapes possible for nodes and numerous other visual enhancements - see online graphviz documentation. Bespoke refinements can be added by editing the raw outfile produced. For full manual editing, particularly of the layout, or adding annotations, one easy solution is to convert a postscript format graph (produced in graphviz using the -Tps switch) into a vector format using a tool such as pstoedit \url{http://www.pstoedit.net}, and then edit using a vector drawing tool like xfig. This can then be resaved as postscript or pdf thus retaining full vector quality.
 
-} 
+}
 
 
 \value{Nothing is returned, but a file \code{outfile} written.}
@@ -58,16 +58,16 @@ mydat <- ex0.dag.data[,c("b1","b2","b3","g1","b4","p2","p4")]
 mydists <- list(b1="binomial", b2="binomial", b3="binomial",
                 g1="gaussian", b4="binomial", p2="poisson",
                 p4="poisson")
-## specify DAG model 
-mydag <- matrix(c(   0,1,0,0,1,0,0, # 
+## specify DAG model
+mydag <- matrix(c(   0,1,0,0,1,0,0, #
                      0,0,0,0,0,0,0, #
-                     0,1,0,0,1,0,0, # 
-                     1,0,0,0,0,0,1, # 
+                     0,1,0,0,1,0,0, #
+                     1,0,0,0,0,0,1, #
                      0,0,0,0,0,0,0, #
                      0,0,0,1,0,0,0, #
                      0,0,0,0,1,0,0  #
                      ), byrow=TRUE, ncol=7)
-                     
+
 colnames(mydag) <- rownames(mydag) <- names(mydat)
 
 ## create file for processing with graphviz
@@ -85,13 +85,14 @@ colnames(mydag) <- rownames(mydag) <- names(ex3.dag.data[,c(1,2)])
 mydists <- list(b1="binomial", b2="binomial")
 
 ## create file for processing with graphviz
-outfile <- paste(tempdir(), "graph.dot", sep="/")
+outfile <- paste0(tempdir(), "/graph.dot")
 toGraphviz(dag=mydag, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
-           group.var="group", 
+           group.var="group",
            outfile=outfile, directed=FALSE)
-## and then process using graphviz tools e.g. on linux
-# system(paste( "dot -Tpdf -o graph.pdf", outfile))
-# system("evince graph.pdf")
+## and then process using graphviz tools e.g. on linux:
+# pdffile <- paste0(tempdir(), "/graph.pdf")"
+# system(paste("dot -Tpdf -o ", pdffile, outfile))
+# system(paste("evince ", pdffile, " &")   ## or some other viewer
 }
 
 }

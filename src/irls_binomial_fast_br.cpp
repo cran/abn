@@ -43,8 +43,9 @@ for (int i = 0; i < maxit; ++i) {
   eta = A * x;
   
   for (int j=0; j < nobs; ++j) {
-    g[j] = 1.0 / (1.0 + exp(-1.0 * eta[j]));
-    gprime[j] = exp (-1.0 * eta[j]) / ((1.0 + exp (-1.0 * eta[j])) * (1.0 + exp (-1.0 * eta[j])));
+    double e = exp(-1.0 * eta[j]);
+    g[j] = 1.0 / (1.0 + e);
+    gprime[j] = e / ((1.0 + e) * (1.0 + e));
     //mod
     bprime[j] = (b[j]+(df/nobs)*(0.5))/(1+(df/nobs));
     //bprime[j] = b[j]+(sum(b)/nobs)*(0.5);
@@ -61,7 +62,7 @@ for (int i = 0; i < maxit; ++i) {
   //coefficients
   //x = arma::solve(A.t()*(W % A.each_col()), A.t()*(W % z), arma::solve_opts::no_approx);
   varmatrix = A.t()*(W % A.each_col());
-  x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::no_approx);
+  x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::no_approx + arma::solve_opts::likely_sympd);
   //k = i;
   
 if(sqrt(arma::dot(x-xold,x-xold)) < tol){
@@ -79,7 +80,7 @@ if(sqrt(arma::dot(x-xold,x-xold)) < tol){
 //scores
 
 //ll = arma::accu(-arma::dot(b,log(unit + exp(-(A*x)))) - arma::dot((unit-b),log(unit + exp(A*x))));
-ll = arma::accu(-arma::dot(b,log(unit + exp(-(A*x)))) - arma::dot((unit-b),log(unit + exp(A*x))));
+ll = arma::accu(-arma::dot(b,log(unit + exp(-(eta)))) - arma::dot((unit-b),log(unit + exp(eta))));
 
 aic = - 2 * ll + 2 * df;
 

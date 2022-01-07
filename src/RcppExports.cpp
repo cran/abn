@@ -173,6 +173,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rank_cpp
+int rank_cpp(arma::mat A);
+RcppExport SEXP _abn_rank_cpp(SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(rank_cpp(A));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 RcppExport SEXP buildcachematrix(SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP checkforcycles(SEXP, SEXP);
@@ -195,6 +206,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_abn_factorial_fast", (DL_FUNC) &_abn_factorial_fast, 1},
     {"_abn_irls_poisson_cpp_fast", (DL_FUNC) &_abn_irls_poisson_cpp_fast, 4},
     {"_abn_mi_cpp", (DL_FUNC) &_abn_mi_cpp, 1},
+    {"_abn_rank_cpp", (DL_FUNC) &_abn_rank_cpp, 1},
     {"buildcachematrix", (DL_FUNC) &buildcachematrix,  5},
     {"checkforcycles",   (DL_FUNC) &checkforcycles,    2},
     {"fit_single_node",  (DL_FUNC) &fit_single_node,  26},

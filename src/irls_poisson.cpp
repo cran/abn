@@ -45,25 +45,16 @@ arma::vec z(nobs);
 for (int i = 0; i < maxit; ++i) {
   eta = A * x;
   
-//  g = exp(eta);
-//  gprime = exp(eta);
-   for (int j=0; j < nobs; ++j) {
-     g[j] = exp(eta[j]);
-//     gprime[j] = exp(eta[j]);
-   }
-    gprime = g;
+  W = exp(eta);
     
-  z = eta+(b-g)/gprime;
-  
-  W = gprime % gprime;
-  W /= g;
+  z = eta+(b-W)/W;
   xold = x;
   
   //coefficients
   varmatrix = A.t()*(W % A.each_col());
   x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::no_approx);
   
-if(sqrt(arma::dot(x-xold,x-xold)) < tol){
+if(sqrt(pow(arma::norm(x-xold), 2)) < tol){
  break;
 }}
 
@@ -74,19 +65,17 @@ df = A.n_cols;
     for (int j = 0; j < nobs; ++j) {
       f[j] = log(factorial(1.0 * b[j]));
       }
-    ll = arma::accu(b % (A * x) - exp(A * x) - f);
+    
+    ll = arma::accu(b % (eta) - exp(eta) - f);
     
 aic = - 2 * ll + 2 * df;
 
 bic = - 2 * ll + log(nobs) * df;
     
 //sse
-e = (b - A*x);
-    //TEST GK 21.03.2021
-//ssr = accu(e.t()*e);
-    ssr = arma::accu(e.t()*e);
-    
-    
+e = (b - eta);
+ssr = arma::dot(e, e);
+
 mdl = 1;
     
 //return

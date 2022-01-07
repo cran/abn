@@ -2,6 +2,30 @@
 -- ChangeLog - abn --
 ---------------------------
 
+
+2021-06-08 Gilles Kratzer, Reinhard Furrer & Kalina Cherneva (version 2.6.0)
+	   * Bug fixes:
+	      . initial values for several chains in `simulateAbn()`
+	      . new default value for `method` in `fitAbn()`
+	      . new default value `method='bic'` in `mostProbable()`
+	      . minor bug fixes in `plotAbn()`
+	      . minor bug fix in `help(plotAbn)`
+	      . number of parent specification for `buildScoreCache( , method='mle')`
+	   * Renaming many function arguments for consistency
+	   * Reordering, purging and adding function argments
+	   * Parallelization of `buildScoreCache(, method='mle')`
+	   * Cleaning of RCpp with improved default parameters (speed up 5%)
+	   * Adapting authorship of package
+	   * Minor cleaning of `Examples` in the help files
+
+
+2021-04-23 Gilles Kratzer & Reinhard Furrer (version 2.5.0)
+	   * Renaming many functions to CamelCase for consistency
+	   * Renaming many arguments for consistency
+	   * Reordering, purging and adding function argments
+	   * Major changes in `plotAbn()`
+	   * Cleaning of several help files
+
 2020-10-31 Gilles Kratzer & Reinhard Furrer (version 2.4.0)
 	   * Update on citations
 	   * Update on ORCID number
@@ -18,7 +42,7 @@
 	   * New vignette describing new functionalities!
 	   * Old vignette is store in the﻿ directories inst/bootstrapping_example and inst/old_vignette
 	   * Dataset: FCV
-	   * Methods related to the class abnFit: family, logLik, AIC, BIC, nobs, coef 
+	   * Methods related to the class abnFit: family, logLik, AIC, BIC, nobs, coef
 	   * Bugs corrected in plotabn()
 	   * Compilation warnings corrected
 	   * Typos in man help files corrected
@@ -31,8 +55,8 @@
 2019-07-01 Gilles Kratzer & Reinhard Furrer (version 2.0)
 	   * Implementation of S3 methods (print, summary, plot)
 	   * New classes:
-	   		* abnDag, abnCache, abnHeuristic, abnMostprobable, abnHillClimber, abnFit 
-	   * renaming of functions 
+	   		* abnDag, abnCache, abnHeuristic, abnMostprobable, abnHillClimber, abnFit
+	   * renaming of functions
 	   		* link.strength() -> linkStrength()
 	   		* search.heuristic() -> searchHeuristic()
 	   		* backward compatibility is not ensured for those functions
@@ -61,7 +85,7 @@
 	   * search.heuristic()
 	   * entropyData()
 	   * miData()
-	   
+
 	   * modification of existing functions:
 	   * mostprobable()
 
@@ -71,13 +95,13 @@
 
 2016-01-11 Pittavino Marta (version 1.0)
 	   New vignette uploaded.
-	
+
 2015-12-22 Pittavino Marta (version 0.86)
 	   INLA routine updated, ERROR and NOTE addressed.
-	
+
 2014-12-22 Pittavino Marta (version 0.85)
 	   * Published Version v0.85 on CRAN
-	
+
 2014-12-09 Pittavino Marta (version 0.85)
            * cleanup file to delete additional Makevars added
 
@@ -89,7 +113,7 @@
 
 2014-12-05 Pittavino Marta (version 0.84)
            * dependencies --as-cran NOTE addressed, with .Rprofile
-           * graphical issue with Sweave solved 
+           * graphical issue with Sweave solved
 
 2014-12-04 Pittavino Marta (version 0.84)
            * finished to edit vignette
@@ -104,7 +128,7 @@
            * installation of local version of abn to text and work with vignette
 
 2014-10-23 Pittavino Marta (version 0.84)
-           * confirmation of the change of maintainer 
+           * confirmation of the change of maintainer
 
 2014-10-13 Pittavino Marta (version 0.84)
            * updated Rclean for file .log and .status
@@ -113,12 +137,12 @@
 2014-10-06 Pittavino Marta (version 0.84)
            * compressed Data with resaveRdaFiles(,compress=c("xz"))
            * solved installing issue (Rclean update)
-           
+
 2014-10-03 Pittavino Marta (version 0.84)
 	       * alias Rclean extended
 	       * eliminate old and very old version
 	       * comment out require(Cairo) line-code
-	
+
 2014-10-02 Reinhard Furrer (version 0.84)
 	       * Cairo NOTE fixed, moved from Suggests to Depends
 	       * DESCRIPTION and NAMESPACE update
@@ -126,12 +150,12 @@
 	       * .gitignore create
 
 2014-09-29 Pittavino Marta (version 0.84)
-	       * update version 
+	       * update version
 	       * rename R function as the one in manual
-	
+
 2014-09-26 Pittavino Marta (version 0.83)
 	       * update DESCRIPTION
-	
+
 2014-09-19 Pittavino Marta (version 0.83)
  	       * update DESCRIPTION
            * update tographviz documentation

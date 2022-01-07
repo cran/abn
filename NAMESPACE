@@ -28,13 +28,15 @@ useDynLib(abn)
 
 importFrom("grDevices", "rgb", "dev.flush", "dev.new", "dev.list", "dev.off")
 importFrom("graphics", "plot", "lines", "par", "points", "title")
+
 importFrom("methods", "initialize", "new", "slot")
+   ## this is for the handling of the graph classes passed to Rgraphviz.
+
 importFrom("stats", "complete.cases", "sd", "spline","coef", "model.matrix", "pnorm", "pt", "residuals", "hatvalues", "AIC", "BIC", "family")
-importFrom("rjags",coda.samples, jags.model)
+importFrom("rjags", "coda.samples", "jags.model")
 importFrom("stats", "IQR", "cor", "nobs", "rbinom", "dbinom", "dist", "dnorm", "dpois", "glm","predict.glm", "sigma")
 importFrom("utils", "tail", "combn")
 importFrom("nnet", "multinom", "nnet.default")
-# import("MASS")
 importFrom("lme4", "glmer", "VarCorr")
 importFrom("Rgraphviz", "layoutGraph", "renderGraph", "plot", "buildEdgeList")
 
@@ -44,6 +46,12 @@ importFrom("Rgraphviz", "layoutGraph", "renderGraph", "plot", "buildEdgeList")
 #importFrom("entropy", discretize2d, entropy.empirical, mi.empirical)
 #importFrom("moments", skewness)
 #importFrom("brglm", brglm)
+
+
+importFrom("foreach","%dopar%", foreach)
+importFrom("doParallel", registerDoParallel)
+importFrom("parallel", stopCluster, makeCluster)
+
 
 S3method(print, abnDag)
 S3method(print, abnCache)

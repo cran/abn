@@ -1,6 +1,6 @@
 
-R Under development (unstable) (2021-03-25 r80120) -- "Unsuffered Consequences"
-Copyright (C) 2021 The R Foundation for Statistical Computing
+R Under development (unstable) (2022-01-04 r81445) -- "Unsuffered Consequences"
+Copyright (C) 2022 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -24,38 +24,8 @@ Type 'q()' to quit R.
 > 
 > test_check("abn")
 Loading required package: abn
-Loading required package: nnet
-Loading required package: lme4
-Loading required package: Matrix
-Loading required package: Rgraphviz
-Loading required package: graph
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: 'BiocGenerics'
-
-The following objects are masked from 'package:parallel':
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from 'package:stats':
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from 'package:base':
-
-    Filter, Find, Map, Position, Reduce, anyDuplicated, append,
-    as.data.frame, basename, cbind, colnames, dirname, do.call,
-    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
-    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
-    pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,
-    tapply, union, unique, unsplit, which.max, which.min
-
-Loading required package: grid
 [ FAIL 0 | WARN 0 | SKIP 0 | PASS 205 ]
 > 
 > proc.time()
    user  system elapsed 
-101.393   0.360 101.474 
+ 15.879   0.128  31.847 

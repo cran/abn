@@ -18,8 +18,7 @@
 \description{Find most probable DAG structure using exact order based approach due to Koivisto and Sood, 2004}
 
 \usage{
-mostProbable(score.cache, score="mlik", prior.choice=1,
-             verbose=TRUE, ...)
+mostProbable(score.cache, score="bic", prior.choice=1, verbose=TRUE, ...)
 }
 
 %- maybe also `usage' for other objects documented here.
@@ -57,67 +56,60 @@ Further information about \bold{abn} can be found at:\cr
 
 
 \examples{
-\dontrun{
 ##############################
 ## Example 1
 ##############################
 
-## this data comes with abn see ?ex1.dag.data
-mydat <- ex1.dag.data
+## This data comes with `abn` see ?ex1.dag.data
+mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
-## setup distribution list for each node
+## Setup distribution list for each node:
 mydists <- list(b1="binomial", p1="poisson", g1="gaussian", b2="binomial",
-              p2="poisson", b3="binomial", g2="gaussian", b4="binomial",
-              b5="binomial", g3="gaussian")
+                p2="poisson", b3="binomial", g2="gaussian", g3="gaussian")
 
-## assum no constraints in ban nor retain
-
-## parent limits
-max.par <- list("b1"=0,"p1"=0,"g1"=1,"b2"=1,"p2"=2,"b3"=3,"g2"=3,"b4"=2,"b5"=2,"g3"=2)
-## now build cache
+## Parent limits, for speed purposes quite specific here:
+max.par <- list("b1"=0,"p1"=0,"g1"=1,"b2"=1,"p2"=2,"b3"=3,"g2"=3,"g3"=2)
+## Now build cache (no constraints in ban nor retain)
 mycache <- buildScoreCache(data.df=mydat, data.dists=mydists, max.parents=max.par)
 
-## Find the globally best DAG
+## Find the globally best DAG:
 mp.dag <- mostProbable(score.cache=mycache)
-fitAbn(object=mp.dag)$mlik
-
-## plot the best model
 myres <- fitAbn(object=mp.dag,create.graph=TRUE)
+myres$mlik
+plot(myres) # plot the best model
 
-plotAbn(dag=mp.dag$dag, data.dists=mydists)#, fitted.values.abn=myres)
+## last line is essentially equivalent to:
+# plotAbn(dag=mp.dag$dag, data.dists=mydists, fitted.values=myres$modes)
 
-## fit the known true DAG
-true.dag <- matrix(data=0,ncol=10, nrow=10)
+## Fit the known true DAG (up to variables 'b4' and 'b5'):
+true.dag <- matrix(data=0, ncol=8, nrow=8)
 colnames(true.dag) <- rownames(true.dag) <- names(mydists)
 
 true.dag["p2",c("b1","p1")] <- 1
 true.dag["b3",c("b1","g1","b2")] <- 1
 true.dag["g2",c("p1","g1","b2")] <- 1
-true.dag["b4",c("g1","p2")] <- 1
-true.dag["b5",c("g1","g2")] <- 1
 true.dag["g3",c("g1","b2")] <- 1
 
 fitAbn(dag=true.dag, data.df=mydat, data.dists=mydists)$mlik
 
+\dontrun{
 #################################################################
 ## Example 2 - models with random effects
 #################################################################
 
-## this data comes with abn see ?ex3.dag.data
+## This data comes with abn see ?ex3.dag.data
 # mydat <- ex3.dag.data[,c(1:4,14)]
+# mydists <- list(b1="binomial", b2="binomial", b3="binomial", b4="binomial")
 
-# mydists <- list(b1="binomial", b2="binomial", b3="binomial",
-#              b4="binomial")
-
-## This takes a few seconds
+## This takes a few seconds and requires INLA:
 # mycache.mixed <- buildScoreCache(data.df=mydat, data.dists=mydists,
 #               group.var="group", cor.vars=c("b1","b2","b3","b4"),
 #               max.parents=2, which.nodes=c(1:4))
 
-## find the most probable DAG
+## Find the most probable DAG:
 # mp.dag <- mostProbable(score.cache=mycache.mixed)
 
-## get goodness of fit
+## and get goodness of fit:
 # fitAbn(object=mp.dag, data.df=mydat, data.dists=mydists,
 #      group.var="group", cor.vars=c("b1","b2","b3","b4"))$mlik
 }}

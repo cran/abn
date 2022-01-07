@@ -334,9 +334,9 @@ plot.abnFit <- function(x, which ="abnFit", ...){
   if (which != "abnFit") stop('Function type not implemented yet. Use which="abnFit"')
 
   if(x$method=="mle"){
-    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values.abn = x$coef, ...)
+    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$coef, ...)
   } else {
-    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values.abn = x$modes, ...)
+    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$modes, ...)
   }
   invisible(g)
 }
