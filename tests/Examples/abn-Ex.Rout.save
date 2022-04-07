@@ -21,6 +21,7 @@ Type 'q()' to quit R.
 > source(file.path(R.home("share"), "R", "examples-header.R"))
 > options(warn = 1)
 > library('abn')
+abn version 2.7-0 (2022-04-05) is loaded.
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
@@ -128,6 +129,32 @@ A BibTeX entry for LaTeX users is
 > 
 > 
 > cleanEx()
+> nameEx("build_control")
+> ### * build_control
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: build.control
+> ### Title: Control the iterations in 'buildScoreCache'
+> ### Aliases: build.control
+> 
+> ### ** Examples
+> 
+> ctrlmle <- build.control(method = "mle", ncores = 0, max.irls = 100, tol = 10^-11, seed = 9062019)
+> 
+> ctrlbayes <- build.control(method = "bayes", max.mode.error = 10, mean = 0, prec = 0.001,
++    loggam.shape = 1, loggam.inv.scale = 5e-05, max.iters = 100,
++    epsabs = 1e-07, error.verbose = FALSE, epsabs.inner = 1e-06,
++    max.iters.inner = 100, finite.step.size = 1e-07, hessian.params = c(1e-04, 0.01),
++    max.iters.hessian = 10, max.hessian.error = 0.5, factor.brent = 100,
++    maxiters.hessian.brent = 100, num.intervals.brent = 100,
++    tol = 10^-8, seed = 9062019)
+> 
+> 
+> 
+> 
+> 
+> cleanEx()
 > nameEx("build_score_cache")
 > ### * build_score_cache
 > 
@@ -167,15 +194,16 @@ A BibTeX entry for LaTeX users is
 > 
 > ## repeat but using R-INLA. The mlik's should be virtually identical.
 > ## now build cache:
-> res.inla <- buildScoreCache(data.df=mydat, data.dists=mydists,
-+               dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par,
-+               max.mode.error=100)
-> 
-> ## comparison - very similar
-> summary(res.c$mlik- res.inla$mlik)
+> if(requireNamespace("INLA", quietly = TRUE)){  
++   res.inla <- buildScoreCache(data.df=mydat, data.dists=mydists,
++                 dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par,
++                 control=list(max.mode.error=100))
++ 
++   ## comparison - very similar
++   summary(res.c$mlik- res.inla$mlik)
++ }
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
       0       0       0       0       0       0 
-> 
 > 
 > ## Comparison Bayes with MLE (unconstrained):
 > res.mle <- buildScoreCache(data.df=mydat, data.dists=mydists,
@@ -236,8 +264,8 @@ A BibTeX entry for LaTeX users is
 > flush(stderr()); flush(stdout())
 > 
 > ### Name: compareDag
-> ### Title: Compare two DAGs
-> ### Aliases: compareDag
+> ### Title: Compare two DAGs or EGs
+> ### Aliases: compareDag compareEG compareDAG
 > ### Keywords: utilities
 > 
 > ### ** Examples
@@ -252,34 +280,13 @@ A BibTeX entry for LaTeX users is
 >                           
 > colnames(test.m) <- rownames(test.m) <- colnames(ref.m) <- colnames(ref.m) <- c("a", "b", "c")
 >                           
-> compareDag(ref = ref.m, test = test.m)
-$TPR
-[1] 0.5
-
-$FPR
-[1] 0.1428571
-
-$Accuracy
-[1] 0.7777778
-
-$FDR
-[1] 0.5
-
-$`G-measure`
-[1] 0.5
-
-$`F1-score`
-[1] 2
-
-$PPV
-[1] 0.5
-
-$FOR
-[1] 0.5
-
-$`Hamming-distance`
-[1] 1
-
+> unlist(compareDag(ref = ref.m, test = test.m))
+             TPR              FPR         Accuracy              FDR 
+       0.5000000        0.1428571        0.7777778        0.5000000 
+       G-measure         F1-score              PPV              FOR 
+       0.5000000        2.0000000        0.5000000        0.5000000 
+Hamming-distance 
+       1.0000000 
 > 
 > 
 > 
@@ -508,6 +515,32 @@ c 0 1 0
 > 
 > 
 > cleanEx()
+> nameEx("fit_control")
+> ### * fit_control
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fit.control
+> ### Title: Control the iterations in 'fitAbn'
+> ### Aliases: fit.control
+> 
+> ### ** Examples
+> 
+> ctrlmle <- fit.control(method = "mle", max.irls = 100, tol = 10^-11, seed = 9062019)
+> 
+> ctrlbayes <- fit.control(method = "bayes", mean = 0, prec = 0.001, loggam.shape = 1,
++   loggam.inv.scale = 5e-05, max.mode.error = 10, max.iters = 100,
++   epsabs = 1e-07, error.verbose = FALSE, epsabs.inner = 1e-06,
++   max.iters.inner = 100, finite.step.size = 1e-07, hessian.params = c(1e-04, 0.01),
++   max.iters.hessian = 10, max.hessian.error = 1e-04, factor.brent = 100,
++   maxiters.hessian.brent = 10, num.intervals.brent = 100, min.pdf = 0.001,
++   n.grid = 100, std.area = TRUE, marginal.quantiles = c(0.025, 0.25, 0.5, 0.75, 0.975),
++   max.grid.iter = 1000, marginal.node = NULL, marginal.param = NULL, variate.vec = NULL,
++   seed = 9062019)
+> 
+> 
+> 
+> cleanEx()
 > nameEx("fitabn")
 > ### * fitabn
 > 
@@ -553,8 +586,7 @@ c 0 1 0
 > mydag["b1","b2"] <- 1 # b1<-b2 and so on
 > mydag["b2","p4"] <- mydag["b2","g1"] <- mydag["g1","p2"] <- 1
 > mydag["b3","g1"] <- mydag["b4","b1"] <- mydag["p4","g1"] <- 1
-> myresAlt <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists,
-+               create.graph=TRUE)
+> myresAlt <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists)
 > plot(myresAlt)
 > 
 > ## -----------------------------------------------------------------------------------
@@ -597,7 +629,7 @@ $p4
      p4|intercept      g1
 [1,]         2.32 0.00941
 
-Number of nodes in the network:7.
+Number of nodes in the network: 7.
 > print(myres)
 The ABN model was fitted using a Bayesian approach. The estimated modes are:
 
@@ -640,14 +672,16 @@ Number of nodes in the network: 7.
 > ##D ## end points which had at f=min.pdf
 > ##D ## max.mode.error=0 foces to use the internal c code
 > ##D myres.c <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists,
-> ##D                   compute.fixed=TRUE, n.grid=50, max.mode.error=0)
+> ##D                   compute.fixed=TRUE, 
+> ##D                   control=list(max.mode.error=0))
 > ##D 
 > ##D print(names(myres.c$marginals)) ## gives all the different parameter names
 > ##D 
 > ##D ## Repeat but use INLA for the numerics using max.mode.error=100
 > ##D ## as using internal code is the default here rather than INLA
 > ##D myres.inla <- fitAbn(dag=mydag, data.df=mydat, data.dists=mydists,
-> ##D                      compute.fixed=TRUE, n.grid=50, max.mode.error=100)
+> ##D                      compute.fixed=TRUE,
+> ##D                      control=list(max.mode.error=100))
 > ##D 
 > ##D ## Plot posterior densities
 > ##D par(mfrow=c(2,2), mai=c(.7,.7,.2,.1))
@@ -673,7 +707,7 @@ Number of nodes in the network: 7.
 > ##D ## Model where b1 <- b2
 > ##D myres.c <- fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
 > ##D                   group.var="group", cor.vars=c("b1","b2"),
-> ##D                   max.mode.error=0)
+> ##D                   control=list(max.mode.error=0))
 > ##D print(myres.c) ## show all the output
 > ##D 
 > ##D ## compare mode for node b1 with glmer(), lme4::glmer is automatically attached.
@@ -723,8 +757,8 @@ Number of nodes in the network: 7.
 > ##D #myres.c <- fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
 > ##D #                  group.var="group", cor.vars=c("b1", "b2"),
 > ##D #                  centre=FALSE, compute.fixed=TRUE,
-> ##D #                  marginal.node=1, marginal.param=3,## precision term in node 1
-> ##D #                  variate.vec=seq(0.05, 1.5, len=25), max.hessian.error=10E-02)
+> ##D #                  control=list(marginal.node=1, marginal.param=3,## precision term in node 1
+> ##D #                  variate.vec=seq(0.05, 1.5, len=25), max.hessian.error=10E-02))
 > ##D 
 > ##D #par(mfrow=c(1,2))
 > ##D #plot(myres.c$marginals[[1]], type="l", col="blue")## still fairly sparse
@@ -803,8 +837,8 @@ dev.new(): using pdf(file="Rplots1.pdf")
 > out <- simulateAbn(data.dists = dist,
 +     n.chains = 1, n.adapt = 1000, n.thin = 1, n.iter = 100,
 +     data.param = data.param, data.param.var = data.param.var)
-Creation of the BUG file: model.bug
-BUG file created
+Creation of the BUG file: 'model.bug'
+BUG 'model.bug' file created
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
@@ -990,16 +1024,28 @@ Total sets g(S) to be evaluated over: 256
 > colnames(edge.strength) <- rownames(edge.strength) <- names(dist)
 > 
 > ## Plot form a matrix
-> plotAbn(dag = edge.strength, data.dist = dist)
+> plotAbn(dag = edge.strength, data.dists = dist)
 > 
 > ## Edge strength
-> plotAbn(dag = ~a|b:c:d:e+b|c:d:f+c|d:e+d|e+e|f, data.dist = dist, edge.strength = edge.strength)
+> plotAbn(dag = ~a|b:c:d:e+b|c:d:f+c|d:e+d|e+e|f, data.dists = dist, edge.strength = edge.strength)
 > 
 > ## Plot from a formula for a different DAG!
-> plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist)
+> plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist)
 > 
 > ## Markov blanket
 > plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, markov.blanket.node = "e")
+> 
+> ## Change col for all edges
+> tmp <- plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot=FALSE)
+> graph::edgeRenderInfo(tmp) <- list(col="blue")
+> Rgraphviz::renderGraph(tmp)
+> 
+> ## Change lty for individual ones. Named vector is necessary
+> tmp <- plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot=FALSE)
+> edgelty <- rep(c("solid","dotted"), c(6,1))
+> names(edgelty) <- names( graph::edgeRenderInfo(tmp, "col"))
+> graph::edgeRenderInfo(tmp) <- list(lty=edgelty)
+> Rgraphviz::renderGraph(tmp)
 > 
 > 
 > 
@@ -1151,7 +1197,7 @@ Total sets g(S) to be evaluated over: 256
 > ### ** Examples
 > 
 > ## Define set of distributions:
-> dist<-list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", 
+> dist<-list(a="gaussian", b="gaussian", c="gaussian", d="gaussian",
 +            e="binomial", f="binomial")
 > 
 > ## Define parameter matrix:
@@ -1162,7 +1208,7 @@ Total sets g(S) to be evaluated over: 256
 +                        0,0,0,0,0.5,1,
 +                        0,0,0,0,0,0), nrow = 6L, ncol = 6L, byrow = TRUE)
 > 
-> ## Define precision matrix: 
+> ## Define precision matrix:
 > data.param.var <- matrix(0, nrow = 6L, ncol = 6L)
 > diag(data.param.var) <- c(10,20,30,40,0,0)
 > 
@@ -1172,8 +1218,8 @@ Total sets g(S) to be evaluated over: 256
 > ## Simulate the data
 > out <- simulateAbn(data.dists=dist, n.chains=1, n.thin=1, n.iter=1000,
 +             data.param=data.param, data.param.var=data.param.var)
-Creation of the BUG file: model.bug
-BUG file created
+Creation of the BUG file: 'model.bug'
+BUG 'model.bug' file created
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
@@ -1315,12 +1361,47 @@ dev.new(): using pdf(file="Rplots2.pdf")
 >     
 > 
 > 
+> cleanEx()
+> nameEx("version")
+> ### * version
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: version
+> ### Title: abn Version Information
+> ### Aliases: version abn.version abn.Version
+> ### Keywords: environment sysdata programming
+> 
+> ### ** Examples
+> 
+> abn.version$version.string
+[1] "abn version 2.7-0 (2022-04-05)"
+> 
+> abn.Version("system")
+$R
+[1] "R Under development (unstable) (2022-01-04 r81445)"
+
+$abn
+[1] "2.7-0 (2022-04-05)"
+
+$gsl
+[1] "2.6"
+
+$JAGS
+[1] ‘4.3.0’
+
+$INLA
+[1] "22.03.16"
+
+> 
+> 
+> 
 > ### * <FOOTER>
 > ###
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  1.92 0.077 4.454 0.001 0 
+Time elapsed:  2.504 0.068 2.409 0.001 0 
 > grDevices::dev.off()
 pdf 
   2 

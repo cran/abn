@@ -276,7 +276,7 @@ double g_inner( gsl_vector *beta, const datamatrix *designdata, int groupid, dou
            status = gsl_multiroot_test_residual (s->f, epsabs);
          }
        while (status == GSL_CONTINUE && iter < maxiters);
-       if( status != GSL_SUCCESS){Rprintf ("Zero finding warning: internal--- epsilon status = %s\n", gsl_strerror (status));
+       if( status != GSL_SUCCESS && verbose){Rprintf ("Zero finding warning: internal--- epsilon status = %s\n", gsl_strerror (status));
                                   /*for(i=0;i<s->x->size;i++){Rprintf("0epsilon=%f ",gsl_vector_get(s->x,i));}Rprintf("\n");*/}
        gsl_vector_memcpy(epsilon,s->x);
       /* Rprintf("modes: %f\n",gsl_vector_get(epsilon,0));*/
@@ -301,7 +301,7 @@ double g_inner( gsl_vector *beta, const datamatrix *designdata, int groupid, dou
    /*Rprintf("gvalue in g_inner=|%f| n=|%d| |%f|\n",gvalue,n,-n*gvalue);*/
    /*if(status != GSL_SUCCESS){Rprintf("2epsilon=%f %f\n",gsl_vector_get(epsilon,0), gvalue);}*/
    logscore= -n*gvalue-0.5*log(gsl_matrix_get(hessgvalue,0,0))+(m/2.0)*log((2.0*M_PI)/n); /** this is the final value */
-   if(gsl_isnan(logscore)){error("nan in g_inner hessmat=%f epsilon=%f gvalue=%f\n",gsl_matrix_get(hessgvalue,0,0),gsl_vector_get(epsilon,0),gvalue);}       
+   if(gsl_isnan(logscore)){error("BN: nan in g_inner hessmat=%f epsilon=%f gvalue=%f\n",gsl_matrix_get(hessgvalue,0,0),gsl_vector_get(epsilon,0),gvalue);}       
      /*}*/
     
    /* Rprintf("group=%d logscore=%f\n",groupid+1,logscore);*/
@@ -389,7 +389,7 @@ int rv_dg_inner (const gsl_vector *epsilonvec, void *params, gsl_vector *dgvalue
        /*return(0.2*(epsilo*epsilo*epsilo)-2*epsilo+3);*/
      /*return(term1+term2+term3);*/
      gsl_vector_set(dgvalues,0,term1+term2+term3); 
-     if(gsl_isnan(gsl_vector_get(dgvalues,0))){error("rv_dg_inner is nan %f %f %f\n",term1,term2,term3);}
+     if(gsl_isnan(gsl_vector_get(dgvalues,0))){error("BN: rv_dg_inner is nan %f %f %f\n",term1,term2,term3);}
    /*}*/
      return GSL_SUCCESS;
      

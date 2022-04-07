@@ -1,4 +1,4 @@
-void calc_poisson_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose,
+void calc_poisson_marginal_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose, int trace,
                                 datamatrix *designmatrix, const double priormean, const double priorsd, const double priorgamshape, const double priorgamscale,
                                 const int maxiters, const double epsabs,double epsabs_inner, int maxiters_inner, double finitestepsize, int verbose,
 				 double h_guess, double h_epsabs, int maxiters_hessian,
@@ -17,4 +17,4 @@ double compute_mlik_pois_marg_nm(const gsl_vector *finitestepsize_vec, void *par
 double compute_mlik_pois_marg_brent(double finitestepsize, void *params);
 
 double get_best_stepsize_pois_marg(double delta,double lower,double upper,int maxiters_hessian, struct fnparams *gparams,
-			 double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror);
+			 double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror, int errverbose);

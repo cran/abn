@@ -1,6 +1,6 @@
 Package: abn
-Version: 2.6-0
-Date: 2022-01-06
+Version: 2.7-0
+Date: 2022-04-06
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: 
     c(person(given = "Reinhard",
@@ -35,7 +35,8 @@ Author: Reinhard Furrer [cre, aut] (<https://orcid.org/0000-0002-6319-2332>),
   Kalina Cherneva [ctr]
 Maintainer: Reinhard Furrer <reinhard.furrer@math.uzh.ch>
 Depends: R (>= 4.0.0)
-Imports: methods, rjags, nnet, lme4, Rgraphviz, doParallel, foreach
+Imports: methods, rjags, nnet, lme4, graph, Rgraphviz, doParallel,
+        foreach
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: INLA, knitr, R.rsp, testthat, entropy, moments, boot, brglm
 VignetteBuilder: R.rsp
@@ -53,6 +54,6 @@ LazyData: true
 URL: http://r-bayesian-networks.org
 BugReports: https://git.math.uzh.ch/reinhard.furrer/abn/-/issues
 NeedsCompilation: yes
-Packaged: 2022-01-06 10:36:29 UTC; furrer
+Packaged: 2022-04-06 16:03:21 UTC; furrer
 Repository: CRAN
-Date/Publication: 2022-01-07 16:32:42 UTC
+Date/Publication: 2022-04-07 07:42:43 UTC

@@ -1,12 +1,6 @@
 ###############################################################################
 ## abn-toolbox.R ---
-## Author : Gilles Kratzer
-## Document created : 01/02/2017
-## Last modification : 01/02/2017
-## Last modification : 11/04/2017 (compareDag, infoDag)
-## Last modification : 21/04/2017 (simulateDag)
-## Last modification : 29/08/2017 (compareDag (G and F1 score), essential.graph (minimal vs completed))
-## Last modification : 16/07/2018 error in Hamming distance corrected
+## Authors : Gilles Kratzer, Reinhard Furrer
 ###############################################################################
 
 ##-------------------------------------------------------------------------
@@ -40,7 +34,6 @@ or <- function(x) {
     }
 
     out <- (x[1, 1] * x[2, 2])/(x[1, 2] * x[2, 1])
-
     return(out)
 }
 
@@ -54,14 +47,16 @@ odds <- function(x) {
 ##-------------------------------------------------------------------------
 
 
-compareDag <- function(ref, test, node.names = NULL) {
+compareDag <- function(ref, test, node.names = NULL, checkDAG = TRUE) {
 
     ## check ref dag
-    ref <- validate_abnDag(  ref, data.df=node.names, returnDAG=TRUE)
-    test <- validate_abnDag( test, data.df=node.names, returnDAG=TRUE)
+    if (checkDAG) {
+        ref <- validate_abnDag(  ref, data.df=node.names, returnDAG=TRUE)
+        test <- validate_abnDag( test, data.df=node.names, returnDAG=TRUE)
+    }
 
     if (any(dim(ref) != dim(test))) {
-        stop("The reference or test DAG has not the same size")
+        stop("The reference and test DAG have not the same size")
     }
 
     n <- dim(ref)[1]
@@ -75,7 +70,7 @@ compareDag <- function(ref, test, node.names = NULL) {
     diff.matrix.tab <- table(factor(diff.matrix, levels = c(-0.5, 0, 0.5, 1)))
 
     if(sum(ref == 1)==0 | sum(test == 1)==0){
-        warning("If the test or reference matrix is an empty matrix some of the estimates are not defined.")
+        warning("If the test or reference DAG is empty, some of the estimates are not defined.")
     }
 
     ## output
@@ -99,7 +94,6 @@ compareDag <- function(ref, test, node.names = NULL) {
             }
         }
     }
-
     diff.matrix.tab <- table(factor(diff.matrix, levels = c(-0.5, 0, 0.5, 1)))
 
     out[["Hamming-distance"]] <- sum(as.numeric(diff.matrix.tab[names(diff.matrix.tab) %in% c(-0.5, 1)]))
@@ -107,41 +101,35 @@ compareDag <- function(ref, test, node.names = NULL) {
     return(out)
 }
 
+compareEG <- function(ref, test) compareDag(ref, test, checkDAG=FALSE)
+
 
 ##-------------------------------------------------------------------------
 ## External function that return information about a dag number of nodes number of arcs avergae size of the MB average size of the Neighborhood
 ##-------------------------------------------------------------------------
 
-infoDag <- function(dag, node.names = NULL) {
+infoDag <- function(object, node.names = NULL) {
 
-    ## dag transformation
-    if (!is.null(dag)) {
-        if (is.matrix(dag)) {
-            ## run a series of checks on the DAG passed
-            dag <- abs(dag)
-            diag(dag) <- 0
-            dag <- check.valid.dag(dag.m = dag, is.ban.matrix = FALSE, group.var = NULL)
-            ## naming
-            if (is.null(colnames(dag))) {
-                colnames(dag) <- rownames(dag) <- node.names
-            }
-        } else {
-            if (grepl("~", as.character(dag)[1], fixed = TRUE)) {
-                dag <- formula.abn(f = dag, name = node.names)
-                ## run a series of checks on the DAG passed
-                dag <- check.valid.dag(dag.m = dag, is.ban.matrix = FALSE, group.var = NULL)
-            }
-        }
+    if (inherits(object, "abnLearned")) {
+      dag <- object$dag
+    } else   if (inherits(object, "abnFit")) {
+      dag <- object$abnDag$dag
+    } else  if (is.matrix(object)) {
+      dag <- abs(object)
+      dag[dag != 0] <- 1
+      #       diag(dag) <- 0  # RF: we want to test if proper dag!!
+      dag <- check.valid.dag(dag = dag, is.ban.matrix = FALSE, group.var = NULL)
+      ## naming
+      if (is.null(colnames(dag))) {
+          colnames(dag) <- rownames(dag) <- node.names
+      }
+    } else if (grepl("~", as.character(dag)[1], fixed = TRUE)) {
+        dag <- formula.abn(f = dag, name = node.names)
+        dag <- check.valid.dag(dag = dag, is.ban.matrix = FALSE, group.var = NULL)
     } else {
-        stop("Dag specification must either be a matrix or a formula expression")
+       stop("'object' must either be a matrix or a formula expression, or of class 'abnFit', 'abnLearned'.")
     }
 
-    dag[dag != 0] <- 1
-    diag(dag) <- 0
-
-    if (is.null(node.names) & is.null(colnames(dag))) {
-        stop("Either name have to be provided with a formula statement either a named matrix to define a DAG")
-    }
     if (is.null(node.names)) {
         node.names <- colnames(dag)
     }
@@ -297,7 +285,7 @@ essentialGraph <- function(dag, node.names = NULL, PDAG = "minimal") {
 
     ## dag transformation
     if (is.matrix(dag)) {
-        # check.valid.dag(dag.m=dag.m,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var) unit matrix
+        # check.valid.dag(dag=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var) unit matrix
         dag[dag != 0] <- 1
         node.names <- colnames(dag)
 

@@ -11,8 +11,8 @@
 
 # print
 
-print.abnDag <- function(x, ...){
-  print(x$dag)
+print.abnDag <- function(x, digits = 3L, ...){
+  print(x$dag, digits = digits)
   cat("Class 'abnDag'.\n")
   invisible(x)
 }
@@ -20,10 +20,8 @@ print.abnDag <- function(x, ...){
 # summary
 
 summary.abnDag <- function(object, ...) {
-
   su <- infoDag(object$dag)
   return(su)
-
 }
 
 
@@ -46,23 +44,23 @@ plot.abnDag <- function(x, new=TRUE, ...){
 
 # print
 
-print.abnCache <- function(x, ...){
+print.abnCache <- function(x, digits = 3, ...){
 
-  cat("Number of nodes in the network:",max(x$children), "\n\n")
+  cat("Number of nodes in the network: ",max(x$children), ".\n\n", sep='')
   if(x$method=="bayes"){
     cat("Distribution of the marginal likelihood: \n")
-    print(summary(x[["mlik"]]), digits=3)
+    print(summary(x[["mlik"]]), digits=digits)
   }
 
   if(x$method=="mle"){
     cat(" Distribution of the aic: \n")
-    print(summary(x[["aic"]]), digits=3)
+    print(summary(x[["aic"]]), digits=digits)
 
     cat("\n Distribution of the bic: \n")
-    print(summary(x[["bic"]]), digits=3)
+    print(summary(x[["bic"]]), digits=digits)
 
     cat("\n Distribution of the mdl: \n")
-    print(summary(x[["mdl"]]), digits=3)
+    print(summary(x[["mdl"]]), digits=digits)
   }
   invisible(x)
 }
@@ -73,12 +71,12 @@ print.abnCache <- function(x, ...){
 
 # print
 
-print.abnHeuristic <- function(x, ...){
+print.abnHeuristic <- function(x, digits = 2L, ...){
   cat("Best DAG' score found with",x$algo,"algorithm with", x$num.searches,"different searches limited to" , x$max.steps,"steps:\n")
-  print(max(unlist(x$scores)), digits=2)
+  print(max(unlist(x$scores)), digits=digits)
 
   cat("\n Score distribution: \n")
-  print(summary(unlist(x[["scores"]])), digits=2)
+  print(summary(unlist(x[["scores"]])), digits=digits)
 
   invisible(x)
 }
@@ -125,9 +123,9 @@ plot.abnHeuristic <- function(x, ...){
 
 # print
 
-print.abnHillClimber <- function(x, ...){
-  print(x$consensus)
-  cat("Consensus DAG from 'searchHillClimber'  (class 'abnHillClimber').\n")
+print.abnHillClimber <- function(x, digits = 3L, ...){
+  print(x$consensus, digits = digits)
+  cat("Consensus DAG from 'search.hillclimber'  (class 'abnHillClimber').\n")
   invisible(x)
 }
 
@@ -151,10 +149,10 @@ plot.abnHillClimber <- function(x, new=TRUE, ...){
 
 # print
 
-print.abnMostprobable <- function(x, ...){
+print.abnMostprobable <- function(x, digits = 3L, ...){
 
-  print(x$dag)
-  cat("Consensus DAG from 'mostProbable', can be use with 'fitAbn'.\n")
+  print(x$dag, digits = digits)
+  cat("Consensus DAG from 'mostprobable', can be use with 'fitabn'.\n")
   invisible(x)
 }
 
@@ -189,18 +187,18 @@ plot.abnMostprobable <- function(x, new=TRUE, ...){
 
 # print
 
-print.abnFit <- function(x, ...){
+print.abnFit <- function(x, digits = 3L, ...){
 
   if(x$method=="mle"){
     cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n\n")
-    print(x$coef, digits=3)
-    cat(paste0("Number of nodes in the network:",length(x$coef), ".\n"))
+    print(x$coef, digits=digits)
+    cat("Number of nodes in the network: ",length(x$coef), ".\n", sep='')
   }
 
   if(x$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n\n")
-    print(x$modes, digits=3)
-    cat(paste0("Number of nodes in the network: ",length(x$modes), ".\n"))
+    print(x$modes, digits=digits)
+    cat("Number of nodes in the network: ",length(x$modes), ".\n", sep='')
   }
 
   invisible(x)
@@ -208,29 +206,29 @@ print.abnFit <- function(x, ...){
 
 # summary
 
-summary.abnFit <- function(object, ...){
+summary.abnFit <- function(object, digits = 3L, ...){
 
   if(object$method=="mle"){
     cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n")
     print(object$coef, digits=3)
 
-    cat("Number of nodes in the network:",length(object$modes), ".\n")
+    cat("Number of nodes in the network: ",length(object$modes), ".\n", sep='')
 
     cat("The AIC network score per node is: \n")
-    print(unlist(object[["aicnode"]]), digits=3)
+    print(unlist(object[["aicnode"]]), digits=digits)
 
     cat("\n The BIC network score per node is: \n")
-    print(unlist(object[["bicnode"]]), digits=3)
+    print(unlist(object[["bicnode"]]), digits=digits)
 
     cat("\n The MDL network score per node is: \n")
-    print(unlist(object[["mdlnode"]]), digits=3)
+    print(unlist(object[["mdlnode"]]), digits=digits)
   }
 
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n")
-    print(object$modes, digits=3)
+    print(object$modes, digits=digits)
 
-   cat("Number of nodes in the network:",length(object$modes), ".\n\n")
+   cat("Number of nodes in the network: ",length(object$modes), ".\n\n", sep='')
 
    cat("The network score per node is:\n")
    print(unlist(object[1:length(object$modes)]))
@@ -241,15 +239,15 @@ summary.abnFit <- function(object, ...){
 
 # coef
 
-coef.abnFit <- function(object, ...){
+coef.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
   if(object$method=="mle"){
     cat("The ABN model was fitted using an mle approach. The estimated coefficients are:\n")
-    print(object$coef, digits=3)
+    print(object$coef, digits=digits)
   }
 
   if(object$method=="bayes"){
     cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n")
-    print(object$modes, digits=3)
+    print(object$modes, digits=digits)
   }
 
   invisible(object)
@@ -258,12 +256,12 @@ coef.abnFit <- function(object, ...){
 
 
 
-AIC.abnFit <- function(object, ...){
+AIC.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 
   if(object$method=="mle"){
 
     cat("The ABN model was fitted using an mle approach. The AIC network score per node is: \n")
-    print(unlist(object[["aicnode"]]), digits=3)
+    print(unlist(object[["aicnode"]]), digits=digits)
 
   }
 
@@ -277,7 +275,7 @@ AIC.abnFit <- function(object, ...){
 
 }
 
-BIC.abnFit <- function(object, ...){
+BIC.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 
   if(object$method=="mle"){
 
@@ -295,7 +293,7 @@ BIC.abnFit <- function(object, ...){
 }
 
 
-logLik.abnFit <- function(object, ...){
+logLik.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 
   if(object$method=="mle"){
 
@@ -333,10 +331,14 @@ plot.abnFit <- function(x, which ="abnFit", ...){
 
   if (which != "abnFit") stop('Function type not implemented yet. Use which="abnFit"')
 
-  if(x$method=="mle"){
+  if (hasArg(fitted.values)) {
+        g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, ...)
+  } else {
+    if(x$method=="mle"){
     g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$coef, ...)
   } else {
     g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$modes, ...)
+  }
   }
   invisible(g)
 }

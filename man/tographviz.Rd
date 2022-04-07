@@ -12,18 +12,15 @@
 \alias{tographviz}
 \alias{toGraphviz}
 \encoding{latin1}
-%- Also NEED an `\alias' for EACH other topic documented here.
 
 \title{Convert a DAG into graphviz format}
 
 \description{Given a matrix defining a DAG create a text file suitable for plotting with graphviz}
 
-
 \usage{
 toGraphviz(dag, data.df=NULL, data.dists=NULL, group.var=NULL, outfile, directed=TRUE)
 }
 
-%- maybe also `usage' for other objects documented here.
 \arguments{
   \item{dag}{a matrix defining a DAG.}
   \item{data.df}{a data frame containing the data used for learning the network.}
@@ -34,7 +31,9 @@ toGraphviz(dag, data.df=NULL, data.dists=NULL, group.var=NULL, outfile, directed
 }
 
 \details{
-Graphviz (\url{http://www.graphviz.org}) is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG, or the undirected graph, so this can be plotted using graphviz. Graphviz is available as an R package, \code{Rgraphviz}, through the Bioconductor project \url{http://www.bioconductor.org/} (and requires a working installation of graphviz). Binary nodes will appear as squares, Gaussian as ovals and Poisson nodes as diamonds in the resulting graphviz network diagram. There are many other shapes possible for nodes and numerous other visual enhancements - see online graphviz documentation. Bespoke refinements can be added by editing the raw outfile produced. For full manual editing, particularly of the layout, or adding annotations, one easy solution is to convert a postscript format graph (produced in graphviz using the -Tps switch) into a vector format using a tool such as pstoedit \url{http://www.pstoedit.net}, and then edit using a vector drawing tool like xfig. This can then be resaved as postscript or pdf thus retaining full vector quality.
+Graphviz (\url{https://www.graphviz.org}) is visualisation software developed by AT&T and freely available. This function creates a text representation of the DAG, or the undirected graph, so this can be plotted using graphviz.
+The R package, \code{Rgraphviz} (available through the Bioconductor project \url{https://www.bioconductor.org/}) interfaces R and the working installation of graphviz. \cr
+Binary nodes will appear as squares, Gaussian as ovals and Poisson nodes as diamonds in the resulting graphviz network diagram. There are many other shapes possible for nodes and numerous other visual enhancements - see online graphviz documentation. Bespoke refinements can be added by editing the raw outfile produced. For full manual editing, particularly of the layout, or adding annotations, one easy solution is to convert a postscript format graph (produced in graphviz using the -Tps switch) into a vector format using a tool such as pstoedit (\url{http://www.pstoedit.net}), and then edit using a vector drawing tool like xfig. This can then be resaved as postscript or pdf thus retaining full vector quality.
 
 }
 

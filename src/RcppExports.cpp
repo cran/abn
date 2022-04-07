@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // logit_cpp
 Rcpp::NumericVector logit_cpp(Rcpp::NumericVector x);
 RcppExport SEXP _abn_logit_cpp(SEXP xSEXP) {
@@ -187,8 +192,8 @@ END_RCPP
 
 RcppExport SEXP buildcachematrix(SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP checkforcycles(SEXP, SEXP);
-RcppExport SEXP fit_single_node(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP fitabn_marginals(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP fit_single_node(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP fitabn_marginals(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP mostprobable(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP searchhill(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
@@ -209,8 +214,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_abn_rank_cpp", (DL_FUNC) &_abn_rank_cpp, 1},
     {"buildcachematrix", (DL_FUNC) &buildcachematrix,  5},
     {"checkforcycles",   (DL_FUNC) &checkforcycles,    2},
-    {"fit_single_node",  (DL_FUNC) &fit_single_node,  26},
-    {"fitabn_marginals", (DL_FUNC) &fitabn_marginals, 29},
+    {"fit_single_node",  (DL_FUNC) &fit_single_node,  27},
+    {"fitabn_marginals", (DL_FUNC) &fitabn_marginals, 30},
     {"mostprobable",     (DL_FUNC) &mostprobable,      6},
     {"searchhill",       (DL_FUNC) &searchhill,       13},
     {NULL, NULL, 0}

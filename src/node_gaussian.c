@@ -94,7 +94,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
     iter=0;
     T = gsl_multiroot_fdfsolver_hybridsj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams+1); /** +1 for the precision term */
-    /*status_inits=*/generate_gaus_inits(myBeta,&gparams);
+    /*status_inits=*/generate_gaus_inits(myBeta,&gparams, verbose);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
     
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
@@ -125,7 +125,7 @@ void calc_node_Score_gaus(network *dag, datamatrix *obsdata, int nodeid,  int ve
     iter=0; 
     T = gsl_multiroot_fdfsolver_hybridj;
     s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams+1); /** +1 for the precision term */
-    /*status_inits=*/generate_gaus_inits(myBeta,&gparams);
+    /*status_inits=*/generate_gaus_inits(myBeta, &gparams, verbose);
     status=GSL_FAILURE;/** just set it to something not equal to GSL_SUCCESS */
     
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
@@ -329,19 +329,23 @@ int i,j,ss,status/* ,status2,status_inits,index*/;
     gsl_multiroot_fdfsolver_set (s, &FDF, myBeta);
     
     iter=0; 
-       do
-         {
-           iter++;
-           status = gsl_multiroot_fdfsolver_iterate (s);
-          if (status)
-             break;
-     
-           status = gsl_multiroot_test_residual (s->f, epsabs);
-         }
-       while (status == GSL_CONTINUE && iter < maxiters);
-     
-       if(status != GSL_SUCCESS){Rprintf ("Zero finding error: status = %s at x=%f\n", gsl_strerror (status),gparams.betafixed);/*exit(1);*/}
-      gsl_vector_memcpy(myBeta,s->x);
+    do
+      {
+	iter++;
+	status = gsl_multiroot_fdfsolver_iterate (s);
+	if (status)
+	  break;
+	
+	status = gsl_multiroot_test_residual (s->f, epsabs);
+      }
+    while (status == GSL_CONTINUE && iter < maxiters);
+    
+    if(status != GSL_SUCCESS){
+      if( verbose>0 ) {
+	Rprintf ("Zero finding error: status = %s at x=%f\n", gsl_strerror (status),gparams.betafixed);/*exit(1);*/
+      }
+    }
+    gsl_vector_memcpy(myBeta,s->x);
     /** we now have all the individual parts so put it together to the laplace approx */
     
     
@@ -736,7 +740,7 @@ int laplace_gaus_hessg (const gsl_vector *betaincTau, void *params, gsl_matrix *
 /** *************************************************************************************
 *****************************************************************************************
 *****************************************************************************************/          
-int generate_gaus_inits(gsl_vector *myBeta,struct fnparams *gparams){
+int generate_gaus_inits(gsl_vector *myBeta, struct fnparams *gparams, int errverbose){
 
     /** just hard coded for moment */
            
@@ -780,9 +784,12 @@ int generate_gaus_inits(gsl_vector *myBeta,struct fnparams *gparams){
      gsl_blas_dgemv (CblasTrans, 1.0, X, Y, 0.0, vectmp1); /** X^T Y */
      gsl_blas_dgemv (CblasNoTrans, 1.0, mattmp4, vectmp1, 0.0, vectmp2); 
      for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,gsl_vector_get(vectmp2,i));} /** set to Least squares estimate */
-    } else {Rprintf ("caught gsl error - singular matrix in initial guess estimates\n");
-            /** must have a singular matrix so try all zeros for initial values*//*Rprintf("failed on invert\n");*/
-            for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,0.01);}
+    } else {
+      if (errverbose > 0) {
+	Rprintf ("caught gsl error - singular matrix in initial guess estimates\n");
+      }
+      /** must have a singular matrix so try all zeros for initial values*//*Rprintf("failed on invert\n");*/
+      for(i=0;i<myBeta->size-1;i++){gsl_vector_set(myBeta,i,0.01);}
     }
     gsl_set_error_handler (NULL);/** restore the error handler*/
     /*for(i=0;i<myBeta->size-1;i++){Rprintf("%f ",gsl_vector_get(myBeta,i));}Rprintf("\n"); */

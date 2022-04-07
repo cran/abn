@@ -12,7 +12,7 @@ searchHillclimber <- function(...) {
 
 searchHillClimber <- function(score.cache, score="mlik",
                               num.searches=1, seed=42, start.dag=NULL,
-                              support.threshold=0.5, timing.on=TRUE, create.graph=FALSE, dag.retained=NULL,
+                              support.threshold=0.5, timing.on=TRUE, dag.retained=NULL,
                               verbose=FALSE, ...) {
 
     if (!inherits(score.cache,"abnCache")) {
@@ -71,7 +71,7 @@ searchHillClimber <- function(score.cache, score="mlik",
         if (num.searches != 1) {
             stop("num.searches must equal 1 when using explicit start dag - otherwise an identical search is repeated\n => the final DAG identified depends only on the initial search location\n")
         }
-        check.valid.dag(dag.m=start.dag, data.df=data.df, is.ban.matrix=FALSE, NULL)
+        check.valid.dag(dag=start.dag, data.df=data.df, is.ban.matrix=FALSE, NULL)
         use.start.dag <- TRUE
     }
 
@@ -115,18 +115,10 @@ searchHillClimber <- function(score.cache, score="mlik",
     ## now make binary according to threshold passed
     con.dag.binary <- ifelse(con.dag >= ceiling(num.searches * support.threshold), 1, 0)
     ######################################################### create graph object part
-    if (create.graph) {
-        # Rgraphviz?
-        mygraph <- new("graphAM", adjMat=t(con.dag.binary), edgemode="directed")
-        out <- list(init.score=init.scores, final.score=fin.scores, init.dag=init.mat, final.dag=fin.mat,
-                    consensus=(con.dag.binary), support.threshold=support.threshold, graph=mygraph, score.cache=score.cache)
-        class(out) <- c("abnHillClimber", "abnLearned")
-        return(out)
-    } else {
         out <- list(init.score=init.scores, final.score=fin.scores, init.dag=init.mat, final.dag=fin.mat,
                     consensus=(con.dag.binary), support.threshold=support.threshold, score.cache=score.cache)
         class(out) <- c("abnHillClimber", "abnLearned")
         return(out)
-    }
+
 
 }

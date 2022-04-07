@@ -18,10 +18,9 @@
 \description{Find high scoring network (DAG) structures using a random re-starts greedy hill-climber heuristic search.}
 
 \usage{
-searchHillClimber(score.cache, score="mlik",
-      num.searches=1, seed=42, start.dag=NULL,
-      support.threshold=0.5, timing.on=TRUE, create.graph=FALSE, dag.retained=NULL,
-      verbose=FALSE, ...)
+searchHillClimber(score.cache, score = "mlik", num.searches = 1, seed = 42,
+    start.dag = NULL, support.threshold = 0.5, timing.on = TRUE, dag.retained = NULL,
+    verbose = FALSE, ...)
 
 }
 %- maybe also `usage' for other objects documented here.
@@ -34,7 +33,6 @@ searchHillClimber(score.cache, score="mlik",
   \item{start.dag}{a DAG given as a matrix, see details for format, which can be used to provide a starting point for the structural search explicitly,}
   \item{support.threshold}{the proportion of search results - each locally optimal DAG - in which each arc must appear to be a part of the consensus network.}
   \item{timing.on}{extra output in terms of duration computation.}
-  \item{create.graph}{save the final graph as an R graph object.}
   \item{dag.retained}{a DAG given as a matrix, see details for format. This is necessary if the score.cache was created using an explicit retain matrix, and the same retain matrix should be used here. dag.retained is used by the algorithm which generates the initial random DAG to ensure that the necessary arcs are retained.}
   \item{verbose}{extra output.}
    \item{...}{further arguments passed to or from other methods.}

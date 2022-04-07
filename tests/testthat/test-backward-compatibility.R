@@ -40,11 +40,13 @@ test_that("buildScoreCache", {
     );
 
     ## repeat but using R-INLA. The mlik's should be virtually identical.
-    ## now build cache
+      ## now build cache
+
+    if(requireNamespace("INLA", quietly = TRUE)){  
     res.inla <- buildScoreCache(data.df=mydat,data.dists=mydists,
                               dag.banned=ban, dag.retained=retain,max.parents=max.par,
-                              max.mode.error=100);
-
+                              control=list(max.mode.error=100));
+    }
 
 
     #################################################################
@@ -131,7 +133,7 @@ test_that("buildScoreCache", {
 
     ## now build cache of scores (goodness of fits for each node)
     res.mle <- buildScoreCache(data.df=mydat,data.dists=mydists,max.parents=3,method="mle")
-    res.abn <- buildScoreCache(data.df=mydat,data.dists=mydists,max.parents=3,method="Bayes")
+    res.abn <- buildScoreCache(data.df=mydat,data.dists=mydists,max.parents=3,method="bayes")
 
   }
   if(requireNamespace("INLA", quietly = TRUE)){
@@ -446,12 +448,12 @@ test_that("fitAbn", {
         ## as using INLA is the default here.
         myres.c <- fitAbn(dag=mydag,data.df=ex3.dag.data[,c(1,2,14)],data.dists=mydists,
                         group.var="group",cor.vars=c("b1","b2"),
-                        centre=TRUE,compute.fixed=FALSE,max.mode.error=0);
+                        centre=TRUE,compute.fixed=FALSE,control=list(max.mode.error=0))
 
         ## compare with INLA estimate
         myres.inla <- fitAbn(dag=mydag,data.df=ex3.dag.data[,c(1,2,14)],
                            data.dists=mydists,group.var="group",cor.vars=c("b1","b2"),
-                           centre=TRUE,compute.fixed=FALSE,max.mode.error=100);
+                           centre=TRUE,compute.fixed=FALSE,control=list(max.mode.error=100))
 
         ## compare log marginal likelihoods for each node and total DAG - should be very similar
 

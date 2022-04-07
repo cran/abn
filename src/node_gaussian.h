@@ -13,7 +13,7 @@ int laplace_gaus_hessg (const gsl_vector *beta, void *params, gsl_matrix *hessgv
 
 int wrapper_gaus_fdf (const gsl_vector *beta, void *gparams,gsl_vector *dgvalues, gsl_matrix *hessgvalues);
 
-int generate_gaus_inits(gsl_vector *myBeta,struct fnparams *gparams);
+int generate_gaus_inits(gsl_vector *myBeta,struct fnparams *gparams, int errverbose);
 
 void calc_gaussian_marginal(network *dag, datamatrix *obsdata, int nodeid,  int verbose,datamatrix *designmatrix, 
 		                const double priormean, const double priorsd,const double priorgamshape,const double priorgamscale,

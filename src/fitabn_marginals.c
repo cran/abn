@@ -21,7 +21,8 @@
 
                                          
 SEXP fitabn_marginals(SEXP R_obsdata, SEXP R_dag,SEXP R_numVars, SEXP R_vartype, SEXP R_maxparents,SEXP R_priors_mean, SEXP R_priors_sd,SEXP R_priors_gamshape,SEXP R_priors_gamscale,
-		      SEXP R_maxiters, SEXP R_epsabs, SEXP R_verbose, SEXP R_errorverbose, SEXP R_groupedvars, SEXP R_groupids, SEXP R_epsabs_inner,SEXP R_maxiters_inner,
+		      SEXP R_maxiters, SEXP R_epsabs, SEXP R_verbose, SEXP R_errorverbose, SEXP R_trace,
+		      SEXP R_groupedvars, SEXP R_groupids, SEXP R_epsabs_inner,SEXP R_maxiters_inner,
 	              SEXP R_finitestepsize, SEXP R_hparams,
 		      SEXP R_childid, SEXP R_paramid, SEXP R_denom_modes, SEXP R_betafixed, SEXP R_mlik, SEXP R_maxiters_hessian,
 		      SEXP R_max_hessian_error,SEXP R_myfactor_brent, SEXP R_maxiters_hessian_brent, SEXP R_num_intervals_brent)
@@ -29,7 +30,7 @@ SEXP fitabn_marginals(SEXP R_obsdata, SEXP R_dag,SEXP R_numVars, SEXP R_vartype,
 /** ****************/
 /** declarations **/
 
-int errverbose,verbose;
+  int errverbose,verbose,trace;
 datamatrix data,designmatrix;
 const double priormean=asReal(R_priors_mean);/*Rprintf("priormean=%f %f\n",priormean[0],priormean[5]);*/
 const double priorsd=asReal(R_priors_sd);/*Rprintf("priorsd=%f %f\n",priorsd[0],priorsd[5]);*/
@@ -71,6 +72,7 @@ double betafixed=asReal(R_betafixed);
 double mlik=asReal(R_mlik);
 verbose=asInteger(R_verbose);
 errverbose=asInteger(R_errorverbose);
+trace=asInteger(R_trace);
 /** end of argument parsing **/
 
 /** *******************************************************************************
@@ -112,7 +114,7 @@ for(j=0;j<2;j++){for(i=0;i<numvariates;i++){gsl_matrix_set(posterior,i,j,REAL(R_
 PROTECT(posterior=NEW_NUMERIC(1));				
 calc_parameter_marginal(&dag,&data,&designmatrix,
 		   priormean,priorsd,priorgamshape,priorgamscale,
-		   maxiters,epsabs,verbose,errverbose, 
+			maxiters,epsabs,verbose,errverbose, trace, 
 		   denom_modes,childid,paramid,
 			/*pdfminval, pdfstepsize,*/
 			epsabs_inner,maxiters_inner,finitestepsize, h_guess, h_epsabs,maxiters_hessian,betafixed, mlik,REAL(posterior),
@@ -149,7 +151,7 @@ return(posterior);
 /** ***************************************************************************************************/
 void calc_parameter_marginal(network *dag,datamatrix *obsdata, datamatrix *designmatrix,
 				const double priormean, const double priorsd, const double priorgamshape, const double priorgamscale,
-                                const int maxiters, const double epsabs, int verbose, const int errverbose, 
+                                const int maxiters, const double epsabs, int verbose, const int errverbose, int trace, 
 			      double *denom_modes, int childid, int paramid,  
 			     double epsabs_inner, int maxiters_inner, double finitestepsize,
 			     double h_guess, double h_epsabs,int maxiters_hessian,
@@ -161,7 +163,7 @@ void calc_parameter_marginal(network *dag,datamatrix *obsdata, datamatrix *desig
                          {
                            case 1:{ /** binary/categorical node */
 			            if(dag->groupedVars[childid]){/** have grouped binary variable so node is a glmm */
-				      calc_binary_marginal_rv_R(dag,obsdata,childid,errverbose, designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
+				      calc_binary_marginal_rv_R(dag,obsdata,childid,errverbose, trace, designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
 								epsabs_inner,maxiters_inner,finitestepsize,verbose,
 								h_guess,h_epsabs,maxiters_hessian,
 								denom_modes, paramid, betafixed,mlik, posterior,
@@ -181,7 +183,7 @@ void calc_parameter_marginal(network *dag,datamatrix *obsdata, datamatrix *desig
                         
                            case 2:{ /** gaussian node */
 			            if(dag->groupedVars[childid]){/** have grouped binary variable so node is a glmm */
-			              calc_gaussian_marginal_rv_R(dag,obsdata,childid,errverbose, designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
+			              calc_gaussian_marginal_rv_R(dag,obsdata,childid,errverbose, trace, designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
 								epsabs_inner,maxiters_inner,finitestepsize,verbose,
 								h_guess,h_epsabs,maxiters_hessian,
 								denom_modes, paramid, betafixed,mlik, posterior,
@@ -198,7 +200,7 @@ void calc_parameter_marginal(network *dag,datamatrix *obsdata, datamatrix *desig
                                    
                             case 3:{ /** poisson node */
 			             if(dag->groupedVars[childid]){/** have grouped binary variable so node is a glmm */
-				      calc_poisson_marginal_rv_R(dag,obsdata,childid,errverbose, designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
+				       calc_poisson_marginal_rv_R(dag,obsdata,childid,errverbose, trace, designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
 								epsabs_inner,maxiters_inner,finitestepsize,verbose,
 								h_guess,h_epsabs,maxiters_hessian,
 								denom_modes, paramid, betafixed,mlik, posterior,

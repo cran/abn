@@ -1,14 +1,15 @@
-############################################################################### buildscorecache.mle.R --- Author : Gilles Kratzer Last modified : 08/03/2017 Last modified : 18/03/2017 (mycache) Last modified : 20/10/2017 Multinomial
-
+############################################################################### buildscorecache.mle.R
 ## fit a given DAG to data
+
 buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents = NULL,
                                 adj.vars = NULL, cor.vars = NULL, dag.banned = NULL,
-                                dag.retained = NULL, which.nodes = NULL, maxit = 100,
-    tol = 10^-8, centre = TRUE, defn.res = NULL, dry.run = FALSE, verbose = FALSE,
-    seed = 9062019,
-    ncores = 1 ) {
+                                dag.retained = NULL, which.nodes = NULL, centre = TRUE,
+                                defn.res = NULL, dry.run = FALSE, verbose = FALSE,
+                                control = build.control(method = "mle")) {
 
-    set.seed(seed)
+
+    set.seed(control[["seed"]])
+
     ## which.nodes
     if (!is.null(which.nodes)) {
         data.df <- data.df[, which.nodes]
@@ -18,9 +19,6 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
     ## number of variable:
     n <- length(data.dists)
     nobs <- dim(data.df)[1]
-
-    ## for compatibility
-    group.var <- NULL
 
     # test same order for data.frame and data.dist
     if (Reduce("|", names(data.dists) != names(data.dists[colnames(data.df)]))) {
@@ -59,38 +57,38 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
     if (!is.null(dag.banned)) {
         if (is.matrix(dag.banned)) {
             ## run a series of checks on the DAG passed
-            dag.banned <- check.valid.dag(dag.m = dag.banned, data.df = data.df,
-                                          is.ban.matrix = TRUE, group.var = group.var)
+            dag.banned <- check.valid.dag(dag = dag.banned, data.df = data.df,
+                                          is.ban.matrix = TRUE)
         } else {
             if (grepl("~", as.character(dag.banned)[1], fixed = TRUE)) {
                 dag.banned <- formula.abn(f = dag.banned, name = colnames(data.df))
                 ## run a series of checks on the DAG passed
-                dag.banned <- check.valid.dag(dag.m = dag.banned, data.df = data.df,
-                                              is.ban.matrix = TRUE, group.var = group.var)
+                dag.banned <- check.valid.dag(dag = dag.banned, data.df = data.df,
+                                              is.ban.matrix = TRUE)
             }
         }
     } else {
-        dag.banned <- check.valid.dag(dag.m = dag.banned, data.df = data.df,
-                                      is.ban.matrix = TRUE, group.var = group.var)
+        dag.banned <- check.valid.dag(dag = dag.banned, data.df = data.df,
+                                      is.ban.matrix = TRUE)
     }
 
     # test for dag
     if (!is.null(dag.retained)) {
         if (is.matrix(dag.retained)) {
             ## run a series of checks on the DAG passed
-            dag.retained <- check.valid.dag(dag.m = dag.retained, data.df = data.df,
-                                            is.ban.matrix = FALSE, group.var = group.var)
+            dag.retained <- check.valid.dag(dag = dag.retained, data.df = data.df,
+                                            is.ban.matrix = FALSE)
         } else {
             if (grepl("~", as.character(dag.retained)[1], fixed = TRUE)) {
                 dag.retained <- formula.abn(f = dag.retained, name = colnames(data.df))
                 ## run a series of checks on the DAG passed
-                dag.retained <- check.valid.dag(dag.m = dag.retained, data.df = data.df,
-                                                is.ban.matrix = FALSE, group.var = group.var)
+                dag.retained <- check.valid.dag(dag = dag.retained, data.df = data.df,
+                                                is.ban.matrix = FALSE)
             }
         }
     } else {
-        dag.retained <- check.valid.dag(dag.m = dag.retained, data.df = data.df,
-                                        is.ban.matrix = FALSE, group.var = group.var)
+        dag.retained <- check.valid.dag(dag = dag.retained, data.df = data.df,
+                                        is.ban.matrix = FALSE)
     }
 
     ############################## Function to create the cache
@@ -280,18 +278,22 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
 
     ## EOF cache creation
 
+    row.num <- NULL   # To avoid check comment: 'no visible binding for global variable
+
     out <- list()
     rows <- length(mycache[["children"]])
 
-    cl <- makeCluster(ncores)
-    registerDoParallel(cl)
 
-    #registerDoParallel(cl, cores=ncores)
+    ncores <- control[["ncores"]]
 
-    row.num <- NULL   # To avoid check comment: 'no visible binding for global variable
+    if (ncores == -1) {                # all but one
+        ncores <-  detectCores() - 1   # if ncores==0 (here or set), single threaded.
+    }
+    if (ncores > 0)    ncores <- min(ncores, detectCores())  # restrict in case of overoptimisitic setting.
 
-    suppressWarnings(
-      res <- foreach( row.num = 1:rows, .combine='rbind' ) %dopar% {
+
+
+    forLoopContent <- function( row.num, mycache, data.dists, data.df.multi,adj.vars) {
 
       child <- mycache[["children"]][row.num]
       distribution <- data.dists[child]
@@ -312,7 +314,6 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
         }
 
         ## Rank deficiency
-
         num.na <- 0
         Y1 <- as.numeric(as.character(Y))
 
@@ -322,34 +323,29 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
 
         if (R_col != 1 & as.character(distribution) == "binomial") {
 
-            tryCatch(fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = maxit, tol = tol), error = function(e) {
+            tryCatch(fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]]), error = function(e) {
                 while (rank_cpp(X)/ncol(X) != 1) {
                   X <- X[, -1]
                   num.na <- num.na + 1
                   if (is.null(ncol(X)))
                     X <- as.matrix(X)
                 }
-                fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = maxit, tol = tol)
+                fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]])
             }, finally = fit)
 
         } else {
 
             switch(as.character(distribution), binomial = {
-
-                fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = maxit, tol = tol)
-
-                if (is.na(sum(fit[[1]]))) fit <- irls_binomial_cpp_fast_br(A = X, b = Y, maxit = maxit, tol = tol)
+                fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]])
+                if (is.na(sum(fit[[1]]))) fit <- irls_binomial_cpp_fast_br(A = X, b = Y, maxit = control[["max.iters"]], tol = control[["tol"]])
 
             }, gaussian = {
-
-                suppressWarnings(fit <- irls_gaussian_cpp_fast(A = X, b = Y, maxit = maxit, tol = tol))
+                suppressWarnings(fit <- irls_gaussian_cpp_fast(A = X, b = Y, maxit = control[["max.iters"]], tol = control[["tol"]]))
 
             }, poisson = {
-
-                suppressWarnings(fit <- irls_poisson_cpp_fast(A = X, b = Y, maxit = maxit, tol = tol))
+                suppressWarnings(fit <- irls_poisson_cpp_fast(A = X, b = Y, maxit = control[["max.iters"]], tol = control[["tol"]]))
 
             }, multinomial = {
-
                 Ymulti <- data.matrix(model.matrix(~-1 + data.df.lvl[, child]))
 
                 p <- ncol(Ymulti)
@@ -359,23 +355,35 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
                                     skip = TRUE, softmax = TRUE, rang = 0, trace = FALSE)
 
                 fit <- NULL
-
                 fit$loglik <- -tmp$value
-
                 edf <- ifelse(length(tmp$lev) == 2L, 1, length(tmp$lev) - 1) * R
-
                 fit$aic <- 2 * tmp$value + 2 * edf
-
                 fit$bic <- 2 * tmp$value + edf * log(nobs)
 
             })
         }
 
-       c( fit$loglik, fit$aic, fit$bic,
+      c( fit$loglik, fit$aic, fit$bic,
           fit$bic + (1 + sum(mycache[["node.defn.multi"]][row.num, ]) - num.na) * log(n) )
-      }
+     }
 
-    )
+    if (ncores > 0) {
+
+        cl <- makeCluster(ncores)
+        registerDoParallel(cl)
+
+#        suppressWarnings(
+            res <- foreach( row.num = 1:rows, .combine='rbind' ) %dopar% {
+                                       forLoopContent( row.num, mycache, data.dists, data.df.multi)
+                                                                         }
+#        )
+        stopCluster(cl)
+
+    } else {
+        res <- matrix(0,nrow=rows,ncol=4)
+        for (row.num in 1:rows) res[row.num, ] <- forLoopContent( row.num, mycache, data.dists, data.df.multi, adj.vars)
+
+    }
 
     out[["children"]] <- mycache[["children"]]
     out[["node.defn"]] <- mycache$node.defn
@@ -396,7 +404,6 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
 
     out[["method"]] <- "mle"
 
-    stopCluster(cl)
     return(out)
 }
 

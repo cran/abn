@@ -18,10 +18,11 @@ colnames(edge.strength) <- rownames(edge.strength) <- names(dist)  #Naming of th
 #Plot from a formula
 plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, node.fillcolor.list= "e")
 plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, node.fillcolor.list= "e", markov.blanket.node = "b")
-# mb has precedance!
+# mb has precedence!
 
-# with diamond
-expect_warning( plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, node.shape=c('diamond','box','circle')))
+# with diamonds only, dimands and box
+plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, node.shape='diamond')
+plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist, node.shape=c('diamond','box'))
 
 
 #Plot form a matrix
@@ -56,6 +57,10 @@ expect_error(plotAbn(tmp, edge.strength=-edge.strength-4, data.dist = dist),
 plotAbn(tmp, edge.strength=edge.strength, data.dist = dist) # zeros allowd
 expect_error(plotAbn(edge.strength, edge.strength=tmp, data.dist = dist),"'edge.strength' does not match dag")
 
+# classic view
+tmp <- plotAbn(edge.strength, edge.strength=edge.strength, data.dist = dist)
+slot(tmp, "renderInfo", check=FALSE) <- NULL
+plot(tmp)
 
 
 # testing fitted.values
@@ -73,6 +78,7 @@ g <- plotAbn(myres$abnDag$dag, fitted.values = myres$modes, data.dists = mydists
 myres
 
 
+mydat <- ex0.dag.data[,c("b1","b2","b3","g1","b4","p2","p4")]
 mydat1 <- cbind(m1=as.factor(as.numeric(mydat[,1])*2-as.numeric(mydat[,2])),
                 mydat[3:7])
 mydists1 <- list(m1="multinomial", b3="binomial", g1="gaussian",

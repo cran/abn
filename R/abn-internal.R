@@ -1,4 +1,43 @@
-############################################################################### abn-internal.R --- Author : Gilles Kratzer and Fraser Lewis Document created : 03/08/2012 Last modification : 23.11.2016 (GK) Last modification :
+##############################################################################
+# abn-internal.R
+
+abn.Version <- function(what=c('abn','system')) {
+  what <- match.arg(what)
+  if (what %in% 'system') {
+
+    list(R=R.version.string,
+         abn=substr(abn.version$version.string, 13, 32),
+         gsl=ifelse(R.version$os=="linux-gnu", system('gsl-config --version', intern = TRUE), "NA (?)"),
+         JAGS=rjags::jags.version(),
+         INLA=ifelse(requireNamespace("INLA", quietly = TRUE),
+           INLA::inla.version("version"), "not available")
+    )
+
+  } else {
+    release <- utils::packageDescription("abn",field="Version")
+    date <- utils::packageDescription("abn",field="Date")
+    list(status="",
+        major=sub("-","",substr(release,1,4)),
+        minor=substr(sub("-","",substr(release,5,7)),1,1),
+         year=substr(date,1,4),
+         month=substr(sub("20..-","",date),1,2),
+         day=sub("20..-..-","",date),
+         version.string= paste("abn version ",
+                             utils::packageDescription("abn",field="Version")," (",
+                             utils::packageDescription("abn",field="Date"),")",sep="")
+  )
+  }
+}
+
+abn.version <- abn.Version()
+class(abn.version) <- "simple.list"
+
+
+
+
+".onAttach" <- function (lib, pkg) {
+  packageStartupMessage(abn.version$version.string," is loaded.")
+}
 
 ##-------------------------------------------------------------------------
 ## Internal function that call multiple times strsplit() and remove space
@@ -125,7 +164,8 @@ formula.abn <- function(f, name) {
     return(out)
 }
 
-######################################################################################################################## a set of simple commonsense validity checks on the data.df and data.dists arguments
+#####################################################################################################
+################### a set of simple commonsense validity checks on the data.df and data.dists arguments
 check.valid.data <- function(data.df = NULL, data.dists = NULL, group.var = NULL) {
 
     ## check data is in a data.frame
@@ -221,77 +261,80 @@ check.valid.data <- function(data.df = NULL, data.dists = NULL, group.var = NULL
     return(list(gaus = gaussian.vars.indexes, bin = binomial.vars.indexes, pois = poisson.vars.indexes))
 
 }  #end of check.valid.data()
+
 ######################################### a set of simple commonsense validity checks on the directed acyclic graph definition matrix
-check.valid.dag <- function(dag.m = NULL, data.df = NULL, is.ban.matrix = NULL, group.var = NULL) {
+check.valid.dag <- function(dag = NULL, data.df = NULL, is.ban.matrix = FALSE, group.var = NULL) {
 
     if (!is.null(group.var)) {
         ## have a grouping variable so temporarily drop this from data.df - LOCAL TO THIS FUNCTION ONLY
+
+        if (is.null(data.df)) stop("When specifying 'group.var', 'data.df' argument is required as well.")
         data.df <- data.df[, -which(names(data.df) == group.var)]
     }
 
 
-    ## if dag.m null then create unlimited - empty - network want ban matrix
-    if (is.null(dag.m)) {
-        dag.m <- matrix(rep(0, dim(data.df)[2]^2), ncol = dim(data.df)[2])
+    ## if dag null then create unlimited - empty - network want ban matrix
+    if (is.null(dag)) {
+        dag <- matrix(rep(0, dim(data.df)[2]^2), ncol = dim(data.df)[2])
         ## names must be set
-        colnames(dag.m) <- rownames(dag.m) <- names(data.df)
-        return(dag.m)
+        colnames(dag) <- rownames(dag) <- names(data.df)
+        return(dag)
     }
 
-    if (!is.matrix(dag.m)) {
-        if (grepl("~", as.character(dag.m)[1], fixed = T)) {
-            dag.m <- formula.abn(f = dag.m, name = names(data.df))
-            return(dag.m)
+    if (!is.matrix(dag)) {
+        if (grepl("~", as.character(dag)[1], fixed = T)) {
+            dag <- formula.abn(f = dag, name = names(data.df))
+            return(dag)
         } else {
-            stop("Dag specification must either be a matrix or a formula expresion")
+            stop("'dag' specification must either be a matrix or a formula expresion")
         }
-    }
-    if (is.matrix(dag.m)) {
-        return(dag.m)
-    }
+    } else {
+        if (dim(dag)[1] != dim(dag)[2])  stop("Matrix 'dag' is not square.")
+        }
 
-    ## check dag is in a matrix -> obsolet if(!is.matrix(dag.m)){stop('The DAG definition dag.m must be in a matrix');}
 
     ## check data for missing names
-    if (is.null(colnames(dag.m)) || is.null(rownames(dag.m))) {
+    if (is.null(colnames(dag)) || is.null(rownames(dag))) {
         if (!is.null(data.df)) {
-            cat("t")
-            colnames(dag.m) <- rownames(dag.m) <- names(data.df)
+            if (dim(dag)[1] != dim(data.df)[2]) {  stop("'dag' as dimension inconsistent with columns of 'data.df'")
+#                print(dag)
+#                print(data.df)
+                }
+           colnames(dag) <- rownames(dag) <- names(data.df)
         } else {
-            stop("dag.m must have both row and column names set or a named dataset has to be provided")
+            stop("'dag' must have both row and column names set or a named dataset has to be provided")
         }
     }
     ## check dimension
-    if (dim(dag.m)[1] != dim(data.df)[2] || dim(dag.m)[2] != dim(data.df)[2]) {
-        stop("dag.m as dimension inconsistent with data.df")
+    if (!is.null(data.df)) {
+      if (dim(dag)[1] != dim(data.df)[2] || dim(dag)[2] != dim(data.df)[2]) {
+         stop("'dag' as dimension inconsistent with data.df")
+      }
     }
 
     ## check binary
-    for (i in 1:dim(dag.m)[1]) {
-        for (j in 1:dim(dag.m)[2]) {
-            if (dag.m[i, j] != 0 && dag.m[i, j] != 1) {
-                stop("dag.m must comprise only 1's or 0's")
-            }
-        }
+    for (i in 1:dim(dag)[1]) {
+       for (j in 1:dim(dag)[2]) {
+          if ( abs(dag[i, j]) > 1e-8 && abs(dag[i, j]-1) > 1e-8)      stop("'dag' must comprise only 1's or 0's")
+       }
     }
+    # if (any( c( (dag != 0) && (dag != 1))))                stop("'dag' must comprise only 1's or 0's")
+
 
     ## check diagnonal and cycles - but ignore these checks for a ban matrices
     if (!is.ban.matrix) {
 
-        for (i in 1:dim(dag.m)[1]) {
-            if (dag.m[i, i] == 1) {
-                stop("dag.m is not a valid DAG - a child cannot be its own parent!")
-            }
-        }
+        if (any( diag(dag) != 0))                 stop("'dag' is not a valid DAG - a child cannot be its own parent!")
+
+
 
         ## coerce to int for sending to C$ number of cols (or rows)
-        dim <- dim(dag.m)[1]
-        ## this creates one long vector - filled by cols from dag.m = same as internal C reprentation so fine.
-        dag.m <- as.integer(dag.m)
-
-        res <- .Call("checkforcycles", dag.m, dim, PACKAGE = "abn")
-        if (res!=0) stop("DAG contains at least one cycle.")
+        ## this creates one long vector - filled by cols from dag = same as internal C reprentation so fine.
+        res <- .Call("checkforcycles", as.integer(dag),  dim(dag)[1], PACKAGE = "abn")
+        if (res!=0) stop("'dag' contains at least one cycle.")
     }
+
+    return( dag)
 
 
 }

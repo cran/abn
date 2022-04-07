@@ -2,6 +2,28 @@
 -- ChangeLog - abn --
 ---------------------------
 
+2022-04-02 Reinhard Furrer  (version 2.7-0)
+
+  * plotAbn(): new arguments, now fully based on class `graphAM`, proper handling of lty, lwd etc.
+  * options of `fitAbn()` and `buildScoreCache()` are now handled with a list passed to argument `control=`. Some of the default values have been slightly adapted.
+  * Default list available via `fit.control()` and `build.control()`, including more options!
+  * Significantly improved help of several functions and examples.
+  * Improved display of print methods. 
+  * Possiblity to use single threaded with `for()` loop and with `foreach()`.
+  * Due to proper method handling, the arguments `create.graph` in `searchHillClimber()` and `fitAbn(method="bayes")` has been removed.
+  * Argument `verbose` properly implemented (including passing to JAGS functions).
+  * New function `compareEG()` to compare two essential graphs.
+  * Additional argument checking an cleaning of many error messages. 
+	
+
+  * Internal changes:
+	Option `error.verbose` properly propagated to C functions.
+	New option `trace` passed to "lbfgsb".
+	Less ARMA messages, using now `#define ARMA_WARN_LEVEL 1`.
+	Some GSL error now caught at R level.
+	Severe R and moderate C code cleaning.
+
+
 
 2021-06-08 Gilles Kratzer, Reinhard Furrer & Kalina Cherneva (version 2.6.0)
 	   * Bug fixes:

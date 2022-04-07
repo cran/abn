@@ -10,15 +10,19 @@
 
 \name{compareDag}
 \alias{compareDag}
+\alias{compareEG}
+\alias{compareDAG}
 \encoding{latin1}
 %- Also NEED an `\alias' for EACH other topic documented here.
 
-\title{Compare two DAGs}
+\title{Compare two DAGs or EGs}
 
-\description{Function that returns multiple graph metrics to compare two DAGs, known as confusion matrix or error matrix.}
+\description{Function that returns multiple graph metrics to compare two
+  DAGs or essential graphs, known as confusion matrix or error matrix.}
 
 \usage{
-compareDag(ref, test, node.names = NULL)
+compareDag(ref, test, node.names = NULL, checkDAG = TRUE)
+compareEG(ref, test)
 }
     
 %- maybe also `usage' for other objects documented here.
@@ -26,8 +30,8 @@ compareDag(ref, test, node.names = NULL)
   \item{ref}{a matrix or a formula statement (see details for format) defining the reference network structure, a directed acyclic graph (DAG). Note that row names must be set or given in \code{node.names} if the DAG is given via a formula statement.}
   \item{test}{a matrix or a formula statement (see details for format) defining the test network structure, a directed acyclic graph (DAG). Note that row names must be set or given in \code{node.names} if the DAG is given via a formula statement.}
   \item{node.names}{a vector of names if the DAGs are given via formula, see details.}
+  \item{checkDAG}{should the DAGs be tested for DAGs (default).}
 }
-
 
 \details{
 
@@ -53,6 +57,11 @@ False Ommision Rate \deqn{\frac{\sum FN}{\sum PCN}}{\frac{\sum FN}{\sum PCN}}
 Hamming-Distance: Number of changes needed to match the matrices.
 
 The \code{ref} or \code{test} can be provided using a formula statement (similar to GLM input). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement have to start with \code{~}. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in \code{node.names}. \code{:} is the separtor between either children or parents, \code{|} separates children (left side) and parents (right side), \code{+} separates terms, \code{.} replaces all the variables in \code{node.names}.
+\cr
+
+To test for essential graphs (or graphs) in general, the test for DAG
+need to be switched off \code{checkDAG=FALSE}. The function
+\code{compareEG()} is a wrapper to \code{compareDag(, checkDAG=FALSE)}. 
 }
 
 
@@ -78,7 +87,7 @@ ref.m <- matrix(data = c(0,0,0,
                           
 colnames(test.m) <- rownames(test.m) <- colnames(ref.m) <- colnames(ref.m) <- c("a", "b", "c")
                           
-compareDag(ref = ref.m, test = test.m)
+unlist(compareDag(ref = ref.m, test = test.m))
 }
 \keyword{utilities}
 \concept{DAG}

@@ -60,7 +60,7 @@
 /** ****************************************************************************************************
  ***** calc an individual logistic regression model 
  *******************************************************************************************************/
-void calc_node_Score_gaus_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose,
+void calc_node_Score_gaus_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose, int trace,
                                 datamatrix *designmatrix, const double priormean, const double priorsd, const double priorgamshape, const double priorgamscale,
                                 const int maxiters, const double epsabs,int storeModes, double epsabs_inner, int maxiters_inner, double finitestepsize, int verbose,
 				 double h_guess, double h_epsabs, int maxiters_hessian, int ModesONLY,
@@ -102,7 +102,7 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
   double pgtol=1e-07;/** default value is zero - this is the gradient tolerance - mmm what does that actually mean? */
   int fncount,grcount;/** hold number of evaluations */
   char msg[60];/** error message */
-  int trace=errverbose;/** like verbose */
+  /* int trace=errverbose;  */ /** like verbose */
   int nREPORT=1000;/** report freq*/
   int lmm=5;/** see R ?optim - number of function evals to store - default is 5 */
   /** want to find the modes of the function g(betas) where betas=b_0,b_1,,...,tau, the latter being precision */
@@ -299,9 +299,9 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
 	R_CheckUserInterrupt();/** allow an interupt from R console */ 
 	/** find a point which has f(x) lower than f(lower) and f(upper) **/
 	 new_f_min=compute_mlik_gaus_brent(gsl_sf_exp(delta), &gparams); 
-	 Rprintf("lower=%e, delta=%e, upper=%e\n",lower,gsl_sf_exp(delta),upper);
+	 if (errverbose) 	 Rprintf("GN: lower=%e, delta=%e, upper=%e\n",lower,gsl_sf_exp(delta),upper);
         if(lower_f>new_f_min && new_f_min<upper_f  && get_best_stepsize_gaus(gsl_sf_exp(delta),lower,upper,maxiters_hessian_brent,&gparams, &compute_mlik_gaus_brent,
-	                                                               s1,&finitestepsize,&(dag->hessianError[nodeid]) )<=max_hessian_error){/** have an interval suitable for bracketing **/
+									     s1,&finitestepsize,&(dag->hessianError[nodeid]), errverbose )<=max_hessian_error){/** have an interval suitable for bracketing **/
 	                                                           /** above is address so can store error withouth rerunning function */
 	  /*finitestepsize=delta;*/
 	  found=1;
@@ -709,7 +709,7 @@ double compute_mlik_gaus_brent(double finitestepsize, void *params)
 /** ***********************************************************************************************/
 /** ***********************************************************************************************/
 double get_best_stepsize_gaus(double delta,double lower,double upper,int maxiters_hessian, struct fnparams *gparams,
-			 double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror)
+			      double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror, int errverbose)
 {
   gsl_function F1; 
   /*const gsl_min_fminimizer_type *T1;
@@ -745,7 +745,8 @@ double get_best_stepsize_gaus(double delta,double lower,double upper,int maxiter
  
   myerror=compute_mlik_gaus_brent(*finitestepsize, gparams);
   *saverror=myerror;/** this is a pointer to the dag->HessianError[nodeid] */
-  Rprintf("Brent minimiser: error in mlik=%e in [%e,%e] with best h=%e\n",myerror,lower,upper,*finitestepsize);
-
+  if (errverbose>0) { 
+    Rprintf("Gaussian node: Brent minimiser: error in mlik=%e in [%e,%e] with best h=%e\n",myerror,lower,upper,*finitestepsize);
+  }
 return(myerror);  
 }	

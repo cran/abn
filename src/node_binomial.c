@@ -391,7 +391,7 @@ void calc_binary_marginal(network *dag, datamatrix *obsdata, int nodeid,  int ve
        
       if(status == GSL_SUCCESS){gsl_vector_memcpy(myBeta,s->x);}/** copy if success **/
    
-       if(status != GSL_SUCCESS){Rprintf ("Zero finding error: status = %s at x=%f\n", gsl_strerror (status),gparams.betafixed);/*exit(1);*/
+       if(status != GSL_SUCCESS && verbose){Rprintf ("Zero finding error: status = %s at x=%f\n", gsl_strerror (status),gparams.betafixed);/*exit(1);*/
        gsl_multiroot_fdfsolver_free(s);/** alloc new solver type */
        T = gsl_multiroot_fdfsolver_hybridj;
        s = gsl_multiroot_fdfsolver_alloc (T, designmatrix->numparams-1);  

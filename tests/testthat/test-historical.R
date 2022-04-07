@@ -26,7 +26,7 @@ test_that("Test fitAbn()", {
     expect_that(unclass(myres.c.test)[[11]], equals(myres.c[[11]]))
     expect_that(unclass(myres.c.test)[[12]], equals(myres.c[[12]]))
     expect_that(unclass(myres.c.test)[[13]], equals(myres.c[[13]]))
-    expect_that(unclass(myres.c.test)[[14]], equals(myres.c[[14]]))
+#     expect_that(unclass(myres.c.test)[[14]], equals(myres.c[[14]])) # no graph  part anymore...
 
 })
 

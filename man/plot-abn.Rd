@@ -19,10 +19,11 @@
 
 \usage{
 plotAbn(dag, data.dists=NULL, markov.blanket.node=NULL, fitted.values=NULL,
-        digits=2, edge.strength=NULL, edge.direction="pc", edge.color="black",
-        edge.arrowsize=0.5, edge.fontsize=5, node.fontsize=10,
-        node.fillcolor=c("lightblue","brown3","chartreuse3"), node.fillcolor.list=NULL,
-        node.shape=c("circle","box","ellipse","diamond"), plot=TRUE , ...)
+        digits=2, edge.strength=NULL, edge.strength.lwd=5, edge.direction="pc",
+        edge.color="black", edge.linetype="solid", edge.arrowsize=0.6,
+        edge.fontsize=node.fontsize, node.fontsize=12, node.fillcolor=c(
+        "lightblue", "brown3", "chartreuse3"), node.fillcolor.list=NULL,
+        node.shape=c("circle", "box", "ellipse", "diamond"), plot=TRUE , ...)
 
 }
 
@@ -34,10 +35,13 @@ plotAbn(dag, data.dists=NULL, markov.blanket.node=NULL, fitted.values=NULL,
   \item{fitted.values}{modes or coefficents outputted from \code{\link{fitAbn}}.}
   \item{digits}{number of digits to display the \code{fitted.values}.}
   \item{edge.strength}{a named matrix containing evaluations of edge strength which will change the arcs width (could be Mutual information, p-values, number of bootstrap retrieve samples or the outcome of the \code{\link{link.strength}}).}
-   \item{edge.direction}{character giving the direction in which arcs should be plotted, \code{pc} (parent to child) or \code{cp} (child to parent) or \code{undirected}.}
+  \item{edge.strength.lwd}{maximum line width for \code{edge.strength}.}
+  \item{edge.direction}{character giving the direction in which arcs should be plotted, \code{pc} (parent to child) or \code{cp} (child to parent) or \code{undirected}.}
   \item{node.fillcolor}{the colour of the node. Second and third element is used for the Markov blanket and node of the Markov blanket.}
   \item{node.shape}{the shape of the nodes according the Gaussian, binomial, Poisson and multinomial distributions.}
   \item{edge.color}{the colour of the edge.}
+  \item{edge.linetype}{the linetype of the edge. Defaults to \code{"solid"}. Valid values are the
+same as for the R's base graphic parameter \code{lty}.}
   \item{edge.arrowsize}{the thickness of the arrows. Not relevant if \code{arc.strength} is provided.}
   \item{node.fontsize}{the font size of the nodes names.}
   \item{edge.fontsize}{the font size of the arcs fitted values.}
@@ -51,16 +55,20 @@ plotAbn(dag, data.dists=NULL, markov.blanket.node=NULL, fitted.values=NULL,
 
 By default binomial nodes are squares, multinoial nodes are empty, Gaussian nodes are circles and poison nodes are ellipses.
 
-The \code{dag} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}. The formula statement have to start with \code{~}. In this example, node1 has two parents (parent1 and parent2). node2 and node3 have the same parent3. The parents names have to exactly match those given in \code{name}. \code{:} is the separator between either children or parents, \code{|} separates children (left side) and parents (right side), \code{+} separates terms, \code{.} replaces all the variables in \code{name}.
+The \code{dag} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}.
+
+The construction is based on the \pkg{graph} package. Properties of the graph can be changend after the construction, see \sQuote{Examples}.
+
 }
 
 
-\value{A matrix giving the DAG definition of the most probable posterior structure.}
+\value{A rendered graph, if \code{plot=TRUE}. The \code{graphAM} object is returned invisibly.}
 
 \references{
 Further information about \pkg{abn} can be found at:\cr
   \url{http://r-bayesian-networks.org}}
-\author{Gilles Kratzer}
+\author{Gilles Kratzer, Reinhard Furrer}
+\seealso{\code{\link[graph]{graphAM-class}}, \code{\link[graph]{edgeRenderInfo}}}
 \examples{
 #Define distribution list
 dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", e="binomial", f="binomial")
@@ -77,16 +85,28 @@ edge.strength <- matrix(c(0,0.5,0.5,0.7,0.1,0,
 colnames(edge.strength) <- rownames(edge.strength) <- names(dist)
 
 ## Plot form a matrix
-plotAbn(dag = edge.strength, data.dist = dist)
+plotAbn(dag = edge.strength, data.dists = dist)
 
 ## Edge strength
-plotAbn(dag = ~a|b:c:d:e+b|c:d:f+c|d:e+d|e+e|f, data.dist = dist, edge.strength = edge.strength)
+plotAbn(dag = ~a|b:c:d:e+b|c:d:f+c|d:e+d|e+e|f, data.dists = dist, edge.strength = edge.strength)
 
 ## Plot from a formula for a different DAG!
-plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dist = dist)
+plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist)
 
 ## Markov blanket
 plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, markov.blanket.node = "e")
+
+## Change col for all edges
+tmp <- plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot=FALSE)
+graph::edgeRenderInfo(tmp) <- list(col="blue")
+Rgraphviz::renderGraph(tmp)
+
+## Change lty for individual ones. Named vector is necessary
+tmp <- plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot=FALSE)
+edgelty <- rep(c("solid","dotted"), c(6,1))
+names(edgelty) <- names( graph::edgeRenderInfo(tmp, "col"))
+graph::edgeRenderInfo(tmp) <- list(lty=edgelty)
+Rgraphviz::renderGraph(tmp)
 }
 \keyword{models}
 \keyword{hplot}

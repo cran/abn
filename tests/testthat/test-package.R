@@ -64,12 +64,12 @@ test_that("Test fitAbn.mle()", {
     ## test formula statement
 
  #   expect_error(fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2)], data.dists=mydists, max.mode.error=0), NA)
-    expect_silent(fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2)], data.dists=mydists, max.mode.error=0))
+    expect_silent(fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2)], data.dists=mydists, control=list(max.mode.error=0)))
 
     if(requireNamespace("INLA", quietly=TRUE)){
     ## test formula statement in bayes with correlation
       expect_silent(fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2,14)], data.dists=mydists,
-                      group.var="group", cor.vars=c("b1","b2"), max.mode.error=0))
+                      group.var="group", cor.vars=c("b1","b2"), control=list(max.mode.error=0)))
     } else expect_equal(1,1)
     expect_silent(fitAbn(dag=~b1|b2, data.df=ex3.dag.data[,c(1,2)], data.dists=mydists, method="mle"))
 
@@ -101,6 +101,7 @@ test_that("Test fitAbn.mle()", {
     dist <- list(a="binomial", b="binomial")
 
     data.param <- matrix(data=c(0, 0.5, 0, 0), nrow=2L, ncol=2L, byrow=TRUE)
+    data.param <- matrix(data=c(0, 1, 0, 0), nrow=2L, ncol=2L, byrow=TRUE)
 
     # naming
     colnames(data.param) <- rownames(data.param) <- names(dist)
@@ -112,13 +113,16 @@ test_that("Test fitAbn.mle()", {
     m2 <- glm(formula=out.sim$a ~ out.sim$b, family="binomial")
 
     expect_that(unname(m1$coef[[1]]), equals(unname(t(coef(summary.glm(object=m2))[, 1]))))
-    expect_that(unname(m1$Stderror[[1]]), equals(unname(t(coef(summary.glm(object=m2))[, 2]))))
-    expect_that(unname(m1$pvalue[[1]]), equals(unname(t(coef(summary.glm(object=m2))[, 4]))))
+
+    ## new: RF 2022 after big merge: tolerance required.
+    expect_that(unname(m1$Stderror[[1]]), equals(unname(t(coef(summary.glm(object=m2))[, 2])), tolerance=1e-06))
+    expect_that(unname(m1$pvalue[[1]]), equals(unname(t(coef(summary.glm(object=m2))[, 4])), tolerance=1e-06))
 
     # Poisson
     dist <- list(a="poisson", b="poisson")
 
     data.param <- matrix(data=c(0, 0.5, 0, 0), nrow=2L, ncol=2L, byrow=TRUE)
+    data.param <- matrix(data=c(0, 1, 0, 0), nrow=2L, ncol=2L, byrow=TRUE)
 
     # naming
     colnames(data.param) <- rownames(data.param) <- names(dist)
@@ -518,19 +522,19 @@ test_that("infoDag()", {
     dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", e="gaussian", f="gaussian")
     colnames(dag) <- rownames(dag) <- names(dist)
 
-    infoDag.out1 <- infoDag(dag=dag,node.names=names(dist))
+    infoDag.out1 <- infoDag(dag, node.names=names(dist))
 
     dag <- matrix(data=c(0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0), nrow=6, ncol=6)
     colnames(dag) <- rownames(dag) <- names(dist)
 
-    infoDag.out2 <- infoDag(dag=dag, node.names=names(dist))
+    infoDag.out2 <- infoDag(dag, node.names=names(dist))
 
     dag <- matrix(data=c(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0), nrow=6, ncol=6)
     colnames(dag) <- rownames(dag) <- names(dist)
 
-    infoDag.out3 <- infoDag(dag=dag, node.names=names(dist))
+    infoDag.out3 <- infoDag(dag, node.names=names(dist))
 
     expect_equal(infoDag.out1$n.nodes, 6)
     expect_equal(infoDag.out1$n.arcs, 0)

@@ -475,7 +475,7 @@ int rv_dg_pois_inner (const gsl_vector *epsilonvec, void *params, gsl_vector *dg
    gsl_blas_ddot (vectmp2long, vectmp1long, &term2);/** just to get the sum of vectmp2long */
    
    gsl_vector_set(dgvalues,0,term1+term2+term3); 
-   if(gsl_isnan(gsl_vector_get(dgvalues,0))){error("rv_dg_inner is nan %f %f %f\n",term1,term2,term3);}
+   if(gsl_isnan(gsl_vector_get(dgvalues,0))){error("PN: rv_dg_inner is nan %f %f %f\n",term1,term2,term3);}
   
    return GSL_SUCCESS;
   

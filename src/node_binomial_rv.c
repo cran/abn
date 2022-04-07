@@ -58,7 +58,7 @@
 /** ****************************************************************************************************
  ***** calc an individual logistic regression model 
  *******************************************************************************************************/
-void calc_node_Score_binary_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose,
+void calc_node_Score_binary_rv_R(network *dag, datamatrix *obsdata, int nodeid,  int errverbose, int trace, 
                                 datamatrix *designmatrix, const double priormean, const double priorsd, const double priorgamshape, const double priorgamscale,
                                 const int maxiters, const double epsabs,int storeModes, double epsabs_inner, int maxiters_inner, double finitestepsize, int verbose,
 				 double h_guess, double h_epsabs, int maxiters_hessian, int ModesONLY,
@@ -107,7 +107,7 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
   double pgtol=1e-07;/** default value is zero - this is the gradient tolerance - mmm what does that actually mean? */
   int fncount,grcount;/** hold number of evaluations */
   char msg[60];/** error message */
-  int trace=errverbose;/** like verbose */
+  /* int trace=trace;  */ /** like verbose */
   int nREPORT=1000;/** report freq*/
   int lmm=5;/** see R ?optim - number of function evals to store - default is 5 */
   /** want to find the modes of the function g(betas) where betas=b_0,b_1,,...,tau, the latter being precision */
@@ -274,9 +274,11 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
    /** README - it might be possible to avoid the brent by increasing the epsabs error in nelder mead (and no. of iterations), although for hard cases
        this probably will not work but may give a little greater accuracy for easier cases, These are the hessian.params arg in R */
     
-   if(dag->hessianError[nodeid]!=DBL_MAX && dag->hessianError[nodeid]>max_hessian_error){Rprintf("Error in mlik = %e > tolerance of %e so continuing optimisation using Brent initial guess h=%e\n",
+   if(dag->hessianError[nodeid]!=DBL_MAX && dag->hessianError[nodeid]>max_hessian_error){
+     if (errverbose>0) {
+       Rprintf("Binomial node: Warning: in mlik = %e > tolerance of %e so continuing optimisation using Brent initial guess h=%e\n",
                                                    dag->hessianError[nodeid],max_hessian_error,finitestepsize); 
-   
+     }
      /* Rprintf("stepsize after NM= %e\n",finitestepsize);*/
   
      T1 = gsl_min_fminimizer_brent;
@@ -297,9 +299,9 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
 	R_CheckUserInterrupt();/** allow an interupt from R console */ 
 	/** find a point which has f(x) lower than f(lower) and f(upper) **/
 	 new_f_min=compute_mlik_brent(gsl_sf_exp(delta), &gparams); 
-	/* Rprintf("lower=%e, delta=%e, upper=%e\n",lower,gsl_sf_exp(delta),upper);*/
+	 if (errverbose)  Rprintf("BN: lower=%e, delta=%e, upper=%e\n",lower,gsl_sf_exp(delta),upper);
         if(lower_f>new_f_min && new_f_min<upper_f  && get_best_stepsize(gsl_sf_exp(delta),lower,upper,maxiters_hessian_brent,&gparams, &compute_mlik_brent,
-	                                                               s1,&finitestepsize,&(dag->hessianError[nodeid]) )<=max_hessian_error){/** have an interval suitable for bracketing **/
+									s1,&finitestepsize,&(dag->hessianError[nodeid]), errverbose )<=max_hessian_error){/** have an interval suitable for bracketing **/
 	                                                           /** above is address so can store error withouth rerunning function */
 	  /*finitestepsize=delta;*/
 	  found=1;
@@ -319,9 +321,11 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
 					 finitestepsize=best_h;
         /** reset back to nelder-mead estimate **/
 	status=GSL_FAILURE;/** set to failure since we did not achieve the lower error asked for */
-      Rprintf("failed to meet tolerance of %e and using best error estimate found of %e\n",max_hessian_error,dag->hessianError[nodeid]);}
-
-    gsl_min_fminimizer_free (s1);
+	     if (errverbose>0) {
+	       Rprintf("BN: failed to meet tolerance of %e and using best error estimate found of %e\n",max_hessian_error,dag->hessianError[nodeid]);
+	     }
+      }
+      gsl_min_fminimizer_free (s1);
    
    } /** end of error being too large **/
  
@@ -348,7 +352,9 @@ Rprintf("############ Warning - Priors turned off - use only for checking mlik v
 		     }
        
 		     case GSL_FAILURE: {/** the minimiser did not find a minimum meeting the accuracy requirements and so may be unreliable **/
-		                       Rprintf ("-- ERROR! -- search for optimal step size error: status = %s at nodeid %d\n", gsl_strerror (status),nodeid+1);
+		                       if (errverbose>0) {
+					      Rprintf ("BN: -- ERROR! -- search for optimal step size error: status = %s at nodeid %d\n", gsl_strerror (status),nodeid+1);
+				       }
                                        rv_hessg_outer(myBeta,&gparams, hessgvalues,finitestepsize,hessgvalues3pt);/** start with LARGEST STEPSIZE **/
                                        /*Rprintf("HESSIAN using stepsize=%e\n",finitestepsize);
 				       for(i1=0;i1<hessgvalues->size1;i1++){
@@ -915,7 +921,8 @@ double compute_mlik_brent(double finitestepsize, void *params)
 /** ***********************************************************************************************/
 /** ***********************************************************************************************/
 double get_best_stepsize(double delta,double lower,double upper,int maxiters_hessian, struct fnparams *gparams,
-			 double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror)
+			 double (* compute_mlik_nm_brent) (double finitestepsize, void *params), gsl_min_fminimizer *s1, double *finitestepsize,double *saverror,
+			 int errverbose)
 {
   gsl_function F1; 
   /*const gsl_min_fminimizer_type *T1;
@@ -951,7 +958,8 @@ double get_best_stepsize(double delta,double lower,double upper,int maxiters_hes
  
   myerror=compute_mlik_brent(*finitestepsize, gparams);
   *saverror=myerror;/** this is a pointer to the dag->HessianError[nodeid] */
-  Rprintf("Brent minimiser: error in mlik=%e in [%e,%e] with best h=%e\n",myerror,lower,upper,*finitestepsize);
-
+   if (errverbose>0) { 
+    Rprintf("Binomial node: Brent minimiser: iterations exceeded in mlik=%e in [%e,%e] with best h=%e\n",myerror,lower,upper,*finitestepsize);
+   }
 return(myerror);  
 }

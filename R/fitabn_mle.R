@@ -15,11 +15,10 @@ fitAbn.mle <- function(dag = NULL,
                        adj.vars = NULL,
                        cor.vars = NULL,
                        centre = TRUE,
-                       maxit = 100, 
-                       tol = 10^-11,
-                       verbose = FALSE, seed = 9062019){
+                       control = fit.control(method = "mle"),
+                       verbose = FALSE){
 
-  set.seed(seed)
+  set.seed(control[["seed"]])
   
   n <- length(data.dists)
   nobs <- dim(data.df)[1]
@@ -28,12 +27,12 @@ fitAbn.mle <- function(dag = NULL,
   if(!is.null(dag)){
     if(is.matrix(dag)){
       ## run a series of checks on the DAG passed
-      dag <- check.valid.dag(dag.m=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
+      dag <- check.valid.dag(dag=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
     } else {
       if(grepl('~',as.character(dag)[1],fixed = TRUE)){
         dag <- formula.abn(f = dag,name = colnames(data.df))
         ## run a series of checks on the DAG passed
-        dag <- check.valid.dag(dag.m=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
+        dag <- check.valid.dag(dag=dag,data.df=data.df,is.ban.matrix=FALSE,group.var=NULL)
       }
     }}
   else {
@@ -140,13 +139,13 @@ fitAbn.mle <- function(dag = NULL,
         
         Y <- as.numeric(as.character(Y))
         
-        fit <- tryCatch(irls_binomial_cpp_br(A = X, b = Y, maxit = maxit,tol = tol),error=function(e){
+        fit <- tryCatch(irls_binomial_cpp_br(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]]),error=function(e){
           while((qr(X)$rank/ncol(X))!=1){
             X <- X[,-1]
             num.na <- num.na+1
             if(is.null(ncol(X))) X <- as.matrix(X)
           }
-          list(irls_binomial_cpp_br(A = X, b = Y, maxit = maxit,tol = tol),num.na)
+          list(irls_binomial_cpp_br(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]]),num.na)
         })
         num.na <- fit[[2]]
         fit <- fit[[1]]
@@ -157,22 +156,22 @@ fitAbn.mle <- function(dag = NULL,
                
               Y <- as.numeric(as.character(Y))
               
-              #fit <- irls_binomial_cpp(A = X, b = Y, maxit = maxit,tol = tol)
+              #fit <- irls_binomial_cpp(A = X, b = Y, maxit = control[["maxit"]],tol = control[["tol"]])
               
-              fit <- tryCatch(irls_binomial_cpp(A = X, b = Y, maxit = maxit,tol = tol),error=function(e){
+              fit <- tryCatch(irls_binomial_cpp(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]]),error=function(e){
                 
-                irls_binomial_cpp_br(A = X, b = Y, maxit = maxit,tol = tol)
+                irls_binomial_cpp_br(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]])
               })
               
-              if(is.na(sum(fit[[1]])))fit <- irls_binomial_cpp_br(A = X, b = Y, maxit = maxit,tol = tol)
+              if(is.na(sum(fit[[1]])))fit <- irls_binomial_cpp_br(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]])
               
              },
              "gaussian"={
-               fit <- irls_gaussian_cpp(A = X, b = Y, maxit = maxit,tol = tol)
+               fit <- irls_gaussian_cpp(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]])
              },
              "poisson"={
                
-               fit <- irls_poisson_cpp(A = X, b = Y, maxit = maxit,tol = tol)
+               fit <- irls_poisson_cpp(A = X, b = Y, maxit = control[["max.irls"]],tol = control[["tol"]])
              },
              "multinomial"={
                

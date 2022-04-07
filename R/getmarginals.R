@@ -7,7 +7,7 @@
 getmarginals <- function(res.list, ## rest of arguments as for call to C fitabn
                        data.df,dag.m,var.types,max.parents,
                        mean,prec,loggam.shape,loggam.inv.scale,
-                       max.iters,epsabs,verbose,error.verbose,
+                       max.iters,epsabs,verbose,error.verbose,trace,
                        grouped.vars,## int.vector of variables which are mixed model nodes
                        group.ids,
                        epsabs.inner,max.iters.inner,finite.step.size,hessian.params,max.iters.hessian,min.pdf,marginal.node,marginal.param, variate.vec,n.grid,
@@ -34,7 +34,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -110,7 +110,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -157,7 +157,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -204,7 +204,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -251,7 +251,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -298,7 +298,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -344,7 +344,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -390,7 +390,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -436,7 +436,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -482,7 +482,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -529,7 +529,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -577,7 +577,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -625,7 +625,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),
@@ -674,7 +674,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
                             as.integer(max.iters),as.double(epsabs),
-                            as.integer(verbose),as.integer(error.verbose),
+                            as.integer(verbose),as.integer(error.verbose),as.integer(trace),
                             grouped.vars,## int.vector of variables which are mixed model nodes
                             group.ids,
                             as.double(epsabs.inner),

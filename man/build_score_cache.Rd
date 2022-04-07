@@ -21,14 +21,15 @@ buildScoreCache(data.df = NULL, data.dists = NULL, method = "bayes",
    group.var = NULL, adj.vars = NULL, cor.vars = NULL, dag.banned = NULL,
    dag.retained = NULL, max.parents = NULL, which.nodes=NULL,
    defn.res = NULL, centre = TRUE, dry.run = FALSE,
-   control = list(), ncores = 1, verbose = FALSE, ...)
+   control = NULL, verbose = FALSE, ...)
 }
 \arguments{
   \item{data.df}{a data frame containing the data used for learning each node, binary variables must be declared as factors.}
   \item{data.dists}{a named list giving the distribution for each node in the network, see \sQuote{Details}.}
   \item{method}{should a "Bayes" or "mle" approach be used, see \sQuote{Details}.}
-  \item{group.var}{only applicable for nodes to be fitted as a mixed model and gives the column name in \code{data.df} of the grouping variable which must be a factor denoting group membership.}
-    \item{adj.vars}{a character vector giving the column names in \code{data.df} for which the network score has to be adjusted for, see \sQuote{Details}.}
+  \item{group.var}{only applicable for nodes to be fitted as a mixed
+    model (Bayesian) and gives the column name in \code{data.df} of the grouping variable which must be a factor denoting group membership.}
+  \item{adj.vars}{a character vector giving the column names in \code{data.df} for which the network score has to be adjusted for, see \sQuote{Details}.}
   \item{cor.vars}{a character vector giving the column names in \code{data.df} for which a mixed model should be used to adjust for within group correlation or pure adjustment.}
   \item{dag.banned}{a matrix or a formula statement (see \sQuote{Details} for format) defining which arcs are not permitted - banned - see \sQuote{Details} for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed.}
   \item{dag.retained}{a matrix or a formula statement (see \sQuote{Details} for format) defining which arcs are must be retained in any model search, see \sQuote{Details} for format. Note that colnames and rownames must be set, otherwise same row/column names as data.df will be assumed. If set as NULL an empty matrix is assumed.}
@@ -37,9 +38,8 @@ buildScoreCache(data.df = NULL, data.dists = NULL, method = "bayes",
   \item{defn.res}{an optional user-supplied list of child and parent combinations, see \sQuote{Details}.}
     \item{centre}{should the observations in each Gaussian node first be standardized to mean zero and standard deviation one, defaults to TRUE.}
   \item{dry.run}{if TRUE then a list of the child nodes and parent combinations are returned but without estimation of node scores (log marginal likelihoods).}
-  \item{control}{a list of control parameters. See \sQuote{Details}.}
+  \item{control}{a list of control parameters. See \code{\link{build.control}} for the names of the settable control values and their effect.}
     \item{verbose}{if TRUE then provides some additional output.}
-    \item{ncores}{The number of cores to parallelize to. Defaults to 1 - no parallelization.}
     \item{\dots}{additional arguments passed for optimization.}
 }
 
@@ -61,45 +61,31 @@ buildScoreCache(data.df = NULL, data.dists = NULL, method = "bayes",
 }
 
 \details{
-The function computes a cache of scores based on possible restrictions (maximum complexity, retained and banned arcs). This cache of score could be used to select the optimal network in other function such as \code{\link{searchHeuristic}} or \code{\link{mostprobable}}. Two very different approaches are implemented: a Bayesian and frequentist approaches. They can be selected using the \code{method} argument.
+The function computes a cache of scores based on possible restrictions (maximum complexity, retained and banned arcs).
+
+This function is very similar to \code{\link{fitAbn}} - see that help
+page for details of the type of models used and in particular
+\code{data.dists} specification - but rather than fit a single complete
+DAG \code{buildScoreCache} iterates over all different parent
+combinations for each node, creating a cache of scores.  This cache of
+score could be used to select the optimal network in other function such
+as \code{\link{searchHeuristic}} or \code{\link{mostprobable}}.
+
+
+Two very different approaches are implemented: a Bayesian and frequentist approaches. They can be selected using the \code{method} argument.
 
 If \code{method="bayes"}:
-
-This function is used to calculate all individual node scores (log marginal likelihoods). This cache can then be fed into a model search algorithm. This function is very similar to \code{\link{fitAbn}} - see that help page for details of the type of models used and in particular \code{data.dists} specification - but rather than fit a single complete DAG \code{buildScoreCache} iterates over all different parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents), where this can differ from node to node. In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied, they are assumed to be empty matrices, i.e., no arcs banned or retained. Note that only rudimentary consistency checking is done here, and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
+This function is used to calculate all individual node scores (log
+marginal likelihoods).
 
 The variable \code{which.nodes} is to allow the computation to be separated by node, for example, over different CPUs using say \code{R CMD BATCH}. This may useful and indeed likely essential with larger problems or those with random effects. Note that in this case, the results must then be combined back into a list of identical formats to that produced by an individual call to \code{buildScoreCache}, comprising of all nodes (in the same order as the columns in \code{data.df}) before sending it to any search routines. Using \code{dry.run} can be useful here.
 
 If \code{method="mle"}:
+This function is used to calculate all individual information-theoretic node scores. The possible information-theoretic based network scores
+computed in \code{buildScoreCache} are the maximum likelihood (mlik, called marginal likelihood in this context as it is computed node wise),
+the Akaike Information Criteria (aic), the Bayesian Information Criteria (bic) and the Minimum distance Length (mdl). The classical definitions of those metrics are given in Kratzer and Furrer (2018). This function computes a cache that can be fed into a model search algorithm.
 
-This function is used to calculate all individual Information-Theoretic node scores. The possible Information-theoretic based network scores computed in \code{buildScoreCache} are the maximum likelihood (mlik, called marginal likelihood in this context as it is computed node wise), the Akaike Information Criteria (aic), the Bayesian Information Criteria (bic) and the Minimum distance Length (mdl). The classical definitions of those metrics are given in Kratzer and Furrer (2018). This function computes a cache that can be fed into a model search algorithm. This function is very similar to \code{\link{fitAbn}} with \code{method="mle"} - see that help page for details of the type of models used and in particular \code{data.dists} specification - but rather than fit a single complete DAG \code{buildScoreCache} iterates over all admissible parent combinations for each node.  There are three ways to customise the parent combinations through giving a matrix which contains arcs which are not allowed (banned), a matrix which contains arcs which must always be included (retained) and also a general complexity limit which restricts the maximum number of arcs allowed to terminate at a node (its number of parents). In these matrices, \code{dag.banned} and \code{dag.retained}, each row represents a node in the network, and the columns in each row define the parents for that particular node, see the example below for the specific format. If these are not supplied they are assumed to be empty matrices, i.e., no arcs banned or retained. Note that only rudimentary consistency checking is done here, and some care should be taken not to provide conflicting restrictions in the ban and retain matrices.
-
-The control argument is a list that can supply any of the following components:
-
-\describe{
- \item{max.mode.error}{if the estimated modes from INLA differ by a factor of max.mode.error or more from those computed internally, then results from INLA are replaced by those computed internally. To force INLA always to be used, then max.mode.error=100, to force INLA never to be used max.mod.error=0. See \sQuote{Details}.}
-  \item{mean}{the prior mean for all the Gaussian additive terms for each node}
-  \item{prec}{the prior precision for all the Gaussian additive term for each node}
-  \item{loggam.shape}{the shape parameter in the Gamma distribution prior for the precision in a Gaussian node}
-  \item{loggam.inv.scale}{the inverse scale parameter in the Gamma distribution prior for the precision in a Gaussian node}
-   \item{max.iters}{total number of iterations allowed when estimating the modes in Laplace approximation}
-  \item{epsabs}{absolute error when estimating the modes in Laplace approximation for models with no random effects.}
-  \item{error.verbose}{logical, additional output in the case of errors occurring in the optimization}
-   \item{epsabs.inner}{absolute error in the maximization step in the (nested) Laplace approximation for each random effect term}
-   \item{max.iters.inner}{total number of iterations in the maximization step in the nested Laplace approximation}
-  \item{finite.step.size}{suggested step length used in finite difference estimation of the derivatives for the (outer) Laplace approximation when estimating modes}
-  \item{hessian.params}{a numeric vector giving parameters for the adaptive algorithm, which determines the optimal stepsize in the finite-difference estimation of the hessian. First entry is the initial guess, second entry absolute error}
-\item{max.iters.hessian}{integer, maximum number of iterations to use when determining an optimal finite difference approximation (Nelder-Mead)}
-\item{max.hessian.error}{if the estimated log marginal likelihood when using an adaptive 5pt finite-difference rule for the Hessian differs by more than max.hessian.error from when using an adaptive 3pt rule then continue to minimize the local error by switching to the Brent-Dekker root bracketing method, see \sQuote{Details}}
-\item{factor.brent}{if using Brent-Dekker root bracketing method then define the outer most interval end points as the best estimate of h (stepsize) from the Nelder-Mead as (h/factor.brent,h*factor.brent)}
-\item{maxiters.hessian.brent}{maximum number of iterations allowed in the Brent-Dekker method}
-\item{num.intervals.brent}{the number of initial different bracket segments to try in the Brent-Dekker method}
-  \item{maxit}{integer given the maximum number of run for estimating network scores using an Iterative Reweighed Least Square algorithm.}
-  \item{tol}{real number giving the minimal tolerance expected to terminate the Iterative Reweighed Least Square algorithm to estimate network score.}
-  \item{seed}{a non-negative integer which sets the seed.}
-}
-
-
-The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \url{http://r-bayesian-networks.org} of the abn website for more details.
+The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \url{http://r-bayesian-networks.org} of the \pkg{abn} website for more details.
 
 }
 
@@ -114,7 +100,7 @@ Kratzer, G., and Furrer, R., (2018). "Information-Theoretic Scoring Rules to Lea
 Further information about \pkg{abn} can be found at: \url{http://r-bayesian-networks.org}.}
 
 \author{Fraser Iain Lewis and Gilles Kratzer}
-
+\seealso{\code{\link{buildScoreCache}}}
 \examples{
 #################################################################
 ## Example 1
@@ -142,13 +128,14 @@ res.c <- buildScoreCache(data.df=mydat, data.dists=mydists,
 
 ## repeat but using R-INLA. The mlik's should be virtually identical.
 ## now build cache:
-res.inla <- buildScoreCache(data.df=mydat, data.dists=mydists,
-              dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par,
-              max.mode.error=100)
+if(requireNamespace("INLA", quietly = TRUE)){  
+  res.inla <- buildScoreCache(data.df=mydat, data.dists=mydists,
+                dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par,
+                control=list(max.mode.error=100))
 
-## comparison - very similar
-summary(res.c$mlik- res.inla$mlik)
-
+  ## comparison - very similar
+  difference <- res.c$mlik - res.inla$mlik
+}
 
 ## Comparison Bayes with MLE (unconstrained):
 res.mle <- buildScoreCache(data.df=mydat, data.dists=mydists,

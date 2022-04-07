@@ -23,17 +23,17 @@
 /** compute all the node scores to create a cache ********************************************************************************************************/                                         
 /** ******************************************************************************************************************************************************/
 SEXP fit_single_node(SEXP R_obsdata, SEXP R_child, SEXP R_parents, SEXP R_numVars, SEXP R_vartype, SEXP R_maxparents,
-	      SEXP R_priors_mean, SEXP R_priors_sd,SEXP R_priors_gamshape,SEXP R_priors_gamscale,
-			 SEXP R_maxiters, SEXP R_epsabs, SEXP R_verbose, SEXP R_errorverbose, 
-	                 SEXP R_groupedvars, SEXP R_groupids, SEXP R_epsabs_inner,SEXP R_maxiters_inner,
-	                 SEXP R_finitestepsize, SEXP R_hparams, SEXP R_maxiters_hessian, SEXP R_ModesONLY,
-		         SEXP R_max_hessian_error,SEXP R_myfactor_brent, SEXP R_maxiters_hessian_brent, SEXP R_num_intervals_brent)
+		     SEXP R_priors_mean, SEXP R_priors_sd,SEXP R_priors_gamshape,SEXP R_priors_gamscale,
+		     SEXP R_maxiters, SEXP R_epsabs, SEXP R_verbose, SEXP R_errorverbose, SEXP R_trace,
+		     SEXP R_groupedvars, SEXP R_groupids, SEXP R_epsabs_inner,SEXP R_maxiters_inner,
+		     SEXP R_finitestepsize, SEXP R_hparams, SEXP R_maxiters_hessian, SEXP R_ModesONLY,
+		     SEXP R_max_hessian_error,SEXP R_myfactor_brent, SEXP R_maxiters_hessian_brent, SEXP R_num_intervals_brent)
 {
   
 /** ****************/
 /** declarations **/
 unsigned int i,k;
-int errverbose,verbose;
+ int errverbose,verbose,trace;
 datamatrix data,designmatrix;
 const double priormean=asReal(R_priors_mean);/*Rprintf("priormean=%f %f\n",priormean[0],priormean[5]);*/
 const double priorsd=asReal(R_priors_sd);/*Rprintf("priorsd=%f %f\n",priorsd[0],priorsd[5]);*/
@@ -71,6 +71,7 @@ double h_guess=REAL(R_hparams)[0];
 double h_epsabs=REAL(R_hparams)[1];
 verbose=asInteger(R_verbose);
 errverbose=asInteger(R_errorverbose);
+trace=asInteger(R_trace); 
 
 /** end of argument parsing **/
 /** *******************************************************************************
@@ -112,7 +113,7 @@ for(k=0;k<numVars;k++){Rprintf("|%d|",dag.defn[curnode][k]);}Rprintf("\n");*/
 			   
 			   case 1:{ /** binary/categorical node */
 			           if(dag.groupedVars[curnode]){/** have grouped binary variable so node is a glmm */
-				      calc_node_Score_binary_rv_R(&dag,&data,curnode,errverbose, &designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
+				     calc_node_Score_binary_rv_R(&dag,&data,curnode,errverbose,trace, &designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
 								  storeModes,epsabs_inner,maxiters_inner,finitestepsize, verbose,
 								  h_guess,h_epsabs,maxiters_hessian,ModesONLY,
 								  max_hessian_error,myfactor_brent, maxiters_hessian_brent, num_intervals_brent);  
@@ -125,7 +126,7 @@ for(k=0;k<numVars;k++){Rprintf("|%d|",dag.defn[curnode][k]);}Rprintf("\n");*/
                          
                            case 2:{ /** gaussian node */
 			           if(dag.groupedVars[curnode]){/** have grouped binary variable so node is a glmm */
-			              calc_node_Score_gaus_rv_R(&dag,&data,curnode,errverbose, &designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
+				     calc_node_Score_gaus_rv_R(&dag,&data,curnode,errverbose,trace, &designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
 								  storeModes,epsabs_inner,maxiters_inner,finitestepsize, verbose,
 								  h_guess,h_epsabs,maxiters_hessian,ModesONLY,
 								  max_hessian_error,myfactor_brent, maxiters_hessian_brent, num_intervals_brent);  
@@ -137,7 +138,7 @@ for(k=0;k<numVars;k++){Rprintf("|%d|",dag.defn[curnode][k]);}Rprintf("\n");*/
 			   
 			    case 3:{ /** poisson node */
 			            if(dag.groupedVars[curnode]){/** have grouped poisson variable so node is a glmm */
-                                       calc_node_Score_pois_rv_R(&dag,&data,curnode,errverbose, &designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
+				      calc_node_Score_pois_rv_R(&dag,&data,curnode,errverbose,trace, &designmatrix, priormean, priorsd,priorgamshape,priorgamscale,maxiters,epsabs,
 								  storeModes,epsabs_inner,maxiters_inner,finitestepsize, verbose,
 								  h_guess,h_epsabs,maxiters_hessian,ModesONLY,
 								  max_hessian_error,myfactor_brent, maxiters_hessian_brent, num_intervals_brent);  

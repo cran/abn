@@ -6,36 +6,37 @@
 
 linkStrength <- function(dag, data.df = NULL, data.dists = NULL, method = c("mi.raw", "mi.raw.pc", "mi.corr", "ls", "ls.pc", "stat.dist"), discretization.method = "doane") {
 
-    group.var <- NULL
-    if (is.matrix(dag)) {
-        name <- names(dag)
-    } else {
-        name <- names(data.dists)
-    }
+    group.var <- NULL    # hard coded, no choice here
+#    if (is.matrix(dag)) {
+#        name <- names(dag)
+#    } else {
+#        name <- names(data.dists)
+#    }
     # Contains Rgraphviz stuff
 
     ## dag transformation
-    if (!is.null(dag)) {
+#    if (!is.null(dag)) {
         if (is.matrix(dag)) {
             ## run a series of checks on the DAG passed
-            dag <- abs(dag)
-            diag(dag) <- 0
-            dag <- check.valid.dag(dag.m = dag, is.ban.matrix = FALSE, group.var = group.var)
+ #           dag <- abs(dag)
+ #            diag(dag) <- 0
+            dag <- check.valid.dag(dag = dag, data.df = data.df, is.ban.matrix = FALSE, group.var = group.var)
             ## naming
-            if (is.null(colnames(dag))) {
-                colnames(dag) <- name
-                rownames(dag) <- name
-            }
+ #            if (is.null(colnames(dag))) {
+ #                colnames(dag) <- name
+ #                rownames(dag) <- name
+ #           }
         } else {
-            if (grepl("~", as.character(dag)[1], fixed = T)) {
-                dag <- formula.abn(f = dag, name = name)
+          if (grepl("~", as.character(dag)[1], fixed = T)) {
+                dag <- formula.abn(f = dag, name = names(data.dists))
                 ## run a series of checks on the DAG passed
-                dag <- check.valid.dag(dag.m = dag, is.ban.matrix = FALSE, group.var = group.var)
-            }
+                dag <- check.valid.dag(dag = dag, is.ban.matrix = FALSE, group.var = group.var)
+#            }
+#        }
+         } else {
+            stop("Dag specification must either be a matrix or a formula expression")
+         }
         }
-    } else {
-        stop("Dag specification must either be a matrix or a formula expression")
-    }
 
 
     ## rows and columns
