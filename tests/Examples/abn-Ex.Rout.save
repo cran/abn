@@ -21,7 +21,7 @@ Type 'q()' to quit R.
 > source(file.path(R.home("share"), "R", "examples-header.R"))
 > options(warn = 1)
 > library('abn')
-abn version 2.7-0 (2022-04-05) is loaded.
+abn version 2.7-1 (2022-04-21) is loaded.
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
@@ -200,10 +200,8 @@ A BibTeX entry for LaTeX users is
 +                 control=list(max.mode.error=100))
 + 
 +   ## comparison - very similar
-+   summary(res.c$mlik- res.inla$mlik)
++   difference <- res.c$mlik - res.inla$mlik
 + }
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      0       0       0       0       0       0 
 > 
 > ## Comparison Bayes with MLE (unconstrained):
 > res.mle <- buildScoreCache(data.df=mydat, data.dists=mydists,
@@ -1375,24 +1373,11 @@ dev.new(): using pdf(file="Rplots2.pdf")
 > ### ** Examples
 > 
 > abn.version$version.string
-[1] "abn version 2.7-0 (2022-04-05)"
+[1] "abn version 2.7-1 (2022-04-21)"
 > 
-> abn.Version("system")
-$R
-[1] "R Under development (unstable) (2022-01-04 r81445)"
-
-$abn
-[1] "2.7-0 (2022-04-05)"
-
-$gsl
-[1] "2.6"
-
-$JAGS
-[1] ‘4.3.0’
-
-$INLA
-[1] "22.03.16"
-
+> ## Not run: 
+> ##D abn.Version("system")
+> ## End(Not run)
 > 
 > 
 > 
@@ -1401,7 +1386,7 @@ $INLA
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  2.504 0.068 2.409 0.001 0 
+Time elapsed:  2.444 0.084 2.365 0 0 
 > grDevices::dev.off()
 pdf 
   2 

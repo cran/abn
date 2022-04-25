@@ -17,68 +17,60 @@ double factorial_fast(double n)
 Rcpp::List irls_poisson_cpp_fast(arma::mat A, arma::vec b, double maxit, double tol)
 {
 //Def
-arma::vec x;
-x.zeros(A.n_cols,1);
-arma::vec xold;
-arma::mat varmatrix;
-
-double nobs;
-nobs = A.n_rows;
-double ll;
-double aic;
-double bic;
-double df;
-double mdl;
-
-arma::vec W(nobs);
-arma::vec unit(nobs);
-unit.ones(nobs);
-arma::vec eta(nobs);
-arma::vec g(nobs);
-arma::vec f(nobs);
-arma::vec gprime(nobs);
-arma::vec z(nobs);
-
-for (int i = 0; i < maxit; ++i) {
-  eta = A * x;
+  arma::vec x;
+  x.zeros(A.n_cols,1);
+  arma::vec xold;
+  arma::mat varmatrix;
   
-  W = exp(eta);
+  double nobs;
+  nobs = A.n_rows;
+  double ll;
+  double aic;
+  double bic;
+  double df;
+  double mdl;
   
-   // for (int j=0; j < nobs; ++j) {
-   //   g[j] = exp(eta[j]);
-   // }
-    // gprime = g;
-    
-  z = eta+(b-W)/W;
+  arma::vec W(nobs);
+  arma::vec unit(nobs);
+  unit.ones(nobs);
+  arma::vec eta(nobs);
+  arma::vec g(nobs);
+  arma::vec f(nobs);
+  arma::vec gprime(nobs);
+  arma::vec z(nobs);
   
-  // W = gprime % gprime;
-  // W /= g;
-  xold = x;
+  for (int i = 0; i < maxit; ++i) {
+    eta = A * x;
   
-  //coefficients
-  varmatrix = A.t()*(W % A.each_col());
-  x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::likely_sympd);
+    W = exp(eta);
+      
+    z = eta+(b-W)/W;
   
-if(sqrt(pow(arma::norm(x-xold), 2)) < tol){
- break;
-}}
+    xold = x;
+  
+    //coefficients
+    varmatrix = A.t()*(W % A.each_col());
+    x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::likely_sympd);
+  
+    if(sqrt(pow(arma::norm(x-xold), 2)) < tol){
+      break;
+    }
+  }
 
-arma::vec e;
-//double ssr;
-e = (b - eta);
-//ssr = accu(e.t()*e);
+  arma::vec e;
+  e = (b - eta);
 
-df = A.n_cols;
+  df = A.n_cols;
 
 //scores
-    for (int j = 0; j < nobs; ++j) {
-      f[j] = log(factorial_fast(1.0 * b[j]));
-      }
-    ll = arma::accu(b % (eta) - exp(eta) - f);
+  for (int j = 0; j < nobs; ++j) {
+    f[j] = log(factorial_fast(1.0 * b[j]));
+  }
+  ll = arma::accu(b % (eta) - exp(eta) - f);
     
-aic = - 2 * ll + 2 * df;
-
-bic = - 2 * ll + log(nobs) * df;
+  aic = - 2 * ll + 2 * df;
+  bic = - 2 * ll + log(nobs) * df;
+  mdl = 1;
 
 //mdl
 
@@ -98,7 +90,7 @@ bic = - 2 * ll + log(nobs) * df;
 // F = (((ssrz - ssr)/df)/(ssr/((nobs-(df + 1)))));
 // 
 // for (int j=0; j < nobs; ++j) {
-// yaverage[j] = b[j] - arma::mean(b);
+//   yaverage[j] = b[j] - arma::mean(b);
 // }
 // 
 // ssrtot = accu(yaverage.t()*yaverage);
@@ -106,12 +98,11 @@ bic = - 2 * ll + log(nobs) * df;
 // RR = 1-(ssr/ssrtot);
 // 
 // if (RR > (df/nobs)) {
-// mdl = (nobs/2) * log(ssr/(nobs-df)) + (df/2) * log(F) + log(nobs);
+//   mdl = (nobs/2) * log(ssr/(nobs-df)) + (df/2) * log(F) + log(nobs);
 // } else {
-// mdl = (nobs/2) * log((accu(b.t()*b))/nobs) + 0.5 * log(nobs);
+//   mdl = (nobs/2) * log((accu(b.t()*b))/nobs) + 0.5 * log(nobs);
 // }
 
-mdl = 1;
     
 //return
 return Rcpp::List::create(
@@ -121,3 +112,7 @@ return Rcpp::List::create(
   Rcpp::Named("mdl") = mdl
   );
 }
+
+
+// note that valgrind might issue some possible memory loss.
+// IMO false positive, see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=36298

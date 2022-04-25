@@ -20,13 +20,13 @@ Type 'q()' to quit R.
 > # automatic unit tests
 > 
 > library("testthat")
-> # library("abn")
+> # library("abn", lib='../../lib')
 > 
 > test_check("abn")
 Loading required package: abn
-abn version 2.7-0 (2022-04-05) is loaded.
+abn version 2.7-1 (2022-04-21) is loaded.
 [ FAIL 0 | WARN 0 | SKIP 0 | PASS 203 ]
 > 
 > proc.time()
    user  system elapsed 
- 64.784   0.124  64.651 
+ 65.716   0.116  65.594 

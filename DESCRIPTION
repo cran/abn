@@ -1,6 +1,6 @@
 Package: abn
-Version: 2.7-0
-Date: 2022-04-06
+Version: 2.7-1
+Date: 2022-04-21
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: 
     c(person(given = "Reinhard",
@@ -54,6 +54,6 @@ LazyData: true
 URL: http://r-bayesian-networks.org
 BugReports: https://git.math.uzh.ch/reinhard.furrer/abn/-/issues
 NeedsCompilation: yes
-Packaged: 2022-04-06 16:03:21 UTC; furrer
+Packaged: 2022-04-21 07:25:37 UTC; furrer
 Repository: CRAN
-Date/Publication: 2022-04-07 07:42:43 UTC
+Date/Publication: 2022-04-25 07:10:06 UTC
