@@ -26,14 +26,13 @@ studies. See also the files provided in the package directories
 
 }
 \references{
-Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2019). "Additive Bayesian Network Modelling with the R Package abn". arXiv preprint arXiv:1911.09006.
+Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2023). Additive Bayesian Network Modelling with the R Package abn. 
+\emph{Journal of Statistical Software}, 105(8), 1--41, \doi{10.18637/jss.v105.i08}.
 
-  Lewis, F. I., and Ward, M. P. (2013). "Improving epidemiologic data analyses through multivariate regression modeling". Emerging themes in epidemiology,
-  10(1), 4.
-  
-  Kratzer, G., Pittavino, M, Lewis, F. I., and Furrer, R., (2017). "abn: an R package for modelling multivariate data using additive Bayesian networks". R
-  package version 2.2.  https://CRAN.R-project.org/package=abn
-  }
+Lewis, F. I., and Ward, M. P. (2013). "Improving epidemiologic data analyses through multivariate regression modeling". 
+\emph{Emerging Themes in Epidemiology}, 10(1), 4.
+
+}
 
 
 \examples{

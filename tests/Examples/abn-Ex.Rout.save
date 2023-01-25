@@ -1,5 +1,5 @@
 
-R Under development (unstable) (2022-01-04 r81445) -- "Unsuffered Consequences"
+R version 4.1.3 (2022-03-10) -- "One Push-Up"
 Copyright (C) 2022 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -21,7 +21,7 @@ Type 'q()' to quit R.
 > source(file.path(R.home("share"), "R", "examples-header.R"))
 > options(warn = 1)
 > library('abn')
-abn version 2.7-1 (2022-04-21) is loaded.
+abn version 2.7-3 (2023-01-23) is loaded.
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
@@ -41,34 +41,33 @@ abn version 2.7-1 (2022-04-21) is loaded.
 > ## Citations:
 > print(citation('abn'), bibtex=TRUE)
 
-To cite `abn` modelling approach and `abn` package in publication use,
-select the most appropriate among:
+To cite abn in publications use:
 
---------------------------------------------------------------------------------------------------------
-
-To cite use of the Bayesian and MLE implementation of `abn` in
-publications use:
-
-  Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R.
-  (2019). Additive Bayesian Network Modelling with the R Package abn.
-  arXiv preprint arXiv:1911.09006
+Kratzer G, Lewis F, Comin A, Pittavino M, Furrer R (2023). “Additive
+Bayesian Network Modeling with the R Package abn.” _Journal of
+Statistical Software_, *105*(8), 1-41. doi: 10.18637/jss.v105.i08 (URL:
+https://doi.org/10.18637/jss.v105.i08).
 
 A BibTeX entry for LaTeX users is
 
   @Article{,
-    title = {Additive {B}ayesian Network Modelling with the {R} Package {abn}},
-    author = {Gilles Kratzer and Fraser Iain Lewis and Arianna Comin and Marta Pittavino and Reinhard Furrer},
-    year = {2019},
-    journal = {arXiv preprint arXiv:1911.09006},
+    title = {Additive {B}ayesian Network Modeling with the {R} Package {abn}},
+    author = {Gilles Kratzer and Fraser Lewis and Arianna Comin and Marta Pittavino and Reinhard Furrer},
+    journal = {Journal of Statistical Software},
+    year = {2023},
+    volume = {105},
+    number = {8},
+    pages = {1--41},
+    doi = {10.18637/jss.v105.i08},
   }
 
 To cite an example of a typical ABN analysis in publications use:
 
-  Kratzer, G. and Lewis, F.I. and Willi, B. and Meli, M.L. and Boretti,
-  F.S. and Hofmann-Lehmann, R. and Torgerson, P. and Furrer, R. and
-  Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline
-  Calicivirus Infection Among Cats in Switzerland. Frontiers in
-  Veterinary Science, 7,73
+  Kratzer, G., Lewis, F.I., Willi, B., Meli, M.L., Boretti, F.S.,
+  Hofmann-Lehmann, R., Torgerson, P., Furrer, R. and Hartnack, S.
+  (2020). Bayesian Network Modeling Applied to Feline Calicivirus
+  Infection Among Cats in Switzerland. Frontiers in Veterinary Science,
+  7, 73
 
 A BibTeX entry for LaTeX users is
 
@@ -79,40 +78,19 @@ A BibTeX entry for LaTeX users is
     journal = {Frontiers in Veterinary Science},
   }
 
-To cite use of `abn` underlaying methodology in applied research for
-publications use:
+To cite package of the R package 'abn' in publications use:
 
-  Lewis, F. I., & Ward, M. P. (2013). Improving epidemiologic data
-  analyses through multivariate regression modelling. Emerging themes
-  in epidemiology, 10(1), 4.
-
-A BibTeX entry for LaTeX users is
-
-  @Article{,
-    title = {Improving epidemiologic data analyses through multivariate regression modelling},
-    author = {Lewis Fraser Iain and Ward Michael P},
-    journal = {Emerging themes in epidemiology},
-    volume = {10},
-    number = {1},
-    pages = {4},
-    year = {2013},
-    publisher = {BioMed Central},
-  }
-
-To cite use of the R package `abn` in publications use:
-
-  Kratzer, G. , Pittavino, M, Lewis, F.I. and Furrer, R. (2020). abn:
-  an R package for modelling multivariate data using additive Bayesian
-  networks. R package version 2.4.
-  https://CRAN.R-project.org/package=abn
+  Furrer, R., Kratzer, G. and Lewis, F.I. (2023). abn: Modelling
+  Multivariate Data with Additive Bayesian Networks. R package version
+  2.7-2.  https://CRAN.R-project.org/package=abn
 
 A BibTeX entry for LaTeX users is
 
   @Manual{,
-    title = {abn: an {R} package for modelling multivariate data using additive {B}ayesian networks},
-    author = {Gilles Kratzer and Marta Pittavino and Fraser Iain Lewis and Reinhard Furrer},
-    year = {2020},
-    note = {R package version 2.4},
+    title = {abn: Modelling Multivariate Data with Additive {B}ayesian Networks},
+    author = {Reinhard Furrer and Gilles Kratzer and Fraser Iain Lewis},
+    year = {2023},
+    note = {R package version 2.7-2},
     url = {https://CRAN.R-project.org/package=abn},
   }
 
@@ -1373,7 +1351,7 @@ dev.new(): using pdf(file="Rplots2.pdf")
 > ### ** Examples
 > 
 > abn.version$version.string
-[1] "abn version 2.7-1 (2022-04-21)"
+[1] "abn version 2.7-3 (2023-01-23)"
 > 
 > ## Not run: 
 > ##D abn.Version("system")
@@ -1386,7 +1364,7 @@ dev.new(): using pdf(file="Rplots2.pdf")
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  2.444 0.084 2.365 0 0 
+Time elapsed:  4.1 4.476 3.147 0 0 
 > grDevices::dev.off()
 pdf 
   2 

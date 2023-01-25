@@ -70,9 +70,10 @@ implementation. See  \code{\link{fit.control}} for details.
 
 }
 
-\references{Lewis, F. I., and McCormick, B. J. J. (2012). Revealing the complexity of health determinants in resource poor settings. \emph{American Journal Of Epidemiology}. DOI:10.1093/aje/KWS183.
+\references{Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2023). Additive Bayesian Network Modelling with the R Package abn. 
+\emph{Journal of Statistical Software}, 105(8), 1--41, \doi{10.18637/jss.v105.i08}.
 
-Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2019). "Additive Bayesian Network Modelling with the R Package abn". arXiv preprint arXiv:1911.09006.
+Lewis, F. I., and McCormick, B. J. J. (2012). Revealing the complexity of health determinants in resource poor settings. \emph{American Journal of Epidemiology}. \doi{10.1093/aje/KWS183}.
 
 Kratzer, G., and Furrer, R., 2018. Information-Theoretic Scoring Rules to Learn Additive Bayesian Network Applied to Epidemiology. Preprint; Arxiv: stat.ML/1808.01126.
 

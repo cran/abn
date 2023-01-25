@@ -8,6 +8,7 @@ abn.Version <- function(what=c('abn','system')) {
     list(R=R.version.string,
          abn=substr(abn.version$version.string, 13, 32),
          gsl=ifelse(R.version$os=="linux-gnu", system('gsl-config --version', intern = TRUE), "NA (?)"),
+          #  pacman -Qs gsl | grep -Poz '([0-9.-]+)\n'
          JAGS=rjags::jags.version(),
          INLA=ifelse(requireNamespace("INLA", quietly = TRUE),
            INLA::inla.version("version"), "not available")

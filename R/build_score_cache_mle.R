@@ -36,8 +36,14 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
     }
 
     for (i in 1:n) {
-        if (data.dists[[i]] == "binomial" & class(data.df[, i]) != "numeric") {
-            data.df[, i] <- as.numeric(factor(data.df[, i])) - 1
+        if (data.dists[[i]] == "binomial") {
+            ## we transform it in any case, to be sure that we have zero-one only.
+##            if (!inherits( data.df[, i], "numeric") {
+                data.df[, i] <- as.numeric(factor(data.df[, i])) - 1
+##            }
+            if (length( unique( data.df[, i])) != 2L) {
+                stop("Binomial mode has more than two different values")
+            }
         }
         if (data.dists[[i]] == "multinomial") {
             data.df[, i] <- factor(data.df[, i])
@@ -315,29 +321,39 @@ buildScoreCache.mle <- function(data.df = NULL, data.dists = NULL, max.parents =
 
         ## Rank deficiency
         num.na <- 0
-        Y1 <- as.numeric(as.character(Y))
 
         R <- rank_cpp(X)
         r <- ncol(X)
         R_col <- R/r
 
         if (R_col != 1 & as.character(distribution) == "binomial") {
+          Y1 <- if (is.factor(Y)) numeric(Y) else  Y
 
-            tryCatch(fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]]), error = function(e) {
-                while (rank_cpp(X)/ncol(X) != 1) {
-                  X <- X[, -1]
-                  num.na <- num.na + 1
-                  if (is.null(ncol(X)))
-                    X <- as.matrix(X)
-                }
-                fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]])
-            }, finally = fit)
+          while (rank_cpp(X)/ncol(X) != 1) {
+            X <- X[, -1]
+            num.na <- num.na + 1
+            if (is.null(ncol(X)))
+              X <- as.matrix(X)
+          }
+          tryCatch(fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]]))
+
+          # tryCatch(fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]]),
+          #  error = function(e) {
+          #       while (rank_cpp(X)/ncol(X) != 1) {
+          #         X <- X[, -1]
+          #         num.na <- num.na + 1
+          #         if (is.null(ncol(X)))
+          #           X <- as.matrix(X)
+          #       }
+          #       fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]])
+          #   }, finally = fit)
 
         } else {
 
             switch(as.character(distribution), binomial = {
-                fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]])
-                if (is.na(sum(fit[[1]]))) fit <- irls_binomial_cpp_fast_br(A = X, b = Y, maxit = control[["max.iters"]], tol = control[["tol"]])
+              Y1 <- if (is.factor(Y)) numeric(Y) else Y
+              fit <- irls_binomial_cpp_fast_br(A = X, b = Y1, maxit = control[["max.iters"]], tol = control[["tol"]])
+              if (is.na(sum(fit[[1]]))) fit <- irls_binomial_cpp_fast_br(A = X, b = Y, maxit = control[["max.iters"]], tol = control[["tol"]])
 
             }, gaussian = {
                 suppressWarnings(fit <- irls_gaussian_cpp_fast(A = X, b = Y, maxit = control[["max.iters"]], tol = control[["tol"]]))

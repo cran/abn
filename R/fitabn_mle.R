@@ -60,9 +60,15 @@ fitAbn.mle <- function(dag = NULL,
   
   ##formatting 
   for(i in 1:n){
-    if(data.dists[[i]]=="binomial" & class(data.df[,i])!="numeric"){
-      data.df[,i] <- as.numeric(factor(data.df[,i]))-1
-    }
+        if (data.dists[[i]] == "binomial") {
+            ## we transform it in any case, to be sure that we have zero-one only.
+##            if (!inherits( data.df[, i], "numeric") {
+                data.df[, i] <- as.numeric(factor(data.df[, i])) - 1
+##            }
+            if (length( unique( data.df[, i])) != 2L) {
+                stop("Binomial mode has more than two different values")
+            }
+      }
       if(data.dists[[i]]=="multinomial"){
         data.df[,i] <- factor(data.df[,i])
       }

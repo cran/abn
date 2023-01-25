@@ -31,8 +31,10 @@ to adjust for grouping.
 }  
  
 \references{
-Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2019). "Additive Bayesian Network Modelling with the R Package abn". arXiv preprint arXiv:1911.09006.
- 
+Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2023). Additive Bayesian Network Modelling with the R Package abn. 
+_Journal of Statistical Software_, 105(8), 1--41, \doi{10.18637/jss.v105.i08}.
+
+  
 Dohoo, Ian Robert, Wayne Martin, and Henrik Stryhn. Veterinary epidemiologic research. No. V413 DOHv. Charlottetown, Canada: AVC Incorporated, 2003.}
 
 \keyword{datasets}

@@ -1,49 +1,45 @@
-citHeader("To cite `abn` modelling approach and `abn` package in publication use, select the most appropriate among:\n
---------------------------------------------------------------------------------------------------------
-")
-
-citEntry(entry = "Article",
-  title        = "Additive {B}ayesian Network Modelling with the {R} Package {abn}",
-  author       = personList(as.person("Gilles Kratzer"),as.person("Fraser Iain Lewis"), as.person("Arianna Comin"), as.person("Marta Pittavino"), as.person("Reinhard Furrer")),
-  year         = "2019",
-  journal      ="arXiv preprint arXiv:1911.09006",
-  header       = "To cite use of the Bayesian and MLE implementation of `abn` in publications use:",
-  textVersion  =
-  paste("Kratzer, G., Lewis, F.I., Comin, A., Pittavino, M. and Furrer, R. (2019). Additive Bayesian Network Modelling with the R Package abn. arXiv preprint arXiv:1911.09006")
+bibentry(bibtype = "Article",
+  title        = "Additive {B}ayesian Network Modeling with the {R} Package {abn}",
+  author       = c(person(given = "Gilles",
+                          family = "Kratzer"),
+                   person(given = "Fraser",
+                          family = "Lewis"),
+                   person(given = "Arianna",
+                          family = "Comin"),
+                   person(given = "Marta",
+                          family = "Pittavino"),
+                   person(given = "Reinhard",
+                          family = "Furrer",
+                          email = "reinhard.furrer@math.uzh.ch")),
+  journal      = "Journal of Statistical Software",
+  year         = "2023",
+  volume       = "105",
+  number       = "8",
+  pages        = "1--41",
+  doi          = "10.18637/jss.v105.i08",
+  header       = "To cite abn in publications use:"
 )
+
 
 citEntry(entry = "Article",
   title        = "{B}ayesian {N}etwork {M}odeling {A}pplied to {F}eline {C}alicivirus {I}nfection {A}mong {C}ats in {S}witzerland",
-  author       = personList(as.person("Gilles Kratzer"),as.person("Fraser Iain Lewis"), as.person("Barbara Willi"), as.person("Marina Meli"), as.person("Felicitas Boretti"), as.person("Regina Hofmann-Lehmann"), as.person("Paul Torgerson"), as.person("Reinhard Furrer"), as.person("Sonja Hartnack")),
+  author       = personList(as.person("Gilles Kratzer"), as.person("Fraser Iain Lewis"), as.person("Barbara Willi"), as.person("Marina Meli"), as.person("Felicitas Boretti"), as.person("Regina Hofmann-Lehmann"), as.person("Paul Torgerson"), as.person("Reinhard Furrer"), as.person("Sonja Hartnack")),
   year         = "2020",
   journal      ="Frontiers in Veterinary Science",
   header       = "To cite an example of a typical ABN analysis in publications use:",
   textVersion  =
-  paste("Kratzer, G. and Lewis, F.I. and Willi, B. and Meli, M.L. and Boretti, F.S. and Hofmann-Lehmann, R. and Torgerson, P. and Furrer, R. and Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Frontiers in Veterinary Science, 7,73")
+  paste("Kratzer, G., Lewis, F.I., Willi, B., Meli, M.L., Boretti, F.S., Hofmann-Lehmann, R., Torgerson, P., Furrer, R. and Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Frontiers in Veterinary Science, 7, 73")
 )
 
-citEntry(entry = "Article",
-  title        = "Improving epidemiologic data analyses through multivariate regression modelling",
-  author       = personList(as.person("Lewis Fraser Iain"), as.person("Ward Michael P")),
-  journal      = "Emerging themes in epidemiology",
-  volume       = "10",
-  number       = "1",
-  pages        = "4",
-  year         = "2013",
-  publisher    ="BioMed Central",
-header       = "To cite use of `abn` underlaying methodology in applied research for publications use:",
-  textVersion  =
-  paste("Lewis, F. I., & Ward, M. P. (2013). Improving epidemiologic data analyses through multivariate regression modelling. Emerging themes in epidemiology, 10(1), 4.")
-  )
 
 citEntry(entry = "Manual",
-    title = "abn: an {R} package for modelling multivariate data using additive {B}ayesian networks",
-    author = personList(as.person("Gilles Kratzer"), as.person("Marta Pittavino"), as.person("Fraser Iain Lewis"), as.person("Reinhard Furrer")),
-    year = "2020",
-    note = "R package version 2.4",
+    title = "abn: Modelling Multivariate Data with Additive {B}ayesian Networks",
+    author = personList(as.person("Reinhard Furrer"), as.person("Gilles Kratzer"), as.person("Fraser Iain Lewis")),
+    year = "2023",
+    note = "R package version 2.7-2",
     url = "https://CRAN.R-project.org/package=abn",
-    header       = "To cite use of the R package `abn` in publications use:",
+    header       = "To cite package of the R package 'abn' in publications use:",
   textVersion  =
-  paste("Kratzer, G. , Pittavino, M, Lewis, F.I. and Furrer, R. (2020). abn: an R package for modelling multivariate data using additive Bayesian networks. R package version 2.4.
+  paste("Furrer, R., Kratzer, G. and Lewis, F.I. (2023). abn: Modelling Multivariate Data with Additive Bayesian Networks. R package version 2.7-2.
   https://CRAN.R-project.org/package=abn")
 )
