@@ -24,7 +24,7 @@ Type 'q()' to quit R.
 > 
 > test_check("abn")
 Loading required package: abn
-abn version 2.7-3 (2023-01-23) is loaded.
+abn version 2.7-5 (2023-05-09) is loaded.
 [ FAIL 0 | WARN 0 | SKIP 0 | PASS 203 ]
 > 
 > proc.time()

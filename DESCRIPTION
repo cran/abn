@@ -1,11 +1,16 @@
 Package: abn
-Version: 2.7-3
-Date: 2023-01-23
+Version: 2.7-5
+Date: 2023-05-09
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: 
-    c(person(given = "Reinhard",
+    c(person(given = "Matteo",
+             family = "Delucchi",
+             role = c("cre"),
+             email = "matteo.delucchi@math.uzh.ch",
+             comment = c(ORCID = "0000-0002-9327-1496")),
+      person(given = "Reinhard",
              family = "Furrer",
-             role = c("cre", "aut"),
+             role = c("aut"),
              email = "reinhard.furrer@math.uzh.ch",
              comment = c(ORCID = "0000-0002-6319-2332")),
       person(given = "Gilles",
@@ -20,7 +25,7 @@ Authors@R:
 	           comment = c(ORCID = "0000-0003-4580-2712")),
       person(given = "Marta",
              family = "Pittavino",
-             role = "ctb",
+             role = "ctr",
              email = "marta.pittavino@math.uzh.ch",
              comment = c(ORCID = "0000-0002-1232-1034")),
       person(given = "Kalina", 
@@ -28,12 +33,13 @@ Authors@R:
              role = "ctr",
              email = "kalinacherneva@gmail.com")
 	     )
-Author: Reinhard Furrer [cre, aut] (<https://orcid.org/0000-0002-6319-2332>),
+Author: Matteo Delucchi [cre] (<https://orcid.org/0000-0002-9327-1496>),
+  Reinhard Furrer [aut] (<https://orcid.org/0000-0002-6319-2332>),
   Gilles Kratzer [aut] (<https://orcid.org/0000-0002-5929-8935>),
   Fraser Iain Lewis [aut] (<https://orcid.org/0000-0003-4580-2712>),
-  Marta Pittavino [ctb] (<https://orcid.org/0000-0002-1232-1034>),
+  Marta Pittavino [ctr] (<https://orcid.org/0000-0002-1232-1034>),
   Kalina Cherneva [ctr]
-Maintainer: Reinhard Furrer <reinhard.furrer@math.uzh.ch>
+Maintainer: Matteo Delucchi <matteo.delucchi@math.uzh.ch>
 Depends: R (>= 4.0.0)
 Imports: methods, rjags, nnet, lme4, graph, Rgraphviz, doParallel,
         foreach
@@ -53,7 +59,8 @@ License: GPL (>= 2)
 LazyData: true
 URL: http://r-bayesian-networks.org
 BugReports: https://git.math.uzh.ch/reinhard.furrer/abn/-/issues
+Encoding: UTF-8
 NeedsCompilation: yes
-Packaged: 2023-01-25 09:10:28 UTC; furrer
+Packaged: 2023-05-22 09:10:16 UTC; gitlab-runner
 Repository: CRAN
-Date/Publication: 2023-01-25 10:30:02 UTC
+Date/Publication: 2023-05-22 13:50:24 UTC

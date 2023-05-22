@@ -37,8 +37,8 @@ importFrom("grDevices", "rgb", "dev.flush", "dev.new", "dev.list", "dev.off")
 importFrom("graphics", "plot", "lines", "par", "points", "title")
 
 importFrom("methods", "hasArg")
-importFrom("methods", "initialize", "new", "slot")   ## this is for the handling of the graph classes passed to Rgraphviz.
-importFrom("stats", "fitted.values") # to avoide error  plot.abnFit: no visible binding for global variable ‘fitted.values’
+importFrom("methods", "initialize", "new", "slot")
+importFrom("stats", "fitted.values") 
 importFrom("stats", "complete.cases", "sd", "spline","coef", "model.matrix", "pnorm", "pt", "residuals", "hatvalues", "AIC", "BIC", "family")
 importFrom("rjags", "coda.samples", "jags.model")
 importFrom("stats", "IQR", "cor", "nobs", "rbinom", "dbinom", "dist", "dnorm", "dpois", "glm","predict.glm", "sigma")

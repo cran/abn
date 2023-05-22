@@ -1,6 +1,6 @@
-72f481b206290ae24cd1f0391617838e *ChangeLog
-8e7709325d66d99cbe3c0e4d6d347199 *DESCRIPTION
-5febddf60610105faeea221cf2ee3f8d *NAMESPACE
+5e21cdd41079c696e01b72c5805b1842 *ChangeLog
+898165dacf294542d88bdcacf8973314 *DESCRIPTION
+fcee337402821d92c0ebda20fce52319 *NAMESPACE
 c508b811d1a84b4fb8fa2df58f2fe391 *R/RcppExports.R
 e6535eb8a42c5dedf75fc9a85a5e0986 *R/abn-infotheo.R
 20e97300658b81e5be992afa1a8fc378 *R/abn-internal.R
@@ -24,8 +24,8 @@ bf10f9b73db2009e6bd9b92f2917bcfc *R/link-strength.R
 d5664d8fd9710b0e667446502662cc9d *R/simulate-abn.R
 8aecb31ef5c15fd6929ad3bde310f650 *R/tographviz.R
 d84ee0b5f34b41545561b6abc3fcd85c *R/validation.R
-56cab897a7061ba4291619d6b6d5a729 *build/partial.rdb
-352e52f96c34ff1989f3ee17e06bc3d5 *build/vignette.rds
+0c6ad5b3446721162c89589e8077ab1c *build/partial.rdb
+e6560ed7f01e186d0d0350ac1e25092c *build/vignette.rds
 94823f536be537a42bc2aacc7908e558 *cleanup
 0235013c3c40626b1f7213855acb043d *configure
 cea64cbffcd14212833f11707b6a7406 *configure.ac
@@ -41,7 +41,7 @@ e0210425216170773902bda40b3331f4 *data/ex4data.RData
 166b261826eb76072e84995d8b05d8e8 *data/ex7data.RData
 ad7cc249cc3b4bc990671b8f037e1f57 *data/pigs.vienna.RData
 256a987f46ef4559ee4e35ca9377ea30 *data/var33.RData
-a7d900b58facf30d6eadd1b14af6ae13 *inst/CITATION
+71d34a77a89d813b3f20b61d172d5d9b *inst/CITATION
 e38fdd887d54cbe99ef5b613dff90d03 *inst/bootstrapping_example/bootstrapping.R
 a3ab0e8daccd8c480e4fc7bd793877b9 *inst/bootstrapping_example/bootstrapping.bash
 01b6cf87e28c79ffeec9122be04c87ea *inst/bootstrapping_example/pigs_model.bug
@@ -160,9 +160,9 @@ b41cb94e5ee74f0be78d3d76a6fee9ac *src/rank.cpp
 f3a78447e2b41334bad0c3ec61ff9b33 *src/structs.h
 016626f29b2f2ed3fdc7137fe65fcc89 *src/utility.c
 55115b631bd67070f8e4f0cc765d01f1 *src/utility.h
-8eb7ff602ad4bf100ff3e047d2d53e02 *tests/Examples/abn-Ex.Rout.save
+374b318cc4bacb28de748d490239e26b *tests/Examples/abn-Ex.Rout.save
 b47a968bd8f59e4d53968138881887dc *tests/testthat.R
-0866ccc08c02fe5c76af087d21720806 *tests/testthat.Rout.save
+20a901533ba7be8dbaaa29889d20ba83 *tests/testthat.Rout.save
 dac3e89406e9e42d063abe067db41380 *tests/testthat/test-Coutput.R
 4ecb79d5ce5b69007fa91516aa263ebd *tests/testthat/test-backward-compatibility.R
 01d81629691df990e8365bd6a578df84 *tests/testthat/test-historical.R

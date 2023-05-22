@@ -21,7 +21,7 @@ Type 'q()' to quit R.
 > source(file.path(R.home("share"), "R", "examples-header.R"))
 > options(warn = 1)
 > library('abn')
-abn version 2.7-3 (2023-01-23) is loaded.
+abn version 2.7-5 (2023-05-09) is loaded.
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
@@ -45,8 +45,8 @@ To cite abn in publications use:
 
 Kratzer G, Lewis F, Comin A, Pittavino M, Furrer R (2023). “Additive
 Bayesian Network Modeling with the R Package abn.” _Journal of
-Statistical Software_, *105*(8), 1-41. doi: 10.18637/jss.v105.i08 (URL:
-https://doi.org/10.18637/jss.v105.i08).
+Statistical Software_, *105*(8), 1-41. doi: 10.18637/jss.v105.i08 
+<https://doi.org/10.18637/jss.v105.i08>.
 
 A BibTeX entry for LaTeX users is
 
@@ -1351,7 +1351,7 @@ dev.new(): using pdf(file="Rplots2.pdf")
 > ### ** Examples
 > 
 > abn.version$version.string
-[1] "abn version 2.7-3 (2023-01-23)"
+[1] "abn version 2.7-5 (2023-05-09)"
 > 
 > ## Not run: 
 > ##D abn.Version("system")

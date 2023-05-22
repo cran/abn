@@ -1,7 +1,16 @@
 ---------------------------
 -- ChangeLog - abn --
----------------------------
+	---------------------------
+2023-05-06 Matteo Delucchi (version 2.7-5)
+  * Changed contributors
+  * Fixed unicode-character issue in NAMESPACE
 
+2023-01-21 Reinhard Furrer  (version 2.7-4)
+
+  * Changes for JSS article.
+  * Minor internal improvements (eliminated tests based on `class()`)
+	
+	
 2022-06-15 Reinhard Furrer  (version 2.7-3, 2.7-1)
 
   * Fixed a bug in `buildScoreCache.mle()` ()

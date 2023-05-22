@@ -20,10 +20,9 @@ bibentry(bibtype = "Article",
   header       = "To cite abn in publications use:"
 )
 
-
-citEntry(entry = "Article",
+bibentry(bibtype = "Article",
   title        = "{B}ayesian {N}etwork {M}odeling {A}pplied to {F}eline {C}alicivirus {I}nfection {A}mong {C}ats in {S}witzerland",
-  author       = personList(as.person("Gilles Kratzer"), as.person("Fraser Iain Lewis"), as.person("Barbara Willi"), as.person("Marina Meli"), as.person("Felicitas Boretti"), as.person("Regina Hofmann-Lehmann"), as.person("Paul Torgerson"), as.person("Reinhard Furrer"), as.person("Sonja Hartnack")),
+  author       = c(as.person("Gilles Kratzer"), as.person("Fraser Iain Lewis"), as.person("Barbara Willi"), as.person("Marina Meli"), as.person("Felicitas Boretti"), as.person("Regina Hofmann-Lehmann"), as.person("Paul Torgerson"), as.person("Reinhard Furrer"), as.person("Sonja Hartnack")),
   year         = "2020",
   journal      ="Frontiers in Veterinary Science",
   header       = "To cite an example of a typical ABN analysis in publications use:",
@@ -31,10 +30,9 @@ citEntry(entry = "Article",
   paste("Kratzer, G., Lewis, F.I., Willi, B., Meli, M.L., Boretti, F.S., Hofmann-Lehmann, R., Torgerson, P., Furrer, R. and Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Frontiers in Veterinary Science, 7, 73")
 )
 
-
-citEntry(entry = "Manual",
+bibentry(bibtype = "Manual",
     title = "abn: Modelling Multivariate Data with Additive {B}ayesian Networks",
-    author = personList(as.person("Reinhard Furrer"), as.person("Gilles Kratzer"), as.person("Fraser Iain Lewis")),
+    author = c(as.person("Reinhard Furrer"), as.person("Gilles Kratzer"), as.person("Fraser Iain Lewis")),
     year = "2023",
     note = "R package version 2.7-2",
     url = "https://CRAN.R-project.org/package=abn",
