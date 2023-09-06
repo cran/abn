@@ -1,8 +1,12 @@
-Sys.setenv("R_TESTS" = "")
+# This file is part of the standard setup for testthat.
+# It is recommended that you do not modify it.
+#
+# Where should you do additional test configuration?
+# Learn more about the roles of various files in:
+# * https://r-pkgs.org/tests.html
+# * https://testthat.r-lib.org/reference/test_package.html#special-files
 
-# automatic unit tests
-
-library("testthat")
-# library("abn", lib='../../lib')
+library(testthat)
+library(abn)
 
 test_check("abn")

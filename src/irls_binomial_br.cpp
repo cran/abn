@@ -5,6 +5,10 @@
 
 using namespace Rcpp;
 using namespace arma;
+//' @title BR Iterative Reweighed Least Square algorithm for Binomials
+//' @description IRLS to estimate network score of Binomial nodes.
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 
 Rcpp::List irls_binomial_cpp_br(arma::mat A, arma::vec b, double maxit, double tol)
@@ -42,7 +46,7 @@ arma::vec bprime(nobs);
 
 for (int i = 0; i < maxit; ++i) {
   eta = A * x;
-  
+
   for (int j=0; j < nobs; ++j) {
     g[j] = 1.0 / (1.0 + exp(-1.0 * eta[j]));
     gprime[j] = exp (-1.0 * eta[j]) / ((1.0 + exp (-1.0 * eta[j])) * (1.0 + exp (-1.0 * eta[j])));
@@ -50,21 +54,21 @@ for (int i = 0; i < maxit; ++i) {
     bprime[j] = (b[j]+(df/nobs)*(0.5))/(1+(df/nobs));
 
   }
-   
+
   //z = eta+(b-g)/gprime;
   z = eta+(bprime-g)/gprime;
 
   W = (gprime % gprime);
-  W /= (g % (unit-g)); 
+  W /= (g % (unit-g));
   //W += unit*(df/nobs);
   xold = x;
-  
+
   //coefficients
   //x = arma::solve(A.t()*(W % A.each_col()), A.t()*(W % z), arma::solve_opts::no_approx);
   varmatrix = A.t()*(W % A.each_col());
   x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::no_approx);
   //k = i;
-  
+
 if(sqrt(arma::dot(x-xold,x-xold)) < tol){
  break;
 }}

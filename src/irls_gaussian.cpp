@@ -4,7 +4,10 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-
+//' @title Iterative Reweighed Least Square algorithm for Gaussians
+//' @description IRLS to estimate network score of Gaussian nodes.
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 
 Rcpp::List irls_gaussian_cpp(arma::mat A, arma::mat b, double maxit, double tol)

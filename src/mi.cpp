@@ -4,6 +4,10 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
 
+//' @title Mutual Information
+//' @description Calculates the mutual information.
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 double mi_cpp(arma::mat joint_dist){
         joint_dist = joint_dist/sum(sum(joint_dist));
@@ -18,8 +22,8 @@ double mi_cpp(arma::mat joint_dist){
                 if(!std::isfinite(temp)){
                     temp = 0;
                 }
-                mutual_information += joint_dist(i,j) * temp; 
+                mutual_information += joint_dist(i,j) * temp;
             }
-        } 
-        return mutual_information;    
+        }
+        return mutual_information;
     }

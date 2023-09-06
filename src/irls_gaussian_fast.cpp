@@ -4,7 +4,10 @@
 //[[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-
+//' @title Fast Iterative Reweighed Least Square algorithm for Gaussians
+//' @description IRLS to estimate network score of Gaussian nodes.
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 Rcpp::List irls_gaussian_cpp_fast(arma::mat A, arma::vec b, double maxit, double tol)
 {
@@ -35,7 +38,7 @@ ssr = accu(e.t()*e);
 n = A.n_rows;
 df = A.n_cols + 1;
 
-//scores 
+//scores
 
 ll = 0.5 * ( - n * (log(2 * arma::datum::pi) + 1 - log(n) + log(ssr)));
 
@@ -51,29 +54,29 @@ bic = - 2 * ll + log(n) * df;
 // arma::mat xz;
 // xz.zeros(size(x));
 // arma::vec ez;
-// 
-// 
+//
+//
 // double ssrz;
 // double ssrtot;
 // double RR;
 // double F;
-// 
-// 
-// 
+//
+//
+//
 // arma::vec yaverage(n);
-// 
+//
 // ez = (b - A*xz);
 // ssrz = accu(ez.t()*ez);
 // F = (((ssrz - ssr)/df)/(ssr/((n-(df + 1)))));
-// 
+//
 // for (int j=0; j < (n); ++j) {
 // yaverage[j] = b[j] - arma::mean(b);
 // }
-// 
+//
 // ssrtot = accu(yaverage.t()*yaverage);
-// 
+//
 // RR = 1-(ssr/ssrtot);
-// 
+//
 // if (RR > (df/n)) {
 // mdl = (n/2) * log(ssr/(n-df)) + (df/2) * log(F) + log(n);
 // } else {

@@ -5,7 +5,10 @@
 
 using namespace Rcpp;
 using namespace R;
-
+//' @title Factorial
+//' @description Calculate the factorial in C##
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 double factorial(double n)
 {
@@ -13,6 +16,10 @@ double factorial(double n)
 }
 
 
+//' @title Iterative Reweighed Least Square algorithm for Poissons
+//' @description IRLS to estimate network score of Poisson nodes.
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 
 Rcpp::List irls_poisson_cpp(arma::mat A, arma::vec b, double maxit, double tol)
@@ -45,16 +52,16 @@ arma::vec z(nobs);
 
 for (int i = 0; i < maxit; ++i) {
   eta = A * x;
-  
+
   W = exp(eta);
-    
+
   z = eta+(b-W)/W;
   xold = x;
-  
+
   //coefficients
   varmatrix = A.t()*(W % A.each_col());
   x = arma::solve(varmatrix, A.t()*(W % z), arma::solve_opts::no_approx);
-  
+
 if(sqrt(pow(arma::norm(x-xold), 2)) < tol){
  break;
 }}
@@ -62,23 +69,23 @@ if(sqrt(pow(arma::norm(x-xold), 2)) < tol){
 df = A.n_cols;
 
 //loglik
-    
+
     for (int j = 0; j < nobs; ++j) {
       f[j] = log(factorial(1.0 * b[j]));
       }
-    
+
     ll = arma::accu(b % (eta) - exp(eta) - f);
-    
+
 aic = - 2 * ll + 2 * df;
 
 bic = - 2 * ll + log(nobs) * df;
-    
+
 //sse
 e = (b - eta);
 ssr = arma::dot(e, e);
 
 mdl = 1;
-    
+
 //return
 return Rcpp::List::create(
   Rcpp::Named("coefficients") = x,

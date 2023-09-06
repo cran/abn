@@ -1,125 +1,40 @@
-###############################################################################
-## buildscorecache.R ---
-## Author          : Fraser Lewis & Gilles Kratzer
-## Last modified   : 02/12/2012
-##                 : 06/12/2016 GK, implementation of formula (dag.banned, dag.retained)
-##                 : 21/05/2019 GK, methods bayes
-###############################################################################
+#' \code{buildScoreCache.mle} and \code{buildScoreCache.bayes} are internal functions called by \code{buildScoreCache}.
+#'
+#' @describeIn buildScoreCache Fit a given DAG to data with method="bayes".
+#' @param force.method "notset", "INLA" or "C". This is specified in \code{\link{buildScoreCache}(control=list(max.mode.error=...))}.
+#' @param mylist result returned from \code{\link{check.valid.data}}.
+#' @param grouped.vars result returned from \code{\link{check.valid.groups}}.
+#' @param group.ids result returned from \code{\link{check.valid.groups}}.
+#' @importFrom stats sd
+#' @family Bayes
+buildScoreCache.bayes <-
+  function(data.df = NULL,
+           data.dists = NULL,
+           group.var = NULL,
+           cor.vars = NULL,
+           dag.banned = NULL,
+           dag.retained = NULL,
+           max.parents = NULL,
+           which.nodes = NULL,
+           defn.res = NULL,
+           dry.run = FALSE,
+           centre = TRUE,
+           force.method = NULL,
+           mylist = NULL,
+           grouped.vars = NULL,
+           group.ids = NULL,
+           control = build.control(method = "bayes"),
+           verbose = FALSE) {
 
-## fit a given DAG to data
-buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL, cor.vars=NULL,
-                            dag.banned=NULL, dag.retained=NULL,
-                            max.parents=NULL,
-                            which.nodes=NULL,defn.res=NULL,dry.run=FALSE, centre=TRUE,
-                            control = build.control(method = "bayes"), verbose = FALSE)
-                    {
+    # Multinomial nodes not yet implemented for method "bayes"
+    if(any(unlist(data.dists, use.names = F) == "multinomial")){
+      stop("Multinomial nodes are not yet implemented for method 'bayes'. Try with method='mle'.") # Specifically, in file fit_single_node.c, there is no case for multinomial distribution.
+    }
+
    set.seed(control[["seed"]])
 
    data.df.original <- data.df
    n <- length(data.dists)
-
-   if(is.null(max.parents)){
-      max.parents <- 1
-   }
-
-   if(is.numeric(max.parents)){
-      if(max.parents>=n){
-         max.parents <- n-1
-      }
-   }
-
-   if(is.list(max.parents)){
-      if(do.call(max, max.parents)>=(n-1) | length(max.parents)!=n){
-         stop("'max.parent' should be an integer or a list with a maximum possible of number of node-1 and the length of the list should not exceed the number of nodes.")
-      }
-   }
-
-   if(!is.null(cor.vars) && is.null(group.var)){stop("must specify the group variable!") }
-
-   if(control[["max.mode.error"]]>100 || control[["max.mode.error"]]<0){ stop("'max.mode.error' is a % and must be [0,100]!") }
-
-   force.method <- "notset" 
-   if(control[["max.mode.error"]]==0){  force.method <- "C" }
-   if(control[["max.mode.error"]]==100){force.method <- "INLA" }
-
-   ## run series of checks on the arguments
-   ## return a list with entries bin, gaus, pois, ntrials and exposure
-   mylist <- check.valid.data(data.df,data.dists,group.var)
-
-   ## Formula transformation and run a series of common sense checks on the banned DAG and retain DAG
-
-   #test for dag
-   if(!is.null(dag.banned)){
-     if(is.matrix(dag.banned)){
-       ## run a series of checks on the DAG passed
-       dag.banned <- check.valid.dag(dag=dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var)
-     } else {
-       if(grepl('~',as.character(dag.banned)[1],fixed = TRUE)){
-         dag.banned <- formula.abn(f = dag.banned,name = colnames(data.df))
-         ## run a series of checks on the DAG passed
-         dag.banned <- check.valid.dag(dag=dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var)
-       }
-     }
-   } else {
-     dag.banned <- check.valid.dag(dag=dag.banned,data.df=data.df,is.ban.matrix=TRUE,group.var=group.var)
-   }
-
-   #test for dag
-   if(!is.null(dag.retained)){
-     if(is.matrix(dag.retained)){
-       ## run a series of checks on the DAG passed
-       dag.retained <- check.valid.dag(dag=dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
-     } else {
-       if(grepl('~',as.character(dag.retained)[1],fixed = TRUE)){
-         dag.retained <- formula.abn(f = dag.retained,name = colnames(data.df))
-         ## run a series of checks on the DAG passed
-         dag.retained <- check.valid.dag(dag=dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
-       }
-     }
-   } else {
-     dag.retained <- check.valid.dag(dag=dag.retained,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
-   }
-
-   ## check max.parents is a list with suitable entries
-   if(is.null(defn.res)){      ## not supplying custom parent sets
-       ## returns an integer vector of the same length of number of nodes
-       max.parents <- check.valid.parents(data.df,max.parents,group.var)
-       ## providing custom parent set and so max.parents is irrelevant
-   } else {
-       ## note this is just a dummy and not actually used anywhere!
-       max.parents <- max(apply(defn.res[["node.defn"]],1,sum))
-   }
-
-   ## check retain does not ask for more arcs to be retained than allowed in max.parents
-   ## number of parents per node to retain
-   max.retain <- apply(dag.retained,1,sum)
-   if(length(which( (max.retain>max.parents) == TRUE))>0){stop("'dag.retained' is inconsistent with max.parents!")}
-   
-   ## check that arcs than are banned are also not retained
-   if(length(which(which(as.integer(dag.banned)==1)%in%which(as.integer(dag.retained)==1)==TRUE))>0){stop("'dag.banned' and 'dag.retained' are inconsistent!")}
-   
-   ## check which.nodes is sensible
-   if(is.null(defn.res)){which.nodes <- check.which.valid.nodes(data.df,which.nodes,group.var)
-   } else {
-       ## have user supplied children and parent combinations
-       which.nodes <- unique(defn.res$children)
-   }
-
-   ## check grouping variables
-   ## returns ammended data.df and suitable variables
-   list.group.var <- check.valid.groups(group.var,data.df,cor.vars)
-   ## int vect of variables to be treated as grouped indexed from 1
-   grouped.vars <- list.group.var$grouped.vars
-   ## int vector of group membership ids
-   group.ids <- list.group.var$group.ids
-   ## this has removed the grouping variable from data.df
-   data.df <- list.group.var$data.df
-
-   ## check split.vars - gives the variables which are multinomial but split into binary
-   ## do this check after removing the grouping variable from data.df (if that was necessary)
-    #  if(!is.null(split.vars)){if(length(split.vars)!=dim(data.df)[2]){stop("split.vars is the wrong length!") }
-    #                           if(max(split.vars)>=dim(data.df)[2]){stop("split.vars seems in wrong format - should be integers from 1 through to number of unique variables") }
-    #                           }
 
    ## coerce binary factors to become 0/1 integers - the 0 is based on the first entry in levels()
    if(!is.null(mylist$bin)){## have at least one binary variable
@@ -135,17 +50,8 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
    ## coerce ALL cols to double equivalents
    for(i in 1:dim(data.df)[2]){data.df[,i] <- as.double(data.df[,i])}
 
-   ## check for type of grouped variable
-   # if(!is.null(group.var)){
-   #   for(i in grouped.vars){## for each variable to be treated as grouped
-   #     if(data.dists[[i]]!="binomial"){##
-   #                        stop("currently grouped variables must be binary only") }
-   #   }}
-
-  ##
    ## get distributions in terms of a numeric code
   var.types <- get.var.types(data.dists)
-
 
 ########################################################################################
 ## All checking over
@@ -154,12 +60,12 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
  ## down to here we have all the data correct and now call C buildnodecache() to create all the node definitions.
    if(is.null(defn.res)){
        ## pass to C the number (number_of_nodes,banned_arc_as_vector, retain_arcs_as_vector, max_parents_as_vector
-       res <- .Call("buildcachematrix",dim(dag.banned)[1],as.integer(dag.banned),as.integer(dag.retained), max.parents, which.nodes,
+       res <- .Call("buildcachematrix",dim(dag.banned)[1],as.integer(dag.banned),as.integer(dag.retained), as.integer(max.parents), which.nodes,
                     PACKAGE="abn"
                     )
 
        defn.res <- list()
-       defn.res[["children"]] <- res[[1]] 
+       defn.res[["children"]] <- res[[1]]
        defn.res[["node.defn"]] <- matrix(data=res[[2]],byrow=TRUE,ncol=dim(data.df)[2])
        colnames(defn.res[["node.defn"]]) <- names(data.df)
        rm(res)
@@ -173,16 +79,16 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
        if(!(is.vector(defn.res[[1]]) && is.matrix(defn.res[[2]]))){stop("'defn.res' is wrong format") }
        if(!(max(defn.res[[2]])==1 && min(defn.res[[2]])==0)){stop("'defn.res' is wrong format - must only be 0,1 in node definitions") }
    }
-   
+
    if(dry.run){## don't do any computation just return the node definitions
-       if (verbose) cat("No computation - returning only the node combinations\n") 
-       return(defn.res) 
+       if (verbose) cat("No computation - returning only the node combinations\n")
+       return(defn.res)
    }
 
    ### loop through each node and find out what kind of model is to be fitted and then pass to appropriate
    ### separate call for each individual node-parentcombination
    total.rows <- dim(defn.res[["node.defn"]])[1]
-   defn.res[["mlik"]] <- rep(NA,total.rows) 
+   defn.res[["mlik"]] <- rep(NA,total.rows)
    defn.res[["error.code"]] <- rep(NA,total.rows)
    defn.res[["hessian.accuracy"]] <- rep(NA,total.rows)
    defn.res[["used.INLA"]] <- rep(NA,total.rows)
@@ -192,21 +98,21 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
 ###########################################################
 ## Iterate over each node in the DAG separately
 ###########################################################
-   if (verbose) cat("###### Fitting cache to data\n") 
+   if (verbose) cat("###### Fitting cache to data\n")
    row.num <- 1
    ## for each child in the cache
    for(child in defn.res[["children"]]){
        FAILED <- FALSE
        ## to catch any crashes...
        ###########################################################
-       if (verbose) cat("###### Processing...",row.num," of ",total.rows,"\n") 
+       if (verbose) cat("###### Processing...",row.num," of ",total.rows,"\n")
        dag.m[,] <- 0
        ## reset to empty
        dag.m[child,] <- defn.res[["node.defn"]][row.num,]
        ## set parent combination
        orig.force.method <- NULL
        used.inla <- TRUE
-       
+
        ####################################################
        ### First case is the node a GLM
        ####################################################
@@ -214,7 +120,7 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
        if( !(child%in%grouped.vars)){
            ## only compute option here is C since fast and INLA slower and less reliable
            if(force.method=="notset" || force.method=="C"){
-               if (verbose) cat("Using internal code (Laplace glm)\n") 
+               if (verbose) cat("Using internal code (Laplace glm)\n")
                r <- try(res.c <- .Call("fit_single_node",
                                        data.df,
                                        as.integer(child), ## childnode
@@ -240,10 +146,10 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                                        PACKAGE="abn"))
                if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){
                    if (verbose) cat("## !!! Laplace approximation failed\n")
-                   FAILED <- TRUE 
+                   FAILED <- TRUE
                }
                used.inla <- FALSE
-               
+
            } else {
                ## use INLA for glm
                if(!requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nINLA is available from https://www.r-inla.org/download-install.")}
@@ -251,7 +157,7 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                ## use same as for rest of linear terms
                prec.intercept <- control[["prec"]]
                ## use same as for rest of linear terms
-               if (verbose) cat("Using INLA (glm)\n") 
+               if (verbose) cat("Using INLA (glm)\n")
                res.inla <- calc.node.inla.glm(child,
                                               dag.m,
                                               data.df,
@@ -260,10 +166,10 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                                               ## ntrials
                                               rep(1,dim(data.df)[1]),
                                               ## exposure
-                                              TRUE, mean.intercept, prec.intercept, control[["mean"]], control[["prec"]],control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose) 
-               
+                                              TRUE, mean.intercept, prec.intercept, control[["mean"]], control[["prec"]],control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose)
+
                if(is.logical(res.inla)){
-                   if (verbose) cat("INLA failed... so reverting to internal code.\n") 
+                   if (verbose) cat("INLA failed... so reverting to internal code.\n")
                    r <- try(res.c <- .Call("fit_single_node",
                                            data.df,
                                            as.integer(child),    ## childnode
@@ -288,7 +194,7 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                                            as.double(control[["num.intervals.brent"]]),     ## Not applicable
                                            PACKAGE="abn"))
                    if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){
-                       if (verbose) cat("## !!! Laplace approximation failed\n") 
+                       if (verbose) cat("## !!! Laplace approximation failed\n")
                        FAILED <- TRUE
                    }
                    used.inla <- FALSE
@@ -323,7 +229,7 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                                                TRUE,    ## always compute marginals - since only way to check results
                                                mean.intercept, prec.intercept, control[["mean"]], control[["prec"]],control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose);
                                         #return(res);
-               
+
                ## CHECK FOR INLA CRASH
                if(is.logical(res.inla)){
                    if (verbose) cat("INLA failed...  so reverting to internal code\n");
@@ -333,7 +239,7 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                    res.inla.modes <- getModeVector(list.fixed=res.inla$marginals.fixed,list.hyper=res.inla$marginals.hyperpar);
                }
                                         #cat("check INLA modes against C at node ",rownames(dag.m)[child],"\n");
-               
+
            }
            if (verbose) cat("fit a glmm at node ",rownames(dag.m)[child],"using C\n");
            if(force.method=="notset"){
@@ -411,7 +317,7 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
                }
 
                used.inla <- FALSE;## flip
-               
+
            } else {
                if (verbose) cat("Using INLA (glmm)\n");
            }## end of if inla bad
@@ -467,14 +373,19 @@ buildScoreCache.bayes <- function(data.df=NULL, data.dists=NULL, group.var=NULL,
    defn.res[["error.code.desc"]] <- ifelse(defn.res[["error.code.desc"]]==1,"warning: mode results may be unreliable (optimiser terminated unusually)",defn.res[["error.code.desc"]]);
    defn.res[["error.code.desc"]] <- ifelse(defn.res[["error.code.desc"]]==2,"error - logscore is NA - model could not be fitted",defn.res[["error.code.desc"]]);
    defn.res[["error.code.desc"]] <- ifelse(defn.res[["error.code.desc"]]==4,"warning: fin.diff hessian estimation terminated unusually ",defn.res[["error.code.desc"]]);
-   
+
    defn.res[["data.df"]] <- data.df.original
    defn.res[["data.dists"]] <- data.dists
    defn.res[["max.parents"]] <- max.parents
    defn.res[["dag.retained"]] <- dag.retained
    defn.res[["dag.banned"]] <- dag.banned
+   defn.res[["group.var"]] <- group.var
    defn.res[["group.ids"]] <- group.ids
-   
+   defn.res[["grouped.vars"]] <- grouped.vars
+   defn.res[["cor.vars"]] <- cor.vars
+   # defn.res[["adj.var"]] <- adj.var
+   defn.res[["mylist"]] <- mylist
+
    defn.res[["method"]] <- "bayes"
 
   if (verbose)  cat("########End of cache building ##########################\n");

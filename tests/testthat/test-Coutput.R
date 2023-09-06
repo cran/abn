@@ -1,9 +1,6 @@
 suppressPackageStartupMessages(require(testthat))
 suppressPackageStartupMessages(require(abn))
 
-context("plotAbn")
-
-
 data("adg", package = "abn")
 dt <- adg[,c("AR","pneumS","female","livdam","eggs","wormCount","age","adg","farm")] #different order than original data
 drop <- which(colnames(dt) %in% c("farm"))

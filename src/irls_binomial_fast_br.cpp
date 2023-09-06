@@ -5,6 +5,10 @@
 
 using namespace Rcpp;
 using namespace arma;
+//' @title Fast Br Iterative Reweighed Least Square algorithm for Binomials
+//' @description IRLS to estimate network score of Binomial nodes.
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 
 Rcpp::List irls_binomial_cpp_fast_br(arma::mat A, arma::vec b, double maxit, double tol)

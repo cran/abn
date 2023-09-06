@@ -1,10 +1,19 @@
-#################################################################################################
-## getmarginals.R
-## function for computing marginal posterior densities using C and is called from fit.dag()
-## Only to be called internally.
-#################################################################################################
-
-getmarginals <- function(res.list, ## rest of arguments as for call to C fitabn
+#' Internal function called by \code{fitAbn.bayes}.
+#'
+#' Function for computing marginal posterior densities using C and is called from fit.dag()
+#' Only to be called internally.
+#'
+#' @inheritParams fit.control
+#' @inheritParams fitAbn
+#' @param res.list rest of arguments as for call to C fitabn
+#' @param dag.m adjacency matrix
+#' @param var.types distributions in terms of a numeric code
+#' @param max.parents max number of parents over all nodes in dag (different from other \code{max.parents} definitions).
+#' @param INLA.marginals vector - TRUE if INLA used false otherwise
+#' @param iter.max same as \code{max.iters} in \code{\link{fit.control}}. Total number of iterations allowed when estimating the modes in Laplace approximation. Passed to .Call("fit_single_node", ...).
+#' @family Bayes
+#' @importFrom stats sd spline
+getmarginals <- function(res.list,
                        data.df,dag.m,var.types,max.parents,
                        mean,prec,loggam.shape,loggam.inv.scale,
                        max.iters,epsabs,verbose,error.verbose,trace,
@@ -22,7 +31,7 @@ if(!is.null(marginal.node) && is.null(variate.vec)){stop("must supply variate.ve
 
 marginals <- list()
 
-if( !is.null(marginal.node)) {## in single node case 
+if( !is.null(marginal.node)) {## in single node case
     if(res.list[["error.code"]][marginal.node]!=0){stop("---- Cannot compute marginal density as the mlik is unreliable for this node.\nTry re-running with different finite difference parameters or else increase max.hessian.error ----")}
     nodeid <- marginal.node
     paramid <- marginal.param
@@ -47,7 +56,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(res.list$modes[[nodeid]]), ## relevant mode estimates
                             as.double(betafixed), ## value to be evaluated e.g. want f(x) given x - betafixed is x
                             as.double(res.list[[names(res.list$modes)[nodeid]]]),## mlik for the node
-                            as.integer(max.iters.hessian), 
+                            as.integer(max.iters.hessian),
                             as.double(max.hessian.error),
                             as.double(factor.brent),
                             as.integer(maxiters.hessian.brent),
@@ -67,19 +76,19 @@ if( !is.null(marginal.node)) {## in single node case
   ## for each node
   index <- 1;
   for(nodeid in 1:length(res.list$modes)){
-   
+
   # nodeid=6;
     if(!INLA.marginals[nodeid]){## COMPUTE NODE MARGINALS if NOT already done via INLA
      node.marginals <- list();
-     
+
      ## for each parameter
      for(paramid in 1:length(res.list$modes[[nodeid]])){
 
-   #paramid <- 3;    
-         if (verbose) cat("processing ",names(res.list$modes[[nodeid]])[paramid],"\n");      
-         curnom <- names(res.list$modes[[nodeid]])[paramid]; 
+   #paramid <- 3;
+         if (verbose) cat("processing ",names(res.list$modes[[nodeid]])[paramid],"\n");
+         curnom <- names(res.list$modes[[nodeid]])[paramid];
          have.precision <- ifelse(grepl("prec",curnom),TRUE,FALSE);
-         if(res.list[["error.code"]][nodeid]!=0){ if (verbose) cat("--- NOTE DROPPING parameter: ",curnom," as mlik is unreliable for this node.\nTry re-running with different finite difference parameters---\n");}  
+         if(res.list[["error.code"]][nodeid]!=0){ if (verbose) cat("--- NOTE DROPPING parameter: ",curnom," as mlik is unreliable for this node.\nTry re-running with different finite difference parameters---\n");}
          betafixedMode <- res.list$modes[[nodeid]][paramid];## just evaluate at the mode for paramid in node id
          #betafixedMode <- signif(betafixedMode,1);## adjust the mode a little as this seems to cause problems in the C optim in some unusual cases
          ##############################################################################################################
@@ -88,7 +97,7 @@ if( !is.null(marginal.node)) {## in single node case
          ## README THIS NEXT SECTION IS LONG BUT JUST REPETITION!
          ##############################################################################################################
          ## this is crucial as it controls the rest - we start with a guess and then if this is too wide or two small then change
-         if(abs(betafixedMode)<1E-05){## if have a centred variable so create two evaluation point either side using se.delta 
+         if(abs(betafixedMode)<1E-05){## if have a centred variable so create two evaluation point either side using se.delta
                                       x.delta <- se.delta <- (sd(data.df[,nodeid])/sqrt(dim(data.df)[1]))/10;## a feeble effort to get a good step size
                                       variate.x <- c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
          } else {## not centred variable to again try one point either side of mode
@@ -105,7 +114,7 @@ if( !is.null(marginal.node)) {## in single node case
           row <- 1;
           mymat <- matrix(data=c(variate.x,rep(NA,3)),ncol=2,byrow=TRUE);colnames(mymat) <- c("x","f(x)");## storage for three rows
           for(betafixed in variate.x){## for each of the three initial points mode +/- one other
-          
+
           marg.res <- .Call("fitabn_marginals",data.df,as.integer(dag.m),as.integer(dim(data.df)[2]),
                             as.integer(var.types),as.integer(max.parents),
                             as.double(mean),as.double(1/sqrt(prec)),as.double(loggam.shape),as.double(1/loggam.inv.scale),
@@ -130,7 +139,7 @@ if( !is.null(marginal.node)) {## in single node case
               PACKAGE="abn" ## uncomment to load as package not shlib
               );
               #cat("betafixed=",betafixed," gvalue=",marg.res,"\n");
-              mymat[row,] <- c(betafixed,marg.res);row <- row+1; 
+              mymat[row,] <- c(betafixed,marg.res);row <- row+1;
               }
               #cat("original points\n");print(mymat);
               gvalue <- mymat[,2];## f(x) values
@@ -145,8 +154,8 @@ if( !is.null(marginal.node)) {## in single node case
               if(!small.ok){
                            #cat("decreasing x.delta by *2 from ",x.delta," ");
                           x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                            } ## gap too big so decrease x.delta by factor of 5              
-              
+                            } ## gap too big so decrease x.delta by factor of 5
+
               ## SECOND try for x.delta
               if( !(big.ok && small.ok)){
               variate.x <- c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
@@ -176,7 +185,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -190,10 +199,10 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing again x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                               } ## gap too big so decrease x.delta by factor of 5              
+                               } ## gap too big so decrease x.delta by factor of 5
 
               }
-              
+
               ## THIRD try for x.delta
               if( !(big.ok && small.ok)){
               variate.x <- c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
@@ -223,7 +232,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -237,10 +246,10 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing 3rd time x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                } ## gap too big so decrease x.delta by factor of 5              
+                                } ## gap too big so decrease x.delta by factor of 5
 
               }
- 
+
               ## FOURTH try for x.delta
               if( !(big.ok && small.ok)){
               variate.x <- c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
@@ -270,7 +279,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -284,7 +293,7 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing 4th time x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                } ## gap too big so decrease x.delta by factor of 5              
+                                } ## gap too big so decrease x.delta by factor of 5
 
               }
 
@@ -317,7 +326,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -331,7 +340,7 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing 5th time x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                 } ## gap too big so decrease x.delta by factor of 5              
+                                 } ## gap too big so decrease x.delta by factor of 5
 
               }
               ## SIXTH try for x.delta
@@ -363,7 +372,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -377,9 +386,9 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing 6th time x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                 } ## gap too big so decrease x.delta by factor of 5              
+                                 } ## gap too big so decrease x.delta by factor of 5
 
-              } 
+              }
               ## SEVENTH try for x.delta
               if( !(big.ok && small.ok)){
               variate.x <- c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
@@ -409,7 +418,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -423,7 +432,7 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing 7th time x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                 } ## gap too big so decrease x.delta by factor of 5              
+                                 } ## gap too big so decrease x.delta by factor of 5
 
               }
               ## EIGHTH try for x.delta
@@ -455,7 +464,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -469,7 +478,7 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                                #cat("decreasing 8th time x.delta by *2 from ",x.delta," ");
                                x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                } ## gap too big so decrease x.delta by factor of 5              
+                                } ## gap too big so decrease x.delta by factor of 5
 
               }
               ## NINTH try for x.delta
@@ -501,7 +510,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -515,10 +524,10 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                                #cat("decreasing 9th time x.delta by *2 from ",x.delta," ");
                                x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                } ## gap too big so decrease x.delta by factor of 5              
+                                } ## gap too big so decrease x.delta by factor of 5
 
               }
- 
+
               ## TENTH try for x.delta
               if( !(big.ok && small.ok)){
               variate.x <- c(betafixedMode-x.delta,betafixedMode,betafixedMode+x.delta);
@@ -548,7 +557,7 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
                   PACKAGE="abn" ## uncomment to load as package not shlib
                   );
-                  mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+                  mymat[row,] <- c(betafixed,gvalue);row <- row+1;
                   }
                   gvalue <- mymat[,2];## f(x) values
                   big.ok <- small.ok <- FALSE;
@@ -562,10 +571,10 @@ if( !is.null(marginal.node)) {## in single node case
                    if(!small.ok){
                               #cat("decreasing 10th time x.delta by *2 from ",x.delta," ");
                               x.delta <- x.delta/2;#cat("to ",x.delta,"\n");
-                                 } ## gap too big so decrease x.delta by factor of 5              
+                                 } ## gap too big so decrease x.delta by factor of 5
 
               }
-             
+
               ## BACKUP Use last guess if still not very good
               if( !(big.ok && small.ok)){## initial guesses not good so rebuild variate.x with last guess
               if (verbose) cat("Failed to find a good x-increment so going with last estimate which may not be very good...\n May be better to provide the x-grid manually\n");
@@ -596,13 +605,13 @@ if( !is.null(marginal.node)) {## in single node case
                             as.double(num.intervals.brent),
               PACKAGE="abn" ## uncomment to load as package not shlib
               );
-              mymat[row,] <- c(betafixed,gvalue);row <- row+1; 
+              mymat[row,] <- c(betafixed,gvalue);row <- row+1;
               }}
         ###################################################################################################################
         ### End of successive guesses at initial min. step size
-        ## we now have the mode x and its height f(x) and one point either side. 
+        ## we now have the mode x and its height f(x) and one point either side.
         ###################################################################################################################
-        ## STEP 2. traverse left until we find f(x) less than pdf.min. To do this we use a spline to try and estimate the 
+        ## STEP 2. traverse left until we find f(x) less than pdf.min. To do this we use a spline to try and estimate the
         ##         next x value
         gvalue <- .Machine$double.xmax
          iter <- 1;## to avoid taking forever...
@@ -611,15 +620,15 @@ if( !is.null(marginal.node)) {## in single node case
            gvalue.max <- max(mymat[,2]);## max of f(x)
            x.delta.orig <- x.delta;## backup of stepsize
            max.fact.delta=0.2;## if new x point is more than a factor max.fact.delta (e.g. 0.2) from last evaluated point then stop here
-           #cat("evaluating node ",nodeid,": parameter:",paramid," at betafixed=",betafixed," with gvalue=",gvalue,"\n",sep="");  
+           #cat("evaluating node ",nodeid,": parameter:",paramid," at betafixed=",betafixed," with gvalue=",gvalue,"\n",sep="");
            ## find the next x value left which differs from the max. gvalue by at least a factor of g.factor, searching in step sizes of
-           ##  x.delta subject to the constraint that if we move more than max.fact.delta*last.x then we evaluate here. Avoids big steps. 
+           ##  x.delta subject to the constraint that if we move more than max.fact.delta*last.x then we evaluate here. Avoids big steps.
            ## this function using spline()
            betafixed <- find.next.left.x(mymat,gvalue.max,g.factor=0.1,x.delta=x.delta,max.fact.delta=max.fact.delta);
 
            if(have.precision && betafixed<0){## precision terms must not cross zero so try again with smaller x.factor
                                            x.delta <- x.delta/10; if (verbose) cat("Have precision term but jumped to left of zero so skipping...\n");
-                                            next; }  
+                                            next; }
            ## evaluate at next chosen x
            gvalue <- .Call("fitabn_marginals",data.df,as.integer(dag.m),as.integer(dim(data.df)[2]),
                             as.integer(var.types),as.integer(max.parents),
@@ -649,12 +658,12 @@ if( !is.null(marginal.node)) {## in single node case
              mymat <- rbind(mymat,c(betafixed,gvalue));
             iter <- iter+1;
             } ## end of while
-            if(iter==1000){ if (verbose) cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}              
+            if(iter==1000){ if (verbose) cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}
             ## restore x.factor in case changed during precision evaluation.
             x.delta <- x.delta.orig;
         #####################################################################################################################
-        ## STEP 3. as above but traverse right 
-        ## 
+        ## STEP 3. as above but traverse right
+        ##
         iter <- 1;## to avoid taking forever...
         gvalue <- .Machine$double.xmax
         if (verbose) cat("gvalue=",gvalue," min.pdf=",min.pdf," iter.max=",iter.max,"\n");
@@ -663,12 +672,12 @@ if( !is.null(marginal.node)) {## in single node case
            gvalue.max <- max(mymat[,2]);## max of f(x)
            x.delta.orig <- x.delta;## backup of stepsize
            max.fact.delta=0.2;## if new x point is more than a factor max.fact.delta (e.g. 0.2) from last evaluated point then stop here
-           #cat("evaluating node ",nodeid,": parameter:",paramid," at betafixed=",betafixed," with gvalue=",gvalue,"\n",sep="");  
+           #cat("evaluating node ",nodeid,": parameter:",paramid," at betafixed=",betafixed," with gvalue=",gvalue,"\n",sep="");
            ## find the next x value left which differs from the max. gvalue by at least a factor of g.factor, searching in step sizes of
-           ##  x.delta subject to the constraint that if we move more than max.fact.delta*last.x then we evaluate here. Avoids big steps. 
+           ##  x.delta subject to the constraint that if we move more than max.fact.delta*last.x then we evaluate here. Avoids big steps.
            ## this function using spline()
            betafixed <- find.next.right.x(mymat,gvalue.max,g.factor=0.1,x.delta=x.delta,max.fact.delta=max.fact.delta);
- 
+
            ## evaluate at next chosen x
            gvalue <- .Call("fitabn_marginals",data.df,as.integer(dag.m),as.integer(dim(data.df)[2]),
                             as.integer(var.types),as.integer(max.parents),
@@ -698,24 +707,24 @@ if( !is.null(marginal.node)) {## in single node case
              mymat <- rbind(mymat,c(betafixed,gvalue));
             iter <- iter+1;
             } ## end of while
-            if(iter==1000){if (verbose) cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}              
- 
+            if(iter==1000){if (verbose) cat("reached max.marg.iter.limit so stopped evaluation and distribution may not be complete!\n");}
+
             ## final step before saving data into list is to make sure it is ordered according to increasing x
             mymat <- mymat[order(mymat[,1]),];
             node.marginals[[curnom]] <- mymat;
 
              } ## parameter
 
-      
-       
+
+
        marginals[[index]] <- node.marginals;index <- index+1; }  ## check whether not already computed in INLA
-     
+
      } ## node
-    
+
      } ## end of if single node or all
 
-     #cat("f(",betafixed,")=",marg.res,"\n");   
-if( is.null(marginal.node)) {## not in single node case   
+     #cat("f(",betafixed,")=",marg.res,"\n");
+if( is.null(marginal.node)) {## not in single node case
     names(marginals) <- colnames(dag.m)[which(INLA.marginals==FALSE)]
     res.list[["marginals"]] <- marginals;
 } else {## single parameter manual case
@@ -727,49 +736,63 @@ return(res.list);
 
 }
 
-#############################################################################
-## attempt to find the next x evaluation point using spline extrapolation
-## traversing left from mode
-#############################################################################
- find.next.left.x <- function(mat.xy,g.max,g.factor,x.delta,max.fact.delta){
- 
-   xleft <- min(mat.xy[,"x"]);## current left hand endpoint  
-   orig.xleft <- xleft;
-   do <- TRUE;       
-   while(do){
-     ## keep decreasing xleft until f(x) reduces to next point of evaluation
+#' Find next X evaluation Point
+#'
+#' Attempt to find the next x evaluation point using spline extrapolation traversing left from mode.
+#'
+#' @details
+#' if new x point is more than a factor max.fact.delta (e.g. 0.2) from last evaluated point then stop here
+#' \code{cat("evaluating node ",nodeid,": parameter:",paramid," at betafixed=",betafixed," with gvalue=",gvalue,"\n",sep="");}
+#' find the next x value left which differs from the max. gvalue by at least a factor of g.factor, searching in step sizes of
+#' x.delta subject to the constraint that if we move more than max.fact.delta*last.x then we evaluate here. Avoids big steps.
+#'
+#' @param mat.xy matrix
+#' @param g.max integer. See Details.
+#' @param g.factor integer. See Details.
+#' @param x.delta integer. See Details.
+#' @param max.fact.delta integer. See Details.
+#'
+#' @return integer
+#' @importFrom stats spline
+#' @export
+#' @keywords internal
+find.next.left.x <- function(mat.xy,g.max,g.factor,x.delta,max.fact.delta){
+
+  xleft <- min(mat.xy[,"x"]);## current left hand endpoint
+  orig.xleft <- xleft;
+  do <- TRUE;
+  while(do){
+    ## keep decreasing xleft until f(x) reduces to next point of evaluation
     x.out=xleft-abs(x.delta);## size of vertical grid to the left is abs(x.delta)
     if(abs(x.out-orig.xleft)>max.fact.delta*x.delta){do <- FALSE;} ## if current value of x is a distance further away than original value then stop here
-    next.try <- spline(mat.xy[,"x"],mat.xy[,"f(x)"],xout=x.out);## get value of f(x) at x.factor of current xleft 
+    next.try <- spline(mat.xy[,"x"],mat.xy[,"f(x)"],xout=x.out);## get value of f(x) at x.factor of current xleft
     if(abs(next.try$y-g.max)>g.factor*g.max){## if current value of x gives a value for g=f(x) which is at least a min vertical distance from current then finish
-    return(next.try$x);}
+      return(next.try$x);}
 
     ## get to here need to keep moving left at the estimated value of g is not sufficiently different from the current one
-    xleft <- next.try$x;## try a lower xleft 
-            } ## end of while
- 
-   return(xleft);
-  }
-#############################################################################
-## attempt to find the next x evaluation point using spline extrapolation
-## traversing right from mode
-#############################################################################
- find.next.right.x <- function(mat.xy,g.max,g.factor,x.delta,max.fact.delta){
- 
-   xright <- max(mat.xy[,"x"]);## current left hand endpoint  
-   orig.xright <- xright;
-   do <- TRUE;       
-   while(do){
-     ## keep increasing xright until f(x) reduces to next point of evaluation
+    xleft <- next.try$x;## try a lower xleft
+  } ## end of while
+
+  return(xleft);
+}
+
+#' @describeIn find.next.left.x Attempt to find the next x evaluation point using spline extrapolation traversing right from mode.
+find.next.right.x <- function(mat.xy,g.max,g.factor,x.delta,max.fact.delta){
+
+  xright <- max(mat.xy[,"x"]);## current left hand endpoint
+  orig.xright <- xright;
+  do <- TRUE;
+  while(do){
+    ## keep increasing xright until f(x) reduces to next point of evaluation
     x.out=xright+abs(x.delta);## size of vertical grid to the left is abs(x.delta)
     if(abs(x.out-orig.xright)>max.fact.delta*x.delta){do <- FALSE;} ## if current value of x is a distance further away than original value then stop here
     next.try <- spline(mat.xy[,"x"],mat.xy[,"f(x)"],xout=x.out);## get value of f(x) at x.out
     if(abs(next.try$y-g.max)>g.factor*g.max){## if current value of x gives a value for g=f(x) which is at least a min vertical distance from current then finish
-    return(next.try$x);}
+      return(next.try$x);}
 
     ## get to here need to keep moving right at the estimated value of g is not sufficiently different from the current one
     xright <- next.try$x;## try a higher xright
-            } ## end of while
- 
-   return(xright);
-  }
+  } ## end of while
+
+  return(xright);
+}

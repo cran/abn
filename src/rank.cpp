@@ -5,6 +5,10 @@
 
 using namespace Rcpp;
 using namespace arma;
+//' @title Rank of a matrix
+//' @description similar to \code{base::rank}
+//' @keywords internal
+//' @export
 // [[Rcpp::export]]
 
 int rank_cpp(arma::mat A)
@@ -13,5 +17,5 @@ int rank_cpp(arma::mat A)
   out = rank(A);
   //return
   return out;
-  
+
 }

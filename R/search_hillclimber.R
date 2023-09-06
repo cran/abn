@@ -1,15 +1,84 @@
-###############################################################################
-## search.hillclimber.R ---
-## Author : Fraser Lewis
-## Last modified : 03/10/2014
-
-## fit a given DAG to data using the distribution given
-
-searchHillclimber <- function(...) {
-    .Deprecated("searchHillClimber", msg="'searchHillClimber' is deprecated.\n Use 'searchHillClimber' instead but note that arguments have slightly changed.")
-    searchHillClimber(...)
-}
-
+#' Find high scoring directed acyclic graphs using heuristic search.
+#'
+#' Find high scoring network (DAG) structures using a random re-starts greedy hill-climber heuristic search.
+#'
+#' @usage searchHillClimber(score.cache, score = "mlik", num.searches = 1, seed = 42,
+#'                          start.dag = NULL, support.threshold = 0.5, timing.on = TRUE,
+#'                          dag.retained = NULL, verbose = FALSE, ...)
+#'
+#' @param score.cache output from \code{buildScoreCache()}.
+#' @param score character giving which network score should be used to
+#' select the structure. Currently \code{'mlik'} only.
+#' @param num.searches number of times to run the search.
+#' @param seed non-negative integer which sets the seed in the GSL random number generator.
+#' @param start.dag a DAG given as a matrix, see details for format, which can be used to provide a starting point for the structural search explicitly.
+#' @param support.threshold the proportion of search results - each locally optimal DAG - in which each arc must appear to be a part of the consensus network.
+#' @param timing.on extra output in terms of duration computation.
+#' @param dag.retained a DAG given as a matrix, see details for format. This is necessary if the score.cache was created using an explicit retain matrix, and the same retain matrix should be used here. dag.retained is used by the algorithm which generates the initial random DAG to ensure that the necessary arcs are retained.
+#' @param verbose extra output.
+#' @param ... further arguments passed to or from other methods.
+#'
+#' @details
+#' The procedure runs a greedy hill-climbing search similar, but not identical,
+#' to the method presented initially in Heckerman et al. 1995.
+#' (Machine Learning, 20, 197-243).
+#' Each search begins with a randomly chosen DAG structure where this is
+#' constructed in such a way as to attempt to choose a DAG uniformly from
+#' the vast landscape of possible structures. The algorithm used is as follows:
+#' given a node cache (from \code{\link{buildScoreCache}},
+#' then within this set of all allowed local parent combinations,
+#' a random combination is chosen for each node.
+#' This is then combined into a full DAG, which is then checked for cycles,
+#' where this check iterates over the nodes in a random order.
+#' If all nodes have at least one child (i.e., at least one cycle is present),
+#' then the first node examined has all its children removed, and the check for
+#' cycles is then repeated. If this has removed the only cycle present,
+#' then this DAG is used at the starting point for the search,
+#' if not, a second node is chosen (randomly) and the process is then
+#' repeated until a DAG is obtained.
+#'
+#' The actual hill-climbing algorithm itself differs slightly from that presented
+#' in Heckerman et al. as a full cache of all possible local combinations are available.
+#' At each hill-climbing step, everything in the node cache is considered.
+#' In other words, all possible single swaps between members of cache currently present
+#' in the DAG and those in the full cache. The single swap, which provides the greatest
+#' increase in goodness of fit is chosen. A single swap here is the removal
+#' or addition of any one node-parent combination present in the cache while
+#' avoiding a cycle. This means that as well as all single arc changes
+#' (addition or removal), multiple arc changes are also considered at each same step,
+#' note however that arc reversal in this scheme takes two steps (as this requires
+#' first removal of a parent arc from one node and then addition of a parent arc
+#' to a different node). The original algorithm perturbed the current DAG by only
+#' a single arc at each step but also included arc reversal.
+#' The current implementation may not be any more efficient than the original
+#' but is arguably more natural given a pre-computed cache of local scores.
+#'
+#' A start DAG may be provided in which case num.searches must
+#' equal 1 - this option is really just to provide a local search
+#' around a previously identified optimal DAG.
+#'
+#' This function is designed for two different purposes:
+#' i) interactive visualization; and
+#' ii) longer batch processing. The former provides easy visual "eyeballing" of
+#' data in terms of its majority consensus network (or similar threshold),
+#' which is a graphical structure which comprises of all arcs which feature in
+#' a given proportion (\code{support.threshold}) of locally optimal DAGs already
+#' identified during the run. The general hope is that this structure will
+#' stabilize - become fixed - relatively quickly, at least for problems with
+#' smaller numbers of nodes.
+#'
+#' @return A list with entries:
+#' \itemize{
+#' \item{init.score}{a vector giving network score for initial network from which the search commenced}
+#' \item{final.score}{a vector giving the network score for the locally optimal network}
+#' \item{init.dag}{list of matrices, initial DAGs}
+#' \item{final.dag}{list of matrices, locally optimal DAGs}
+#' \item{consensus}{a matrix holding a binary graph, not necessary a DAG!}
+#' \item{support.threshold}{percentage supported used to create consensus matrix}
+#' }
+#'
+#' @references Lewis, F. I., and McCormick, B. J. J. (2012). Revealing the complexity of health determinants in resource poor settings. \emph{American Journal Of Epidemiology}. DOI:10.1093/aje/KWS183).
+#' @export searchHillClimber
 searchHillClimber <- function(score.cache, score="mlik",
                               num.searches=1, seed=42, start.dag=NULL,
                               support.threshold=0.5, timing.on=TRUE, dag.retained=NULL,
@@ -115,8 +184,14 @@ searchHillClimber <- function(score.cache, score="mlik",
     ## now make binary according to threshold passed
     con.dag.binary <- ifelse(con.dag >= ceiling(num.searches * support.threshold), 1, 0)
     ######################################################### create graph object part
-        out <- list(init.score=init.scores, final.score=fin.scores, init.dag=init.mat, final.dag=fin.mat,
-                    consensus=(con.dag.binary), support.threshold=support.threshold, score.cache=score.cache)
+        out <- list(init.score=init.scores,
+                    final.score=fin.scores,
+                    init.dag=init.mat,
+                    final.dag=fin.mat,
+                    # consensus=(con.dag.binary),
+                    dag=(con.dag.binary),
+                    support.threshold=support.threshold,
+                    score.cache=score.cache)
         class(out) <- c("abnHillClimber", "abnLearned")
         return(out)
 

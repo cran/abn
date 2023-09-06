@@ -1,65 +1,25 @@
-###############################################################################
-## fitabn.R ---
-## Author          : Fraser Lewis & Gilles Kratzer
-###############################################################################
-
-## fit a given DAG to data
-fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL,
-                         cor.vars=NULL, centre=TRUE, compute.fixed=FALSE,
-                         control = fit.control(method = "bayes"), verbose=FALSE){
+#' @describeIn fitAbn Internal function called by \code{fitAbn}.
+#' @param mylist result returned from \code{\link{check.valid.data}}.
+#' @param grouped.vars result returned from \code{\link{check.valid.groups}}. Column indexes of all variables which are affected from grouping effect.
+#' @param group.ids result returned from \code{\link{check.valid.groups}}. Vector of group allocation for each observation (row) in 'data.df'.
+#' @param force.method "notset", "INLA" or "C". This is specified in \code{\link{buildScoreCache}(control=list(max.mode.error=...))}.
+#' @family Bayes
+#' @importFrom stats spline sd
+fitAbn.bayes <- function(dag=NULL,
+                         data.df=NULL,
+                         data.dists=NULL,
+                         group.var=NULL,
+                         cor.vars=NULL,
+                         centre=TRUE,
+                         compute.fixed=FALSE,
+                         control = fit.control(method = "bayes"),
+                         mylist = NULL,
+                         grouped.vars = NULL,
+                         group.ids = NULL,
+                         force.method = NULL,
+                         verbose=FALSE){
 
    set.seed(control[["seed"]])
-
-   ## simple check
-   if(!is.null(cor.vars) && is.null(group.var)){stop("must specify the group variable!")}
-
-   ## another simple check
-   if(control[["max.mode.error"]]>100 || control[["max.mode.error"]]<0){ stop("'max.mode.error' is a % and must be [0,100]!")}
-   #if(!is.null(marginal.node)){std.area <- FALSE;n.grid <- NULL;marginal.quantiles <- NULL;}
-   if(is.null(control[["max.grid.iter"]])){stop("'max.grid.iter' cannot be NULL!") }
-
-    if(!is.null(control[["variate.vec"]])) {
-        control[["max.mode.error"]] <- 0
-        control[["std.area"]] <- FALSE
-        control[["n.grid"]] <- NULL;
-    } ## if user supplied grid then must use C
-
-   force.method <- "notset" 
-   if(control[["max.mode.error"]]==0){force.method <- "C" }
-   if(control[["max.mode.error"]]==100){force.method <- "INLA" }
-
-   ## run series of checks on the arguments
-   mylist <- check.valid.data(data.df,data.dists,group.var) ## return a list with entries bin, gaus, pois, ntrials and exposure
-
-   #test for dag
-   if(!is.null(dag)){
-     if(is.matrix(dag)){
-       ## run a series of checks on the DAG passed
-       dag <- check.valid.dag(dag=dag, data.df=data.df, is.ban.matrix=FALSE, group.var=group.var)
-     } else {
-         if(grepl('~',as.character(dag)[1],fixed = TRUE)){
-             if(is.null(group.var)){
-                 dag <- formula.abn(f = dag,name = colnames(data.df))
-             }else{
-                 dag <- formula.abn(f = dag,name = colnames(data.df)[-which(colnames(data.df)==group.var)])
-             }
-             
-         ## run a series of checks on the DAG passed
-             dag <- check.valid.dag(dag=dag, data.df=data.df, is.ban.matrix=FALSE, group.var=group.var)
-         }
-     }
-   } else {
-       stop("Dag specification must either be a matrix or a formula expression")
-   }
-
-   ## run a series of checks on the DAG passed
-   #dag <- check.valid.dag(dag,data.df=data.df,is.ban.matrix=FALSE,group.var=group.var)
-
-   ## check grouping variables
-   list.group.var <- check.valid.groups(group.var, data.df, cor.vars) ## returns ammended data.df and suitable variables
-   grouped.vars <- list.group.var$grouped.vars ## int vect of variables to be treated as grouped indexed from 1
-   group.ids <- list.group.var$group.ids ## int vector of group membership ids
-   data.df <- list.group.var$data.df ## this has removed the grouping variable from data.df
 
    ## coerce binary factors to become 0/1 integers - the 0 is based on the first entry in levels()
    if(!is.null(mylist$bin)){## have at least one binary variable
@@ -75,11 +35,11 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
    for(i in 1:dim(data.df)[2]){data.df[,i] <- as.double(data.df[,i]) }## coerce ALL cols to double equivalents
 
    ## check for type of grouped variable
-   #  if(!is.null(group.var)){
-   #    for(i in grouped.vars){## for each variable to be treated as grouped
-   #      if(data.dists[[i]]!="binomial"){##
-   #                         stop("currently grouped variables must be binary only") }
-   #    }}
+    if(!is.null(group.var)){
+      for(i in grouped.vars){## for each variable to be treated as grouped
+        if(data.dists[[i]]!="binomial"){##
+                           stop("currently grouped variables must be binary only") }
+      }}
 
    var.types <- get.var.types(data.dists)  ## get distributions in terms of a numeric code
 
@@ -91,30 +51,30 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
 ### loop through each node and find out what kind of model is to be fitted and then pass to appropriate
 ### separate call for each individual node
 ## setup some storage for entire DAG
-    res.list <- list() 
-    error.code <- rep(NA,dim(dag)[1]) #res.list[["error.code"]] <- NULL 
-    hessian.accuracy <- rep(NA,dim(dag)[1]) #NULL res.list[["hessian.accuracy"]] <- NULL 
-    mymodes <- list() 
-    mymargs <- list() 
-    INLA.marginals <- NULL 
+    res.list <- list()
+    error.code <- rep(NA,dim(dag)[1]) #res.list[["error.code"]] <- NULL
+    hessian.accuracy <- rep(NA,dim(dag)[1]) #NULL res.list[["hessian.accuracy"]] <- NULL
+    mymodes <- list()
+    mymargs <- list()
+    INLA.marginals <- NULL
 ###########################################################
 ## Iterate over each node in the DAG separately
 ###########################################################
-    if (verbose) cat("########################################################\n") 
-    if (verbose) cat("###### Fitting DAG to data\n") 
+    if (verbose) cat("########################################################\n")
+    if (verbose) cat("###### Fitting DAG to data\n")
     for(child in 1:dim(dag)[1]){## for each node in the DAG
 
 ###########################################################
 ###########################################################
-        if (verbose) cat("###### Processing...Node ",rownames(dag)[child],"\n") 
-        orig.force.method <- NULL 
-        used.inla <- TRUE 
+        if (verbose) cat("###### Processing...Node ",rownames(dag)[child],"\n")
+        orig.force.method <- NULL
+        used.inla <- TRUE
         ####################################################
         ### First case is the node a GLM
         if( !(child%in%grouped.vars)){## only compute option here is C since fast and INLA slower and less reliable
 
             if(force.method=="notset" || force.method=="C"){
-                if (verbose) cat("Using internal code (Laplace glm)\n") 
+                if (verbose) cat("Using internal code (Laplace glm)\n")
                 r <- try(res.c <- .Call("fit_single_node",
                                         data.df,
                                         as.integer(child),## childnode
@@ -137,11 +97,11 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                                         as.double(control[["factor.brent"]]),## Not applicable
                                         as.integer(control[["maxiters.hessian.brent"]]),## Not applicable
                                         as.double(control[["num.intervals.brent"]])## Not applicable
-                                       ,PACKAGE="abn" )) 
+                                       ,PACKAGE="abn" ))
                 if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){
                     cat("## !!! Laplace approximation failed at node ", rownames(dag)[child],
                         "\n## The additive formulation at this node is perhaps over-parameterized?\n",
-                        "## Fitting the glm at this node using glm() may provide more information.",sep="") 
+                        "## Fitting the glm at this node using glm() may provide more information.",sep="")
                     stop("")
                 }
                 used.inla <- FALSE ## flip
@@ -149,15 +109,15 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                 if(!requireNamespace("INLA", quietly = TRUE)){stop("library INLA is not available!\nR-INLA is available from https://www.r-inla.org/download-install.") }
                 mean.intercept <- control[["mean"]] ## use same as for rest of linear terms
                 prec.intercept <- control[["prec"]] ## use same as for rest of linear terms
-                if (verbose) cat("Using INLA (glm)\n") 
+                if (verbose) cat("Using INLA (glm)\n")
                 res.inla <- calc.node.inla.glm(child, dag, data.df, data.dists,
                                                rep(1,dim(data.df)[1]),## ntrials
                                                rep(1,dim(data.df)[1]),## exposure
                                                TRUE, mean.intercept, prec.intercept, control[["mean"]], control[["prec"]],
-                                               control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose) 
+                                               control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose)
 
 
-                if(is.logical(res.inla)){if (verbose) cat("INLA failed....so reverting to internal code\n") 
+                if(is.logical(res.inla)){if (verbose) cat("INLA failed....so reverting to internal code\n")
                     r <- try(res.c <- .Call("fit_single_node",
                                             data.df,
                                             as.integer(child),## childnode
@@ -180,14 +140,14 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                                             as.double(control[["factor.brent"]]),## Not applicable
                                             as.integer(control[["maxiters.hessian.brent"]]),## Not applicable
                                             as.double(control[["num.intervals.brent"]])## Not applicable
-                                           ,PACKAGE="abn" )) 
+                                           ,PACKAGE="abn" ))
                     if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){
                         cat("## !!! Laplace approximation failed at node ", rownames(dag)[child],
                             "\n## The additive formulation at this node is perhaps over-parameterized?\n",
-                            "## Fitting the glm at this node using glm() may provide more information.",sep="") 
+                            "## Fitting the glm at this node using glm() may provide more information.",sep="")
                         stop("")
                     }
-                    
+
                     used.inla <- FALSE ## flip
                 } ## INLA failed
 
@@ -195,7 +155,7 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
             ## End of GLM node
 ###########################################################
 
-        } else {
+        } else if (child%in%grouped.vars) {
 ###########################################################
             ## Have a GLMM node
 ###########################################################
@@ -211,11 +171,11 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                                                 rep(1,dim(data.df)[1]),## ntrials
                                                 rep(1,dim(data.df)[1]),## exposure
                                                 TRUE,## always compute marginals - since only way to check results
-                                                mean.intercept, prec.intercept, control[["mean"]], control[["prec"]],control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose) 
+                                                mean.intercept, prec.intercept, control[["mean"]], control[["prec"]],control[["loggam.shape"]],control[["loggam.inv.scale"]],verbose)
                                         #return(res.inla)  ## to return RAW INLA object
                 ## CHECK FOR INLA CRASH
                 if(is.logical(res.inla)){
-                    if (verbose) cat("INLA failed....so reverting to internal code\n") 
+                    if (verbose) cat("INLA failed....so reverting to internal code\n")
                     orig.force.method <- force.method ## save original
                     force.method="C"  ## Easiest way is just to force C for this node
                 } else {
@@ -224,7 +184,7 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
 
             }
 
-            if (verbose) cat("fit a glmm at node ",rownames(dag)[child],"using C\n") 
+            if (verbose) cat("fit a glmm at node ",rownames(dag)[child],"using C\n")
             if(force.method=="notset"){
                 r <- try(res.c <- .Call("fit_single_node",
                                         data.df,
@@ -248,30 +208,30 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                                         as.double(control[["factor.brent"]]),
                                         as.integer(control[["maxiters.hessian.brent"]]),
                                         as.double(control[["num.intervals.brent"]])
-                                       ,PACKAGE="abn")) #print(res) 
+                                       ,PACKAGE="abn")) #print(res)
                 if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){
                     cat("## !!! Laplace approximation failed at node ", rownames(dag)[child],
                         "\n## The additive formulation at this node is perhaps over-parameterized?\n",
-                        "## Fitting the glmm at this node using glmer() in lme4 may provide more information",sep="") 
+                        "## Fitting the glmm at this node using glmer() in lme4 may provide more information",sep="")
                     stop("")
                 }
 
                 res.c.modes <- res.c[[1]][-c(1:3)] ## remove mlik - this is first entry, and error code and hessian accuracy
                 res.c.modes <- res.c.modes[which(res.c.modes!=.Machine$double.xmax)] ## this discards all "empty" parameters
                 ## get difference in modes proportion relative to C
-                diff.in.modes <- (res.inla.modes-res.c.modes)/res.c.modes 
-                error.modes <- max(abs(diff.in.modes)) 
+                diff.in.modes <- (res.inla.modes-res.c.modes)/res.c.modes
+                error.modes <- max(abs(diff.in.modes))
             }
-            
+
             if( force.method=="C" || (force.method=="notset" && error.modes>(control[["max.mode.error"]]/100))){ ## INLA might be unreliable to use C (slower)
 
                 if(force.method=="notset"){
-                    if (verbose) cat("Using internal code (Laplace glmm)\n=>max. abs. difference (in %) with INLA is ") 
+                    if (verbose) cat("Using internal code (Laplace glmm)\n=>max. abs. difference (in %) with INLA is ")
                     if (verbose) cat(formatC(100*error.modes,format="f",digits=1)," and exceeds tolerance\n")
                 } else {
                     if (verbose) cat("Using internal code (Laplace glmm)\n")
                 }
-                
+
                 r <- try(res.c <- .Call("fit_single_node",
                                         data.df,
                                         as.integer(child),## childnode
@@ -295,98 +255,100 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                                         as.integer(control[["maxiters.hessian.brent"]]),
                                         as.double(control[["num.intervals.brent"]])
                                        ,PACKAGE="abn")
-                         ) 
+                         )
                 if(length(attr(r,"class")>0) && attr(r,"class")=="try-error"){
                     cat("## !!! Laplace approximation failed at node ", rownames(dag)[child],
                         "\n## The additive formulation at this node is perhaps over-parameterized?\n",
-                        "## Fitting the glmm at this node using glmer() in lme4 may provide more information.",sep="") 
+                        "## Fitting the glmm at this node using glmer() in lme4 may provide more information.",sep="")
                     stop("")
                 }
 
                 used.inla <- FALSE ## flip
-                
+
             } else {
-                if (verbose) cat("Using INLA (glmm)\n") 
+                if (verbose) cat("Using INLA (glmm)\n")
             }## end of if inla bad
 
-        } ## end of if GLMM
-###########################################################
-        ## End of GLMM node
-###########################################################
-        
+          ###########################################################
+          ## End of GLMM node
+          ###########################################################
+        } else {          ## end of if GLMM
+          stop("There is an issue in 'child' and/or 'grouped.vars'.")
+        }
+
 ###########################################################
         ## End of all external computations
 ###########################################################
         ## computation for current node is all done so sort out the
         ## output into nicer form and give labels
 ###########################################################
-        child.name <- colnames(dag)[child] 
-        
+        child.name <- colnames(dag)[child]
+
         if(used.inla==FALSE){## organize output from C
-            res.list[[child.name]] <- res.c[[1]][1] 
+            res.list[[child.name]] <- res.c[[1]][1]
             mymodes[[child]] <- res.c[[1]][-c(1:3)] ## remove mlik - this is first entry, and error code and hessian accuracy
             mymodes[[child]] <- mymodes[[child]][which(mymodes[[child]]!=.Machine$double.xmax)] ## this discards all "empty" parameters
-            error.code[child] <- res.c[[1]][2] 
-            hessian.accuracy[child] <- res.c[[1]][3] 
-            INLA.marginals <- c(INLA.marginals,FALSE) 
+            error.code[child] <- res.c[[1]][2]
+            hessian.accuracy[child] <- res.c[[1]][3]
+            INLA.marginals <- c(INLA.marginals,FALSE)
         } else {
             ## organize output from INLA
             res.list[[child.name]] <- res.inla$mlik[2] ## [2] is for Gaussian rather than Integrated estimate
-            mymodes[[child]] <- getModeVector(list.fixed=res.inla$marginals.fixed,list.hyper=res.inla$marginals.hyperpar) 
-            mymargs[[child]] <- getMargsINLA(list.fixed=res.inla$marginals.fixed,list.hyper=res.inla$marginals.hyperpar) 
-                                        #print(mymodes) stop("") 
+            mymodes[[child]] <- getModeVector(list.fixed=res.inla$marginals.fixed,list.hyper=res.inla$marginals.hyperpar)
+            mymargs[[child]] <- getMargsINLA(list.fixed=res.inla$marginals.fixed,list.hyper=res.inla$marginals.hyperpar)
+                                        #print(mymodes) stop("")
             error.code[child] <- NA ## not available from INLA
             hessian.accuracy[child] <- NA ## not available from INLA
-            INLA.marginals <- c(INLA.marginals,TRUE) 
+            INLA.marginals <- c(INLA.marginals,TRUE)
         }
 
-        nom <- colnames(dag)[which(dag[child,]==1)] 
+        nom <- colnames(dag)[which(dag[child,]==1)]
         if(var.types[child]=="1"){nom <- c("(Intercept)",nom,"group.precision") }## binomial : just some naming for use later
         if(var.types[child]=="2" && !(child%in%grouped.vars)){nom <- c("(Intercept)",nom,"precision","precision") } ## gaus and not grouped
         if(var.types[child]=="2" && (child%in%grouped.vars)){nom <- c("(Intercept)",nom,"group.precision","precision") }
         if(var.types[child]=="3"){nom <- c("(Intercept)",nom,"group.precision") } ## pois}
-        mynom <- NULL 
+        mynom <- NULL
         for(j in 1:length(mymodes[[child]])){
-            mynom <- c(mynom,paste(colnames(dag)[child],nom[j],sep="|")) 
+            mynom <- c(mynom,paste(colnames(dag)[child],nom[j],sep="|"))
         }
-        names(mymodes[[child]]) <- mynom 
+        names(mymodes[[child]]) <- mynom
         if(used.inla==TRUE){  names(mymargs[[child]]) <- mynom }
-        
+
         if(!is.null(orig.force.method)){force.method <- orig.force.method } ## reset force.method after INLA crash
 ############################################################
         ## Finished with current node
 ############################################################
-        
+
     } ## end of nodes loop
 
 #################################################
     ## Further tidy up of results across all nodes
 #################################################
-    names(mymodes) <- colnames(dag) 
-    
-    res.list[["modes"]] <- mymodes 
-    res.list[["error.code"]] <- error.code 
-    res.list[["hessian.accuracy"]] <- hessian.accuracy 
-    names(res.list[["error.code"]]) <- names(res.list[["hessian.accuracy"]]) <- colnames(dag) 
-    res.list[["error.code.desc"]] <- as.character(res.list[["error.code"]]) 
-    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==0,"success",res.list[["error.code"]]) 
-    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==1,"warning: mode results may be unreliable (optimiser terminated unusually)",res.list[["error.code.desc"]]) 
-    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==2,"error - logscore is NA - model could not be fitted",res.list[["error.code.desc"]]) 
-    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==4,"warning: fin.diff hessian estimation terminated unusually ",res.list[["error.code.desc"]]) 
+    names(mymodes) <- colnames(dag)
+
+    res.list[["modes"]] <- mymodes
+    res.list[["error.code"]] <- error.code
+    res.list[["hessian.accuracy"]] <- hessian.accuracy
+    names(res.list[["error.code"]]) <- names(res.list[["hessian.accuracy"]]) <- colnames(dag)
+    res.list[["error.code.desc"]] <- as.character(res.list[["error.code"]])
+    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==0,"success",res.list[["error.code"]])
+    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==1,"warning: mode results may be unreliable (optimiser terminated unusually)",res.list[["error.code.desc"]])
+    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==2,"error - logscore is NA - model could not be fitted",res.list[["error.code.desc"]])
+    res.list[["error.code.desc"]] <- ifelse(res.list[["error.code.desc"]]==4,"warning: fin.diff hessian estimation terminated unusually ",res.list[["error.code.desc"]])
     res.list[["mlik"]] <- sum(unlist(res.list[1:dim(dag)[1]])) ## overall mlik
-    
+
     res.list[["used.INLA"]] <- INLA.marginals ## vector - TRUE if INLA used false otherwise
-    
+
 #####
 ##### Additional part only run if user wants marginal distributions
 #####
     if(compute.fixed){
-        if (verbose) cat("Processing marginal distributions for non-INLA nodes...\n") 
+        if (verbose) cat("Processing marginal distributions for non-INLA nodes...\n")
         ## might have some already computed from INLA
 
         if(length(which(INLA.marginals==FALSE))==0){## ALL INLA so finished
-            names(mymargs) <- colnames(dag)[which(INLA.marginals==TRUE)] 
-            res.list[["marginals"]] <- mymargs 
+            names(mymargs) <- colnames(dag)[which(INLA.marginals==TRUE)]
+            res.list[["marginals"]] <- mymargs
         } else {## At least one C and this creates its own res.list[["marginals"]]
                          ## now get rest using C
             max.parents <- max(apply(dag,1,sum)) ## over all nodes - different from above
@@ -404,28 +366,28 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
                                      as.double(control[["factor.brent"]]),
                                      as.integer(control[["maxiters.hessian.brent"]]),
                                      as.double(control[["num.intervals.brent"]])
-                                     ) 
+                                     )
         }
 
         ## at least one INLA node so we need to combine
         ## res.list[["inla.margs"]] with res.list[["marginals"]]
         if(length(which(INLA.marginals==TRUE))>0){
-            names(mymargs) <- colnames(dag)[which(INLA.marginals==TRUE)] 
-            res.list[["inla.margs"]] <- mymargs 
+            names(mymargs) <- colnames(dag)[which(INLA.marginals==TRUE)]
+            res.list[["inla.margs"]] <- mymargs
             ## also have res.list[["marginals"]] from getmarginalsC above
-            
-            masterlist <- list() 
+
+            masterlist <- list()
             for(i in rownames(dag)){
-                attempt1 <- which(names(res.list[["inla.margs"]])==i) 
-                attempt2 <- which(names(res.list[["marginals"]])==i) 
+                attempt1 <- which(names(res.list[["inla.margs"]])==i)
+                attempt2 <- which(names(res.list[["marginals"]])==i)
                 if(length(attempt1)>0){
-                    masterlist[[i]] <- res.list[["inla.margs"]][[attempt1]] 
+                    masterlist[[i]] <- res.list[["inla.margs"]][[attempt1]]
                 } else {masterlist[[i]] <- res.list[["marginals"]][[attempt2]] }
             }
 
-            #res.list[["marginals.master"]] <- masterlist 
-            res.list[["marginals"]] <- masterlist 
-            res.list[["inla.margs"]] <- NULL 
+            #res.list[["marginals.master"]] <- masterlist
+            res.list[["marginals"]] <- masterlist
+            res.list[["inla.margs"]] <- NULL
 
         }
 
@@ -436,12 +398,12 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
 
         ## 1.
         if(!is.null(control[["n.grid"]])){## evaluated density across an equal grid - use spline interpolation
-            res.list[["marginals"]] <- eval.across.grid(res.list[["marginals"]],control[["n.grid"]],control[["marginal.node"]]) 
+            res.list[["marginals"]] <- eval.across.grid(res.list[["marginals"]],control[["n.grid"]],control[["marginal.node"]])
         }
         ## 2.
         if(control[["std.area"]]){## want to standardize area under curve to unity - might be slightly adrift as is depending on accuracy of approx's
             if(is.null(control[["n.grid"]])){ stop("must provide n.grid if using std.area!") }
-            res.list[["marginals"]] <- std.area.under.grid(res.list[["marginals"]],control[["marginal.node"]]) 
+            res.list[["marginals"]] <- std.area.under.grid(res.list[["marginals"]],control[["marginal.node"]])
         }
         ## 3.
         if(!is.null(control[["marginal.quantiles"]])){res.list[["marginal.quantiles"]] <- get.quantiles(res.list[["marginals"]],control[["marginal.quantiles"]],control[["marginal.node"]]) }
@@ -451,24 +413,28 @@ fitAbn.bayes <- function(dag=NULL, data.df=NULL, data.dists=NULL, group.var=NULL
 
     res.list[["method"]] <- "bayes"
     res.list[["abnDag"]] <- createAbnDag(dag, data.df = data.df, data.dists = data.dists)
-    class( res.list) <- "abnFit"
-    
-    if (verbose) cat("########End of DAG fitting #############################\n") 
-    if (verbose) cat("########################################################\n") 
-    return(res.list) 
-    
+
+    if (verbose) cat("########End of DAG fitting #############################\n")
+    if (verbose) cat("########################################################\n")
+    return(res.list)
+
 }
 
-#####################################################
-## function to extract the mode from INLA output
-#####################################################
+#' function to extract the mode from INLA output
+#'
+#' @param list.fixed list of matrices of two cols x, y
+#' @param list.hyper list of hyperparameters
+#'
+#' @return vector
+#' @export
+#' @keywords internal
 getModeVector <- function(list.fixed,list.hyper){
 
     ## listfixed is a list of matrices of two cols x, y
-    modes <- NULL 
+    modes <- NULL
     for(i in 1:length(list.fixed)){
         mymarg <- list.fixed[[i]] ## matrix 2 cols
-        mymarg <- spline(mymarg) 
+        mymarg <- spline(mymarg)
         modes <- c(modes,mymarg$x[which(mymarg$y==max(mymarg$y))]) ## find x value which corresponds to the max y value
     }
 
@@ -476,32 +442,37 @@ getModeVector <- function(list.fixed,list.hyper){
     if(is.list(list.hyper)){## might be no hyperparam e.g. binomial or poisson glmm
         if(length(list.hyper)==1){
             mymarg <- list.hyper[[1]] ## matrix 2 cols
-            mymarg <- spline(mymarg) 
+            mymarg <- spline(mymarg)
             modes <- c(modes,mymarg$x[which(mymarg$y==max(mymarg$y))])
         }## find x value which corresponds to the max y value
-        
+
         if(length(list.hyper)==2){ ## gaussian glm
             mymarg <- list.hyper[[2]] ## matrix 2 cols - group level precision
-            mymarg <- spline(mymarg) 
-            modes <- c(modes,mymarg$x[which(mymarg$y==max(mymarg$y))]) 
+            mymarg <- spline(mymarg)
+            modes <- c(modes,mymarg$x[which(mymarg$y==max(mymarg$y))])
             mymarg <- list.hyper[[1]] ## matrix 2 cols - residual level precision
-            mymarg <- spline(mymarg) 
-            modes <- c(modes,mymarg$x[which(mymarg$y==max(mymarg$y))]) 
+            mymarg <- spline(mymarg)
+            modes <- c(modes,mymarg$x[which(mymarg$y==max(mymarg$y))])
            ### [[2]] then [[1]] to keep same order a C code
         }
     }
 
-    return(modes) 
+    return(modes)
 
 }
 
-#####################################################
-## function to extract the mode from INLA output
-#####################################################
+#' function to extract marginals from INLA output
+#'
+#' @param list.fixed list of matrices of two cols x, y
+#' @param list.hyper list of hyperparameters
+#'
+#' @return vector
+#' @export
+#' @keywords internal
 getMargsINLA <- function(list.fixed,list.hyper){
 
  ## listfixed is a list of matrices of two cols x, y
- margs <- list() 
+ margs <- list()
  for(i in 1:length(list.fixed)){
    margs[[i]] <- list.fixed[[i]] ## matrix 2 cols
  }
@@ -516,12 +487,19 @@ getMargsINLA <- function(list.fixed,list.hyper){
 
  }
 
-return(margs) 
+return(margs)
 
 }
-#####################################################
-## function to get marginal across an equal grid
-#####################################################
+
+#' function to get marginal across an equal grid
+#'
+#' @param mylist list of matrices of two cols x, y
+#' @param n.grid grid size
+#' @param single NULL or TRUE if only a single node and parameter
+#'
+#' @return list
+#' @export
+#' @keywords internal
 eval.across.grid <- function(mylist,n.grid,single){
 
   if(is.null(single)){
@@ -530,31 +508,39 @@ eval.across.grid <- function(mylist,n.grid,single){
       for(j in 1:length(q.inner.list)){## for each parameter
         mymat <- q.inner.list[[j]] ## copy - this is a matrix
         q.mat <- matrix(data=rep(NA,2*n.grid),ncol=2) ## create new matrix
-        colnames(q.mat) <- c("x","f(x)") 
+        colnames(q.mat) <- c("x","f(x)")
         interp <- spline(mymat,n=n.grid) ## interpolate over equal spaced grid of n points
-        q.mat[,1] <- interp$x 
-        q.mat[,2] <- interp$y 
+        q.mat[,1] <- interp$x
+        q.mat[,2] <- interp$y
         q.inner.list[[j]] <- q.mat ## overwrite
       }
-      mylist[[i]] <- q.inner.list 
+      mylist[[i]] <- q.inner.list
     }
   } else {## have only a single node and parameter
-    mymat <- mylist[[1]] 
+    mymat <- mylist[[1]]
     q.mat <- matrix(data=rep(NA,2*n.grid),ncol=2) ## create new matrix
-    colnames(q.mat) <- c("x","f(x)") 
+    colnames(q.mat) <- c("x","f(x)")
     interp <- spline(mymat,n=n.grid) ## interpolate over equal spaced grid of n points
-    q.mat[,1] <- interp$x 
-    q.mat[,2] <- interp$y 
+    q.mat[,1] <- interp$x
+    q.mat[,2] <- interp$y
     mylist[[1]] <- q.mat ## overwrite
   }
-  return(mylist) 
+  return(mylist)
 }
-##################################################################################
-## function to get std. are under marginal to exactly unity
-## it should be very close to unity but in some cases due to numerical accuracy
-## differences (since each point is a separate estimate) this might be a little adrift
-## turn this option off to see how reliable the original estimation is
-##################################################################################
+
+#' Standard Area Under the Marginal
+#'
+#' function to get std. are under marginal to exactly unity.
+#' It should be very close to unity but in some cases due to numerical accuracy
+#' differences (since each point is a separate estimate) this might be a little adrift
+#' turn this option off to see how reliable the original estimation is
+#'
+#' @param mylist list of matrices of two cols x, y
+#' @param single NULL or TRUE if only a single node and parameter
+#'
+#' @return list
+#' @export
+#' @keywords internal
 std.area.under.grid <- function(mylist,single){
 
   if(is.null(single)){
@@ -566,7 +552,7 @@ std.area.under.grid <- function(mylist,single){
         mymat[,2] <- mymat[,2]/cur.area ## std to ~ 1.0
         q.inner.list[[j]] <- mymat ## overwrite
       }
-      mylist[[i]] <- q.inner.list 
+      mylist[[i]] <- q.inner.list
     }
   } else {
     mymat <- mylist[[1]] ## copy - this is a matrix
@@ -576,11 +562,20 @@ std.area.under.grid <- function(mylist,single){
 
   }
 
-  return(mylist) 
+  return(mylist)
 }
-#####################################################
-## function to quantiles
-#####################################################
+
+#' function to extract quantiles from INLA output
+#'
+#' function to get to extract quantiles
+#'
+#' @param mylist list of matrices of two cols x, y
+#' @param quantiles vector with the desired quantiles
+#' @param single NULL or TRUE if only a single node and parameter
+#'
+#' @return list
+#' @export
+#' @keywords internal
 get.quantiles <- function(mylist,quantiles, single){
 
   if(is.null(single)){
@@ -589,44 +584,46 @@ get.quantiles <- function(mylist,quantiles, single){
      for(j in 1:length(q.inner.list)){
        mymat <- q.inner.list[[j]] ## copy - this is a matrix
        q.mat <- matrix(data=rep(NA,2*length(quantiles)),ncol=2) ## create new matrix
-       colnames(q.mat) <- c("P(X<=x)","x") 
-       q.mat[,1] <- quantiles 
+       colnames(q.mat) <- c("P(X<=x)","x")
+       q.mat[,1] <- quantiles
        q.mat <- get.ind.quantiles(q.mat,mymat) ## the actual quantile arithmetic
        q.inner.list[[j]] <- q.mat ## overwrite
      }
-     mylist[[i]] <- q.inner.list 
+     mylist[[i]] <- q.inner.list
    }
   } else {
       mymat <- mylist[[1]] ## copy - this is a matrix
       q.mat <- matrix(data=rep(NA,2*length(quantiles)),ncol=2) ## create new matrix
-      colnames(q.mat) <- c("P(X<=x)","x") 
-      q.mat[,1] <- quantiles 
+      colnames(q.mat) <- c("P(X<=x)","x")
+      q.mat[,1] <- quantiles
       q.mat <- get.ind.quantiles(q.mat,mymat) ## the actual quantile arithmetic
       mylist[[1]] <- q.mat ## overwrite
 
   }
-  return(mylist) 
+  return(mylist)
 }
 
-## helper function for get.quantiles above
+#' @describeIn get.quantiles helper function for get.quantiles
+#' @param outmat matrix where the first col has the desired quantiles. We want to estimate this and out in into the second col
+#' @param inmat is the actual x,f(x) matrix
 get.ind.quantiles <- function(outmat,inmat){
     ##outmat is a matrix where the first col has the desired quantiles
     ## we want to estimate this and out in into the second col
     ## inmat is the actual x,f(x) matrix
-    qs.vec <- outmat[,1] 
-    x <- inmat[,1] 
-    fx <- inmat[,2] 
+    qs.vec <- outmat[,1]
+    x <- inmat[,1]
+    fx <- inmat[,2]
     cum.den <- cumsum(fx) ## cumulative of f(x) values
     sum.den <- sum(fx) ## total sum of f(x)
     cum.f <- cum.den/sum.den ## cumulative density function
-    row <- 1 
+    row <- 1
     for(qs in qs.vec){## for each quantile
         ## find row in inmat which has cumulative f(x)>q.s
         outmat[row,2] <- x[which(cum.f>qs)[1]] ## find first row to exceed quantile value q.s and get x value
-        row <- row+1 
+        row <- row+1
     }
 
     class(outmat) <- c("abnFit")
 
-    return(outmat) 
+    return(outmat)
 }

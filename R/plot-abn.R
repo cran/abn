@@ -1,21 +1,95 @@
-## plot-abn.R --- Author : Gilles Kratzer Last Modified on: 06/12/2016 Last Modified on: 10/03/2017 Last modification: 19.05.2017 Node color list Last mod: 13.06.2017 Arc direction Last mod:
-## 18/07/2017
-## major rewrite rf 2021-04
-
-# for final submission elimiate and # `print()` lines
-
-
-plotabn <- function(...) {
-    .Deprecated("plotAbn", msg="'plotabn' is deprecated.\n Use 'plotAbn' instead but note that arguments have slightly changed.")
-    dots <- list(...)
-    if (!is.null(dots$dag.m)) {
-        dag <- dots$dag.m
-        dots$dag.m <- NULL
-        do.call('plotAbn', c(dag, dots))
-    } else  plotAbn(...)
-}
-
-
+#' Plot an ABN graphic
+#'
+#' Plot an ABN DAG using formula statement or a matrix in using Rgraphviz through the graphAM class.
+#'
+#' @usage plotAbn(dag, data.dists=NULL, markov.blanket.node=NULL, fitted.values=NULL,
+#'                digits=2, edge.strength=NULL, edge.strength.lwd=5, edge.direction="pc",
+#'                edge.color="black", edge.linetype="solid", edge.arrowsize=0.6,
+#'                edge.fontsize=node.fontsize, node.fontsize=12,
+#'                node.fillcolor=c("lightblue", "brown3", "chartreuse3"),
+#'                node.fillcolor.list=NULL,
+#'                node.shape=c("circle", "box", "ellipse", "diamond"),
+#'                plot=TRUE , ...)
+#'
+#' @param dag a matrix or a formula statement (see details for format) defining
+#' the network structure, a Directed Acyclic Graph (DAG).
+#' Note that rownames must be set or given in \code{data.dists}.
+#' @param data.dists a named list giving the distribution for each node in the network, see details.
+#' @param markov.blanket.node name of variables to display its Markov blanket.
+#' @param fitted.values modes or coefficents outputted from \code{\link{fitAbn}}.
+#' @param digits number of digits to display the \code{fitted.values}.
+#' @param edge.strength a named matrix containing evaluations of edge strength
+#' which will change the arcs width (could be Mutual information, p-values,
+#' number of bootstrap retrieve samples or the outcome of the \code{\link{linkStrength}}).
+#' @param edge.strength.lwd maximum line width for \code{edge.strength}.
+#' @param edge.direction character giving the direction in which arcs should
+#' be plotted, \code{pc} (parent to child) or \code{cp} (child to parent) or \code{undirected}.
+#' @param edge.color the colour of the edge.
+#' @param edge.linetype the linetype of the edge. Defaults to \code{"solid"}.
+#' Valid values are the same as for the R's base graphic parameter \code{lty}.
+#' @param edge.arrowsize the thickness of the arrows. Not relevant if \code{arc.strength} is provided.
+#' @param edge.fontsize the font size of the arcs fitted values.
+#' @param node.fontsize the font size of the nodes names.
+#' @param node.fillcolor the colour of the node. Second and third element is
+#' used for the Markov blanket and node of the Markov blanket.
+#' @param node.fillcolor.list the list of node that should be coloured.
+#' @param node.shape the shape of the nodes according the Gaussian, binomial, Poisson and multinomial distributions.
+#' @param plot logical variable, if set to \code{TRUE} then the graph is plotted.
+#' @param ... arguments passed to the plotting function.
+#'
+#' @details
+#' By default binomial nodes are squares, multinoial nodes are empty, Gaussian nodes are circles and poison nodes are ellipses.
+#'
+#' The \code{dag} can be provided using a formula statement (similar to glm). A typical formula is \code{ ~ node1|parent1:parent2 + node2:node3|parent3}.
+#'
+#' The construction is based on the \pkg{graph} package. Properties of the graph can be changend after the construction, see \sQuote{Examples}.
+#'
+#' @return A rendered graph, if \code{plot=TRUE}. The \code{graphAM} object is returned invisibly.
+#'
+#' @seealso \code{\link[graph]{graphAM-class}}, \code{\link[graph]{edgeRenderInfo}}
+#' @keywords models hplot
+#' @export
+#' @importFrom Rgraphviz renderGraph layoutGraph
+#' @importFrom graph edgeRenderInfo edgeRenderInfo<-
+#' @importFrom methods new
+#' @examples
+#' #Define distribution list
+#' dist <- list(a="gaussian", b="gaussian", c="gaussian", d="gaussian", e="binomial", f="binomial")
+#'
+#' #Define a matrix formulation
+#' edge.strength <- matrix(c(0,0.5,0.5,0.7,0.1,0,
+#'                           0,0,0.3,0.1,0,0.8,
+#'                           0,0,0,0.35,0.66,0,
+#'                           0,0,0,0,0.9,0,
+#'                           0,0,0,0,0,0.8,
+#'                           0,0,0,0,0,0),nrow = 6L, ncol = 6L, byrow = TRUE)
+#'
+#' ## Naming of the matrix
+#' colnames(edge.strength) <- rownames(edge.strength) <- names(dist)
+#'
+#' ## Plot form a matrix
+#' plotAbn(dag = edge.strength, data.dists = dist)
+#'
+#' ## Edge strength
+#' plotAbn(dag = ~a|b:c:d:e+b|c:d:f+c|d:e+d|e+e|f, data.dists = dist, edge.strength = edge.strength)
+#'
+#' ## Plot from a formula for a different DAG!
+#' plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist)
+#'
+#' ## Markov blanket
+#' plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, markov.blanket.node = "e")
+#'
+#' ## Change col for all edges
+#' tmp <- plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot=FALSE)
+#' graph::edgeRenderInfo(tmp) <- list(col="blue")
+#' Rgraphviz::renderGraph(tmp)
+#'
+#' ## Change lty for individual ones. Named vector is necessary
+#' tmp <- plotAbn(dag = ~a|b:c:e+b|c:d:f+e|f, data.dists = dist, plot=FALSE)
+#' edgelty <- rep(c("solid","dotted"), c(6,1))
+#' names(edgelty) <- names( graph::edgeRenderInfo(tmp, "col"))
+#' graph::edgeRenderInfo(tmp) <- list(lty=edgelty)
+#' Rgraphviz::renderGraph(tmp)
 plotAbn <- function(dag, data.dists=NULL, markov.blanket.node=NULL,
                     fitted.values=NULL, digits=2, edge.strength=NULL, edge.strength.lwd=5,
                     edge.direction="pc", edge.color="black", edge.linetype="solid", edge.arrowsize=0.6, edge.fontsize=node.fontsize,
@@ -59,7 +133,7 @@ plotAbn <- function(dag, data.dists=NULL, markov.blanket.node=NULL,
             dag <- check.valid.dag(dag=dag, is.ban.matrix=FALSE, group.var=NULL)
         } else {
             if (grepl("~", as.character(dag)[1], fixed=T)) {
-                dag <- formula.abn(f=dag, name=name)
+                dag <- formula_abn(f=dag, name=name)
                 ## run a series of checks on the DAG passed
                 dag <- check.valid.dag(dag=dag, is.ban.matrix=FALSE, group.var=NULL)
             }

@@ -190,12 +190,12 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP buildcachematrix(SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP checkforcycles(SEXP, SEXP);
-RcppExport SEXP fit_single_node(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP fitabn_marginals(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP mostprobable(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP searchhill(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP buildcachematrix(void *, void *, void *, void *, void *);
+RcppExport SEXP checkforcycles(void *, void *);
+RcppExport SEXP fit_single_node(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+RcppExport SEXP fitabn_marginals(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+RcppExport SEXP mostprobable_C(void *, void *, void *, void *, void *, void *);
+RcppExport SEXP searchhill(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_abn_logit_cpp", (DL_FUNC) &_abn_logit_cpp, 1},
@@ -216,7 +216,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"checkforcycles",   (DL_FUNC) &checkforcycles,    2},
     {"fit_single_node",  (DL_FUNC) &fit_single_node,  27},
     {"fitabn_marginals", (DL_FUNC) &fitabn_marginals, 30},
-    {"mostprobable",     (DL_FUNC) &mostprobable,      6},
+    {"mostprobable_C",   (DL_FUNC) &mostprobable_C,    6},
     {"searchhill",       (DL_FUNC) &searchhill,       13},
     {NULL, NULL, 0}
 };

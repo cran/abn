@@ -1,24 +1,18 @@
 ---------------------------
 -- ChangeLog - abn --
-	---------------------------
-2023-05-06 Matteo Delucchi (version 2.7-5)
-  * Changed contributors
-  * Fixed unicode-character issue in NAMESPACE
-
-2023-01-21 Reinhard Furrer  (version 2.7-4)
-
-  * Changes for JSS article.
-  * Minor internal improvements (eliminated tests based on `class()`)
-	
-	
-2022-06-15 Reinhard Furrer  (version 2.7-3, 2.7-1)
-
-  * Fixed a bug in `buildScoreCache.mle()` ()
-  * Eliminated a couple potential warnings.
-  * Improvement of version `abn.Version()`
-  * Cleaned control arguments
-  * Improved a few man pages
-
+---------------------------
+2023-09-01 Matteo Delucchi (version 3.0.0)
+  * Implemented random-intercept model for `method="mle"` with argument `group.var`.
+  * simulateAbn(): Fixed to run with all arguments. Enhancement: Simulates a hierarchical model if `group.var` is provided.
+  * Fixed parallel computing for `method="mle"` that did not always run smoothly.
+  * Beware, the structure of some objects has changed!
+  * Updated documentation to Roxygen.
+  * Rigorous checking of function arguments.
+  * Upgraded unit test for testthat e3.
+  * Implemented extensive unit tests and CI/CD pipelines.
+  * Many (!) bugs fixed that mainly flew under the radar.
+  * Removed deprecated functions.
+  * Refactoring here and there. Especially to harmonise `buildScoreCache()` and `fitAbn()` for both methods "mle" and "bayes".
 
 2022-04-02 Reinhard Furrer  (version 2.7-0)
 
