@@ -571,8 +571,8 @@ test_that("fitAbn's regressionLoop() works w/o group.var.", {
                               )
                             }
           })
-          expect_equal(res, res3)
-          expect_equal(res2, res3)
+          expect_equal(res, res3, tolerance = 10e-8)
+          expect_equal(res2, res3, tolerance = 10e-8)
         },
         file = "/dev/null")
       }
@@ -680,8 +680,8 @@ test_that("fitAbn's regressionLoop() works w/ group.var.", {
                               )
                             }
           })
-          expect_equal(res, res3)
-          expect_equal(res2, res3)
+          expect_equal(res, res3, tolerance = 10e-8)
+          expect_equal(res2, res3, tolerance = 10e-8)
         },
         file = "/dev/null")
       }

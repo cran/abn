@@ -23,6 +23,7 @@ centre = TRUE,
 dry.run = FALSE,
 control = NULL,
 verbose = FALSE,
+debugging = FALSE,
 ...)
 
 buildScoreCache.bayes(
@@ -73,6 +74,7 @@ buildScoreCache.mle(
   defn.res = NULL,
   dry.run = FALSE,
   verbose = FALSE,
+  debugging = FALSE,
   force.method = NULL,
   group.var = NULL,
   grouped.vars = NULL,
@@ -110,6 +112,8 @@ buildScoreCache.mle(
 \item{control}{a list of control parameters. See \code{\link{build.control}} for the names of the settable control values and their effect.}
 
 \item{verbose}{if TRUE then provides some additional output.}
+
+\item{debugging}{if \code{TRUE} and \code{method = 'mle'} this enables to step into the for-loop.}
 
 \item{...}{additional arguments passed for optimization.}
 

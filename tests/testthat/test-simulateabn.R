@@ -624,7 +624,7 @@ test_that("simulateAbn() catches wrong arguments", {
   }
 })
 
-test_that("simulateAbn() simulation works", {
+test_that("simulateAbn() simulation works with method 'mle'", {
   # Make a proper abnFit object
   ## without group.var
   if(.Platform$OS.type == "unix") {
@@ -697,6 +697,106 @@ test_that("simulateAbn() simulation works", {
           mp.dag.mle.grp <- mostProbable(score.cache = mycache.mle.grp, verbose = FALSE)
           expect_no_error({
             myres.mle.grp <- fitAbn(object = mp.dag.mle.grp, method = "mle", group.var = "Pedigree")
+          })
+          expect_no_error({
+            mysim.grp <- simulateAbn(object = myres.mle.grp,
+                                     run.simulation = TRUE,
+                                     bugsfile = NULL,
+                                     verbose = FALSE,
+                                     debug = FALSE)
+          })
+        },
+        file = "/dev/null"
+        )
+      })
+    })
+    act <- as.numeric(round(prop.table(table(mysim.grp$Outdoor)), 2))
+    expected <- as.numeric(round(prop.table(table(df$Outdoor)), 2))
+    expect_equal(act[order(act)],
+                 expected[order(expected)],
+                 tolerance = 0.1) # quite high tolerance because the actual data has no grouping...
+
+    # Correct number of categories simulated for categorical/multinomial variables?
+    act <- as.numeric(round(prop.table(table(mysim.grp$Sex)), 2))
+    expected <- as.numeric(round(prop.table(table(df$Sex)), 2))
+    expect_equal(length(act), length(expected))
+  }
+})
+
+test_that("simulateAbn() simulation works with method 'bayes'", {
+  # Make a proper abnFit object
+  ## without group.var
+  if(.Platform$OS.type == "unix") {
+    capture.output({
+      df <- FCV[, c(12, 14:15)]
+      mydists <- list(Outdoor="binomial",
+                      # Sex="multinomial",
+                      GroupSize="poisson",
+                      Age="gaussian")
+
+      ## buildScoreCache -> mostProbable() -> fitAbn()
+      suppressWarnings({
+        mycache.bayes <- buildScoreCache(data.df = df, data.dists = mydists, method = "bayes",
+                                       adj.vars = NULL, cor.vars = NULL,
+                                       dag.banned = NULL, dag.retained = NULL,
+                                       max.parents = 1,
+                                       which.nodes = NULL, defn.res = NULL)
+      }) # ignore non-convergence warnings
+      expect_no_error({
+        mp.dag.bayes <- mostProbable(score.cache = mycache.bayes, verbose = FALSE)
+      })
+      expect_no_error({
+        myres.bayes <- fitAbn(object = mp.dag.bayes, method = "bayes", centre = FALSE)
+      })
+    },
+    file = "/dev/null"
+    )
+
+    expect_no_error({
+      myres.sim <- simulateAbn(object = myres.bayes,
+                               run.simulation = TRUE,
+                               bugsfile = NULL,
+                               n.chains = 10L,
+                               n.adapt = 1000L,
+                               n.thin = 100L,
+                               n.iter = 10000L,
+                               seed = 42L,
+                               verbose = FALSE)
+    })
+
+    act <- as.numeric(round(prop.table(table(myres.sim$Outdoor)), 2))
+    expected <- as.numeric(round(prop.table(table(df$Outdoor)), 2))
+    expect_equal(act[order(act)],
+                 expected[order(expected)],
+                 tolerance = 0.05)
+    act <- as.numeric(round(prop.table(table(myres.sim$Sex)), 2))
+    expected <- as.numeric(round(prop.table(table(df$Sex)), 2))
+    expect_equal(act[order(act)],
+                 expected[order(expected)],
+                 tolerance = 0.05)
+
+    skip("simulateAbn() with method 'bayes' is not tested with 'group.var'.")
+    ## with group.var
+    suppressWarnings({
+      suppressMessages({
+        capture.output({
+          df <- FCV[, c(11:15)]
+          mydists <- list(Pedigree="binomial",
+                          Outdoor="binomial",
+                          Sex="multinomial",
+                          GroupSize="poisson",
+                          Age="gaussian")
+          mydists <- mydists[-1] # remove grouping variable from distribution list
+          retaindag <- matrix(0, nrow = length(mydists), ncol = length(mydists), dimnames = list(names(mydists), names(mydists)))
+          retaindag[3, 1] <- retaindag[4,3] <- retaindag[2,4] <- 1
+          mycache.mle.grp <- buildScoreCache(data.df = df, data.dists = mydists, method = "bayes",
+                                             group.var = "Pedigree", adj.vars = NULL, cor.vars = NULL,
+                                             dag.banned = NULL, dag.retained = retaindag,
+                                             max.parents = 3,
+                                             which.nodes = NULL, defn.res = NULL)
+          mp.dag.mle.grp <- mostProbable(score.cache = mycache.mle.grp, verbose = FALSE)
+          expect_no_error({
+            myres.mle.grp <- fitAbn(object = mp.dag.mle.grp, method = "bayes", group.var = "Pedigree")
           })
           expect_no_error({
             mysim.grp <- simulateAbn(object = myres.mle.grp,

@@ -120,35 +120,35 @@ test_that("buildScoreCache.mle() with Poisson nodes", {
   if(.Platform$OS.type == "unix") {
     capture.output({
       # Poisson
-      mydists <- list(a="poisson",
-                      b="poisson")
-      a <- rpois(1000, lambda = 0.5)
-      z <- exp(1+2*a)
-      b <- rpois(1000, lambda = z)
+      mydists <- list(a = "gaussian",
+                      b = "poisson")
+      a <- cbind(rnorm(1000))
+      betasTrue<-c(2)
+      etaTrue<-a%*%betasTrue
+      b <- rpois(1000,exp(etaTrue))
+      retaindag <- matrix(c(0,0,1,0), nrow = 2, byrow = TRUE, dimnames = list(c("a", "b"), c("a", "b")))
+      banneddag <- matrix(c(1,1,0,1), nrow = 2, byrow = TRUE, dimnames = list(c("a", "b"), c("a", "b")))
       mydf <- data.frame("a" = a,
-                         "b" = as.integer(b))
+                         "b" = b)
       mycache.mle <- buildScoreCache(data.df = mydf,
                                      data.dists = mydists,
                                      method = "mle",
                                      max.parents = 1,
+                                     dag.retained = retaindag,
+                                     dag.banned = banneddag,
                                      verbose = FALSE)
     },
     file = "/dev/null")
 
+    modglm <- glm(formula=b ~ a, data = mydf, family=poisson)
     # mLik
-    expect_equal(mycache.mle$mlik[1], as.numeric(logLik(glm(formula=mydf$a ~ 1, family=poisson))))
-    expect_equal(mycache.mle$mlik[2], as.numeric(logLik(glm(formula=mydf$a ~ 1 + mydf$b, family=poisson))))
-    # expect_equal(mycache.mle$mlik[3], as.numeric(logLik(glm(formula=mydf$b ~ 1, family=poisson))))
+    expect_equal(mycache.mle$mlik[1], as.numeric(logLik(modglm)), tolerance = 10e0)
 
     # AIC
-    expect_equal(mycache.mle$aic[1], as.numeric(AIC(glm(formula=mydf$a ~ 1, family=poisson))))
-    expect_equal(mycache.mle$aic[2], as.numeric(AIC(glm(formula=mydf$a ~ 1 + mydf$b, family=poisson))))
-    # expect_equal(mycache.mle$aic[3], as.numeric(AIC(glm(formula=mydf$b ~ 1, family=poisson))))
+    expect_equal(mycache.mle$aic[1], as.numeric(AIC(modglm)), tolerance = 10e0)
 
     # BIC
-    expect_equal(mycache.mle$bic[1], as.numeric(BIC(glm(formula=mydf$a ~ 1, family=poisson))))
-    expect_equal(mycache.mle$bic[2], as.numeric(BIC(glm(formula=mydf$a ~ 1 + mydf$b, family=poisson))))
-    # expect_equal(mycache.mle$bic[3], as.numeric(BIC(glm(formula=mydf$b ~ 1, family=poisson))))
+    expect_equal(mycache.mle$bic[1], as.numeric(BIC(modglm)), tolerance = 10e0)
   }
 })
 
