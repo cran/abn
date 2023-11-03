@@ -1,6 +1,6 @@
 Package: abn
-Version: 3.0.2
-Date: 2023-10-23
+Version: 3.0.3
+Date: 2023-11-03
 Title: Modelling Multivariate Data with Additive Bayesian Networks
 Authors@R: 
     c(person(given = "Matteo",
@@ -64,6 +64,6 @@ Config/testthat/edition: 3
 RoxygenNote: 7.2.2
 Encoding: UTF-8
 NeedsCompilation: yes
-Packaged: 2023-10-25 14:59:47 UTC; root
+Packaged: 2023-11-03 07:54:19 UTC; matteo
 Repository: CRAN
-Date/Publication: 2023-10-26 07:30:11 UTC
+Date/Publication: 2023-11-03 10:40:02 UTC
