@@ -37,6 +37,7 @@
 #' @param catcov.mblogit Defaults to "free" meaning that there are no restrictions on the covariances of random effects between the logit equations. Set to "diagonal" if random effects pertinent to different categories are uncorrelated or "single" if random effect variances pertinent to all categories are identical.
 #' @param epsilon Defaults to 1e-8. Positive convergence tolerance \eqn{\epsilon} that is directly passed to the \code{control} argument of \code{mclogit::mblogit} as \code{mclogit.control}. Only for \code{method='mle', group.var=...}.
 #' @param ncores The number of cores to parallelize to, see \sQuote{Details}. If >0, the number of CPU cores to be used. -1 for all available -1 core. Only for \code{method="mle"}.
+#' @param cluster.type The type of cluster to be used, see \code{?parallel::makeCluster}. \code{abn} then defaults to \code{"PSOCK"} on Windows and \code{"FORK"} on Unix-like systems. With "FORK" the child process are started with \code{rscript_args = "--no-environ"} to avoid loading the whole workspace into each child.
 #' @param seed a non-negative integer which sets the seed in \code{set.seed(seed)}.
 #'
 #' @details
@@ -49,6 +50,7 @@
 #' @examples
 #' ctrlmle <- abn::build.control(method = "mle",
 #'                         ncores = 0,
+#'                         cluster.type = "PSOCK",
 #'                         max.irls = 100,
 #'                         tol = 10^-11,
 #'                         tolPwrss = 1e-7,
@@ -104,7 +106,8 @@ build.control <-
             maxiters.hessian.brent = 100,
             num.intervals.brent = 100,
             n.grid = 250,
-            ncores = 0,
+            ncores = 1,
+            cluster.type = "FORK",
             max.irls = 100,
             tol = 1e-8,
             tolPwrss = 1e-7,
@@ -141,12 +144,15 @@ build.control <-
           maxiters.hessian.brent = maxiters.hessian.brent,
           num.intervals.brent = num.intervals.brent,
           n.grid = n.grid,
+          ncores = ncores,
+          cluster.type = cluster.type,
           seed = seed
         )
     } else if (method == "mle") {
       ctrl <-
         list(
           ncores = ncores,
+          cluster.type = cluster.type,
           max.iters = max.iters,
           max.irls = max.irls,
           tol = tol,
@@ -233,7 +239,7 @@ build.control <-
 #' ## If \code{method="mle"}:
 #' This function is used to calculate all individual information-theoretic node scores. The possible information-theoretic based network scores computed in \code{buildScoreCache} are the maximum likelihood (mlik, called marginal likelihood in this context as it is computed node wise),
 #' the Akaike Information Criteria (aic), the Bayesian Information Criteria (bic) and the Minimum distance Length (mdl). The classical definitions of those metrics are given in Kratzer and Furrer (2018). This function computes a cache that can be fed into a model search algorithm.
-#' The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \href{http://r-bayesian-networks.org/}{r-bayesian-networks.org} of the \pkg{abn} website for more details.
+#' The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \href{https://r-bayesian-networks.org/}{r-bayesian-networks.org} of the \pkg{abn} website for more details.
 #'
 #' @return A named list of class \code{abnCache}.
 #' \describe{
@@ -262,13 +268,56 @@ build.control <-
 #'
 #' Lewis, F. I., and McCormick, B. J. J. (2012). "Revealing the complexity of health determinants in resource poor settings". \emph{American Journal Of Epidemiology}. doi:10.1093/aje/KWS183).
 #'
-#' Further information about \pkg{abn} can be found at: \href{http://r-bayesian-networks.org/}{r-bayesian-networks.org}.
+#' Further information about \pkg{abn} can be found at: \href{https://r-bayesian-networks.org/}{r-bayesian-networks.org}.
 #' @seealso \code{\link{fitAbn}}
 #' @family buildScoreCache
 #' @export
 #'
 #' @examples
+#' ## Simple example
+#' # Generate data
+#' N <- 1e6
+#' mydists <- list(a="gaussian",
+#'                 b="gaussian",
+#'                 c="gaussian")
+#' a <- rnorm(n = N, mean = 0, sd = 1)
+#' b <- 1 + 2*rnorm(n = N, mean = 5, sd = 1)
+#' c <- 2 + 1*a + 2*b + rnorm(n = N, mean = 2, sd = 1)
+#' mydf <- data.frame("a" = scale(a),
+#'                    "b" = scale(b),
+#'                    "c" = scale(c))
+#'
+#' # ABN with MLE
+#' mycache.mle <- buildScoreCache(data.df = mydf,
+#'                                data.dists = mydists,
+#'                                method = "mle",
+#'                             max.parents = 2)
+#' dag.mle <- mostProbable(score.cache = mycache.mle,
+#'                         max.parents = 2)
+#' myfit.mle <- fitAbn(object = dag.mle,
+#'                     method = "mle",
+#'                     max.parents = 2)
+#' plot(myfit.mle)
+#'
 #' \dontrun{
+#' # ABN with Bayes
+#' if(requireNamespace("INLA", quietly = TRUE)){
+#'   # Run only if INLA is available
+#'   mycache.bayes <- buildScoreCache(data.df = mydf,
+#'                                    data.dists = mydists,
+#'                                    method = "bayes",
+#'                                    max.parents = 2)
+#'   dag.bayes <- mostProbable(score.cache = mycache.bayes,
+#'                             max.parents = 2)
+#'   myfit.bayes <- fitAbn(object = dag.bayes,
+#'                         method = "bayes",
+#'                         max.parents = 2)
+#'   plot(myfit.bayes)
+#' }
+#' # Compare MLE and Bayes with lm
+#' mymod.lm <- lm(c ~ a + b, data = mydf)
+#' summary(mymod.lm)
+#'
 #' ##################################################################################################
 #' ## Example 1 - "mle" vs. "bayes" and the later with using the internal C routine compared to INLA
 #' ##################################################################################################
@@ -484,7 +533,7 @@ buildScoreCache <- function(data.df = NULL,
     if (!is.null(which.nodes)) {
       if (!is.null(max.parents)) {
         # check max.parents on trimmed data set and trimmed distribution
-        max.parents <- check.valid.parents(data.df = data.df[which.nodes], max.parents = max.parents, group.var = group.var) # TODO: Consider to raise a meaningful error here if this fails.
+        max.parents <- check.valid.parents(data.df = data.df[which.nodes], max.parents = max.parents, group.var = group.var)
       } else {
         # no max.parents provided
         max.p <- length(data.dists[which.nodes]) # not (n-1) here, to raise warning downstream.
@@ -515,20 +564,18 @@ buildScoreCache <- function(data.df = NULL,
     which.nodes.defnres <- unique(defn.res$children)
     if (which.nodes.defnres != which.nodes){
       stop("`defn.res` and `which.nodes` provided but can only use either or.")
-      #TODO: Resolve by checking if defn.res and which.nodes are not mismatching and keep if ok.
     }
     # check if defn.res agrees with max.parents
     max.parents.defnres <- max(apply(defn.res[["node.defn"]],1,sum))
     if (max.parents.defnres != max.parents){
       stop("`defn.res` and `max.parents` provided but can only use one of each.")
-      #TODO: if max.parents as list this will fail. Catch it and/or resolve max.parent list (e.g. when all items in the list are equal).
     }
   } else {
     # no defn.res provided
     if (!is.null(which.nodes)) {
       if (!is.null(max.parents)) {
         # check max.parents on trimmed data set and trimmed distribution
-        max.parents <- check.valid.parents(data.df = data.df[which.nodes], max.parents = max.parents, group.var = group.var) # TODO: Consider to raise a meaningful error here if this fails.
+        max.parents <- check.valid.parents(data.df = data.df[which.nodes], max.parents = max.parents, group.var = group.var)
       } else {
         # no max.parents provided
         max.p <- length(data.dists[which.nodes]) # not (n-1) here, to raise warning downstream.
@@ -600,14 +647,27 @@ buildScoreCache <- function(data.df = NULL,
       which.nodes <- unique(defn.res$children)
     } else {
       stop("`defn.res` and `which.nodes` provided but can only use either or.")
-      #TODO: Resolve by checking if defn.res and which.nodes are not mismatching and keep if ok.
     }
   }
 
   # Check centre
   if(!any(centre %in% c(TRUE, FALSE))){
-    # TODO: check sth here
-    centre <- centre
+    if(is.null(centre)){
+      centre <- TRUE
+      warning("`centre` is not provided. I set it to TRUE.")
+    } else {
+      stop(paste("`centre` is not provided but should be TRUE/FALSE."))
+    }
+  } else {
+    # centre is provided as TRUE/FALSE
+    # Check if there are nodes to centre or if there are no gaussian nodes
+    if(!any(data.dists == "gaussian")) {
+      centre <- FALSE
+      if(verbose){message("No gaussian nodes to centre. I set `centre` to FALSE.")}
+    } else {
+      if(verbose){message("I set `centre` to: ", centre)}
+      centre <- centre
+    }
   }
 
   # Check dry.run
@@ -616,6 +676,17 @@ buildScoreCache <- function(data.df = NULL,
   }
 
   # Check control args
+  # if any arg matches a possible control arg from build.control(), warn and use it.
+  build.control.args <- names(formals(build.control))[-which(names(formals(build.control))=="method")] # allow method to be provided as it has a different meaning here.
+  provided.args <- names(match.call()[-1]) # remove the first element of match.call() which is empty.
+  if(any(provided.args %in% build.control.args)){
+    warning(paste("Some arguments match possible control arguments from `build.control()`.
+                  I will use the provided arguments. Please use `control=build.control(...)` instead in the future."))
+    ambiguous.args <- provided.args[which(provided.args %in% build.control.args)]
+    for (i in 1:length(ambiguous.args)){
+      control[[ambiguous.args[i]]] <- match.call()[-1][[ambiguous.args[i]]]
+    }
+  }
   ctrl <- check.valid.buildControls(control = control, method = method, verbose = verbose)
 
   if("max.mode.error" %in% names(ctrl)){
@@ -672,7 +743,8 @@ buildScoreCache <- function(data.df = NULL,
         mylist = mylist,
         grouped.vars = grouped.vars,
         group.ids = group.ids,
-        control = ctrl
+        control = ctrl,
+        debugging = debugging
       )
   } else if (method == "mle") {
     out <-

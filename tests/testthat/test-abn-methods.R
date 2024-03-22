@@ -13,7 +13,7 @@ test_that("summary.abnDag() works.", {
 })
 
 test_that("plot.abnDag() works.", {
-  mydag <- createAbnDag(dag = ~a+b|a, data.df = data.frame("a"=1, "b"=1))
+  mydag <- createAbnDag(dag = ~a+b|a, data.df = data.frame("a"=1, "b"=1), data.dists = list(a="binomial", b="gaussian"))
 
   if(.Platform$OS.type == "unix") {
     capture.output({
@@ -114,7 +114,6 @@ test_that("print.abnHillClimber() works.", {
 })
 
 test_that("plot.abnHillClimber() works.", {
-  skip("plotting for abnHillClimber is not up to date with searchHillClimber()'s output.")
   ## this data comes with abn see ?ex1.dag.data
   mydat <- ex1.dag.data
 
@@ -134,7 +133,7 @@ test_that("plot.abnHillClimber() works.", {
   if(.Platform$OS.type == "unix") {
     capture.output({
       expect_no_error({
-        plot(heur.res$dag, new=TRUE)
+        plot(heur.res)
       })
     },
     file = "/dev/null")
@@ -210,6 +209,8 @@ test_that("plot.abnMostprobable() works.", {
 })
 
 test_that("print.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -233,6 +234,8 @@ test_that("print.abnFit() works.", {
 })
 
 test_that("summary.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -256,6 +259,8 @@ test_that("summary.abnFit() works.", {
 })
 
 test_that("coef.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -279,6 +284,8 @@ test_that("coef.abnFit() works.", {
 })
 
 test_that("AIC.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -302,6 +309,8 @@ test_that("AIC.abnFit() works.", {
 })
 
 test_that("BIC.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -325,6 +334,8 @@ test_that("BIC.abnFit() works.", {
 })
 
 test_that("logLik.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -348,6 +359,8 @@ test_that("logLik.abnFit() works.", {
 })
 
 test_that("family.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -371,6 +384,8 @@ test_that("family.abnFit() works.", {
 })
 
 test_that("nobs.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -394,6 +409,8 @@ test_that("nobs.abnFit() works.", {
 })
 
 test_that("plot.abnFit() works.", {
+  skip_on_cran() # Skipped on CRAN because it requires the INLA package
+
   ## This data comes with `abn` see ?ex1.dag.data
   mydat <- ex1.dag.data[1:5000, c(1:7,10)]
 
@@ -414,7 +431,7 @@ test_that("plot.abnFit() works.", {
   if(.Platform$OS.type == "unix") {
     capture.output({
       expect_no_error({
-        plot(myres, new = TRUE)
+        plot(myres)
       })
     },
     file = "/dev/null")

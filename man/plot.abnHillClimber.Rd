@@ -4,14 +4,15 @@
 \alias{plot.abnHillClimber}
 \title{Plot objects of class \code{abnHillClimber}}
 \usage{
-\method{plot}{abnHillClimber}(x, new = TRUE, ...)
+\method{plot}{abnHillClimber}(x, ...)
 }
 \arguments{
 \item{x}{Object of class \code{abnHillClimber}}
 
-\item{new}{defaults to \code{TRUE} for opening a new plot.}
-
 \item{...}{additional parameters. Not used at the moment.}
+}
+\value{
+plot of the consensus DAG.
 }
 \description{
 Plot objects of class \code{abnHillClimber}

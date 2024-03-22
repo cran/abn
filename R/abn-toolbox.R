@@ -6,6 +6,7 @@
 #'
 #' @return numeric vector of same length as \code{x}.
 #' @export
+#' @returns numeric vector of same length as \code{x}.
 #' @keywords utilities
 logit <- function(x) {
   return(log(x/(1 - x)))
@@ -257,7 +258,7 @@ compareEG <- function(ref, test){
 #' colnames(dag) <- rownames(dag) <- names(dist)
 #'
 #' infoDag(dag)
-#' plot(createAbnDag(dag))
+#' plot(createAbnDag(dag = dag, data.dists = dist))
 #' @keywords utilities
 infoDag <- function(object, node.names = NULL) {
 

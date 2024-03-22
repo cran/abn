@@ -25,6 +25,7 @@ print.abnDag <- function(x, digits = 3L, ...){
 #' @examples
 #' mydag <- createAbnDag(dag = ~a+b|a, data.df = data.frame("a"=1, "b"=1))
 #' summary(mydag)
+#' @returns List with summary statistics of the DAG.
 summary.abnDag <- function(object, ...) {
   su <- infoDag(object$dag)
   return(su)
@@ -33,7 +34,6 @@ summary.abnDag <- function(object, ...) {
 #' Plots DAG from an object of class \code{abnDag}
 #'
 #' @param x Object of class \code{abnDag}
-#' @param new defaults to \code{TRUE} for opening a new plot.
 #' @param ... additional parameters. Not used at the moment.
 #'
 #' @return \code{Rgraphviz::plot}
@@ -42,19 +42,17 @@ summary.abnDag <- function(object, ...) {
 #' @importClassesFrom graph graphAM
 #' @importFrom grDevices dev.new dev.flush
 #' @examples
-#' mydag <- createAbnDag(dag = ~a+b|a, data.df = data.frame("a"=1, "b"=1))
+#' mydag <- createAbnDag(dag = ~a+b|a,
+#'                       data.df = data.frame("a"=1, "b"=1),
+#'                       data.dists = list(a="binomial", b="gaussian"))
 #' plot(mydag)
-plot.abnDag <- function(x, new=TRUE, ...){
-  invisible({
-    if (new) dev.new()
-    on.exit(dev.flush())
+plot.abnDag <- function(x, ...){
+  # Check if the graph is a "abnDag" object
+  if (!inherits(x, "abnDag")) stop('Function type not implemented yet. Use which="abnDag"')
 
-    # Rgraphviz:
-    mygraph <- new("graphAM", adjMat = t(x$dag), edgemode = "directed")
-    g <- Rgraphviz::plot(x = mygraph)
-  })
+  # Plot the graph
+  g <- plotAbn(dag = x$dag, data.dists = x$data.dists, ...)
   invisible(g)
-
 }
 
 
@@ -86,10 +84,12 @@ plot.abnDag <- function(x, new=TRUE, ...){
 #' max.par <- list("b1"=2, "b2"=2, "g1"=2, "g2"=2, "b3"=2, "g3"=2)
 #'
 #' ## now build the cache of pre-computed scores accordingly to the structural constraints
-#'
+#' if(requireNamespace("INLA", quietly = TRUE)){
+#'   # Run only if INLA is available
 #' res.c <- buildScoreCache(data.df=mydat, data.dists=mydists,
 #'                          dag.banned= ~b1|b2, dag.retained= ~g1|g2, max.parents=max.par)
 #' print(res.c)
+#' }
 print.abnCache <- function(x, digits = 3, ...){
 
   cat("Number of nodes in the network: ",max(x$children), ".\n\n", sep='')
@@ -118,6 +118,7 @@ print.abnCache <- function(x, digits = 3, ...){
 #' @param x Object of class \code{abnHeuristic}
 #' @param digits number of digits of the results.
 #' @param ... additional parameters. Not used at the moment.
+#' @return prints the best score found and the distribution of the scores.
 #' @export
 print.abnHeuristic <- function(x, digits = 2L, ...){
   cat("Best DAG' score found with",x$algo,"algorithm with", x$num.searches,"different searches limited to" , x$max.steps,"steps:\n")
@@ -134,9 +135,14 @@ print.abnHeuristic <- function(x, digits = 2L, ...){
 #' @param ... additional parameters. Not used at the moment.
 #' @importFrom graphics par plot points title lines
 #' @importFrom grDevices rgb
+#' @return plot of the scores of the heuristic search.
 #' @export
 plot.abnHeuristic <- function(x, ...){
+  # Keep old par() settings and restore them at the end
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
 
+  # Plot the scores
   df <- unlist(x$scores)
 
   par(mfrow=c(1,2))
@@ -176,6 +182,7 @@ plot.abnHeuristic <- function(x, ...){
 #' @param x Object of class \code{abnHillClimber}
 #' @param digits number of digits of the results.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the consensus DAG and the class of the object.
 #' @export
 print.abnHillClimber <- function(x, digits = 3L, ...){
   print(x$consensus, digits = digits)
@@ -185,18 +192,20 @@ print.abnHillClimber <- function(x, digits = 3L, ...){
 
 #' Plot objects of class \code{abnHillClimber}
 #' @param x Object of class \code{abnHillClimber}
-#' @param new defaults to \code{TRUE} for opening a new plot.
 #' @param ... additional parameters. Not used at the moment.
 #' @importFrom grDevices dev.new dev.flush
+#' @returns plot of the consensus DAG.
 #' @export
-plot.abnHillClimber <- function(x, new=TRUE, ...){
+plot.abnHillClimber <- function(x, ...){
+  # Check if the object is of class abnHillClimber
+  if(!inherits(x, "abnHillClimber")){
+    stop("The object is not of class 'abnHillClimber'")
+  }
 
-  if (new) dev.new()
-  on.exit(dev.flush())
+  # Plot the consensus DAG
+  g <- plotAbn(dag = x$dag, data.dists = x$score.cache$data.dists)
 
-  # Rgraphviz
-  mygraph <- new("graphAM", adjMat = x$consensus, edgemode = "directed")
-  g <- Rgraphviz::plot(x = mygraph)
+  # Return the plot
   invisible(g)
 }
 
@@ -209,6 +218,7 @@ plot.abnHillClimber <- function(x, new=TRUE, ...){
 #' @param x Object of class \code{abnMostprobable}
 #' @param digits number of digits of the results.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the mostprobable consensus DAG.
 #' @export
 print.abnMostprobable <- function(x, digits = 3L, ...){
 
@@ -220,6 +230,7 @@ print.abnMostprobable <- function(x, digits = 3L, ...){
 #' Print summary of objects of class \code{abnMostprobable}
 #' @param object Object of class \code{abnMostprobable}
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the mostprobable consensus DAG and the number of observations used to calculate it.
 #' @export
 summary.abnMostprobable <- function(object, ...){
   cat("Optimal DAG from 'mostProbable':\n")
@@ -231,18 +242,20 @@ summary.abnMostprobable <- function(object, ...){
 
 #' Plot objects of class \code{abnMostprobable}
 #' @param x Object of class \code{abnMostprobable}
-#' @param new defaults to \code{TRUE} for opening a new plot.
 #' @param ... additional parameters. Not used at the moment.
 #' @importFrom grDevices dev.new dev.flush
+#' @returns plot of the mostprobable consensus DAG.
 #' @export
-plot.abnMostprobable <- function(x, new=TRUE, ...){
+plot.abnMostprobable <- function(x, ...){
+  # Check if the object is of class abnMostprobable
+  if(!inherits(x, "abnMostprobable")){
+    stop("The object is not of class 'abnMostprobable'")
+  }
 
-  if (new) dev.new()
-  on.exit(dev.flush())
+  # Plot the DAG
+  g <- plotAbn(dag = x$dag, data.dists = x$score.cache$data.dists)
 
-  # Rgraphviz:
-  mygraph <- new("graphAM", adjMat = t(x$dag), edgemode = "directed")
-  g <- Rgraphviz::plot(x = mygraph)
+  # Return the plot
   invisible(g)
 }
 
@@ -253,34 +266,33 @@ plot.abnMostprobable <- function(x, new=TRUE, ...){
 #' @param x Object of class \code{abnFit}
 #' @param digits number of digits of the results.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the parameters of the fitted model.
 #' @export
 print.abnFit <- function(x, digits = 3L, ...){
 
   if(x$method=="mle"){
-    cat("The ABN model was fitted using an mle approach.", fill = TRUE)
+    cat("The ABN model was fitted using a Maximum Likelihood Estimation (MLE) approach.\n", fill = TRUE)
     if(!is.null(x$group.var)){
-      cat("GLMM with the grouping variable ", x$group.var, ".", fill = TRUE, sep = "")
-      cat("The estimated fixed-effect parameters are:\n\n")
+      cat("The model is a Generalized Linear Mixed Model (GLMM) with the following grouping variable: \n", x$group.var, "\n", fill = TRUE, sep = "")
+      cat("Fixed-effect parameters (mu):\n")
       print(x$mu, digits=digits)
+      cat("Fixed-effect coefficients (betas):\n")
       print(x$betas, digits=digits)
-      cat("The estimated random-effect parameters are:\n\n")
+      cat("Random-effects residuals (sigma):\n")
       print(x$sigma, digits=digits)
+      cat("Random-effects intercepts (sigma_alpha):\n")
       print(x$sigma_alpha, digits=digits)
-      cat("Number of nodes in the network: ",length(x$abnDag$data.dists), " plus ", length(x$group.var), " grouping variable.", fill = TRUE, sep = "")
     } else {
-      # no grouping
-      cat("The estimated coefficients are:\n\n")
+      cat("Coefficients:\n")
       print(x$coef, digits=digits)
-      cat("Number of nodes in the network: ",length(x$coef), ".\n", sep='')
     }
-  }
-
-  if(x$method=="bayes"){
-    cat("The ABN model was fitted using a Bayesian approach. The estimated modes are:\n\n")
+  } else if(x$method=="bayes"){
+    cat("The ABN model was fitted using a Bayesian approach. The estimated modes (the highest posterior density values of the parameters) are:\n\n")
     print(x$modes, digits=digits)
-    cat("Number of nodes in the network: ",length(x$modes), ".\n", sep='')
+  } else {
+    stop("The method used to fit the model is not recognized.")
   }
-
+  cat("Number of nodes in the network: ", ifelse(x$method=="mle", length(x$coef), length(x$modes)), "\n")
   invisible(x)
 }
 
@@ -288,6 +300,7 @@ print.abnFit <- function(x, digits = 3L, ...){
 #' @param object Object of class \code{abnFit}
 #' @param digits number of digits of the results.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints summary statistics of the fitted model.
 #' @export
 summary.abnFit <- function(object, digits = 3L, ...){
 
@@ -325,6 +338,7 @@ summary.abnFit <- function(object, digits = 3L, ...){
 #' @param digits number of digits of the results.
 #' @param verbose print additional output.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the coefficients of the fitted model.
 #' @export
 coef.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
   if(object$method=="mle"){
@@ -346,6 +360,7 @@ coef.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 #' @param digits number of digits of the results.
 #' @param verbose print additional output.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the AIC of the fitted model.
 #' @export
 AIC.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 
@@ -369,6 +384,7 @@ AIC.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 #' @param digits number of digits of the results.
 #' @param verbose print additional output.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the BIC of the fitted model.
 #' @export
 BIC.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 
@@ -392,6 +408,7 @@ BIC.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 #' @param digits number of digits of the results.
 #' @param verbose print additional output.
 #' @param ... additional parameters. Not used at the moment.
+#' @returns prints the logLik of the fitted model.
 #' @export
 logLik.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 
@@ -414,6 +431,7 @@ logLik.abnFit <- function(object, digits = 3L, verbose = TRUE, ...){
 #' @param object Object of class \code{abnFit}
 #' @param ... additional parameters. Not used at the moment.
 #' @importFrom stats family
+#' @returns prints the distributions for each variable of the fitted model.
 #' @exportS3Method abn::family abnFit
 family.abnFit <- function(object, ...){
 
@@ -429,6 +447,7 @@ family.abnFit <- function(object, ...){
 #' @param object Object of class \code{abnFit}
 #' @param ... additional parameters. Not used at the moment.
 #' @importFrom stats nobs
+#' @returns prints the number of observations of the fitted model.
 #' @exportS3Method abn::nobs abnFit
 nobs.abnFit <- function(object, ...){
   nrow(object$abnDag$data.df)
@@ -436,23 +455,23 @@ nobs.abnFit <- function(object, ...){
 
 #' Plot objects of class \code{abnFit}
 #' @param x Object of class \code{abnFit}
-#' @param which defaults to "abnFit".
 #' @param ... additional parameters. Not used at the moment.
 #' @importFrom methods hasArg
 #' @importFrom stats fitted.values
+#' @returns a plot of the fitted model.
 #' @export
-plot.abnFit <- function(x, which ="abnFit", ...){
-
-  if (which != "abnFit") stop('Function type not implemented yet. Use which="abnFit"')
+plot.abnFit <- function(x, ...){
+  # Check if the object is of class abnFit
+  if (!inherits(x, "abnFit")) stop("x must be an object of class abnFit")
 
   if (hasArg(fitted.values)) {
-        g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, ...)
+    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, ...)
   } else {
     if(x$method=="mle"){
-    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$coef, ...)
-  } else {
-    g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$modes, ...)
-  }
+      g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$coef, ...)
+    } else {
+      g <- plotAbn(x$abnDag$dag, data.dists = x$abnDag$data.dists, fitted.values = x$modes, ...)
+    }
   }
   invisible(g)
 }

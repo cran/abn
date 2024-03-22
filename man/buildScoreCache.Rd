@@ -4,6 +4,7 @@
 \name{buildScoreCache}
 \alias{buildScoreCache}
 \alias{buildScoreCache.bayes}
+\alias{forLoopContentBayes}
 \alias{forLoopContent}
 \alias{buildScoreCache.mle}
 \title{Build a cache of goodness of fit metrics for each node in a DAG, possibly subject to user-defined restrictions}
@@ -43,6 +44,22 @@ buildScoreCache.bayes(
   grouped.vars = NULL,
   group.ids = NULL,
   control = build.control(method = "bayes"),
+  verbose = FALSE,
+  debugging = FALSE
+)
+
+forLoopContentBayes(
+  row.no = NULL,
+  children = NULL,
+  node.defn = NULL,
+  dag.m = NULL,
+  force.method = NULL,
+  data.df = NULL,
+  data.dists = NULL,
+  var.types = NULL,
+  control = NULL,
+  grouped.vars = NULL,
+  group.ids = NULL,
   verbose = FALSE
 )
 
@@ -125,6 +142,16 @@ buildScoreCache.mle(
 
 \item{group.ids}{result returned from \code{\link{check.valid.groups}}.}
 
+\item{row.no}{The row number of the child-parent combination to be processed.}
+
+\item{children}{vector of child node integers.}
+
+\item{node.defn}{child-parent combination table.}
+
+\item{dag.m}{Empty adjacency matrix.}
+
+\item{var.types}{vector of numeric encoding of distribution types. See \code{get.var.types(data.dists)}}
+
 \item{row.num}{number of child-node (mostly corresponds to child node index e.g. in dag).}
 
 \item{mycache}{prepared cache.}
@@ -154,7 +181,19 @@ A named list of class \code{abnCache}.
 \item{\code{mdl}}{mdl value for each node combination. If the model cannot be fitted then NaN is returned. NULL if \code{method="bayes"}.}
 }
 
-list
+Named vector of results from one child-parent combination subject to the \code{row.no}.
+The names are:
+\describe{
+\item{childParentCombNo}{The row number of the child-parent combination in the \code{node.defn} table.
+This must be the same as the row number in \code{node.defn}:
+careful if \code{buildScoreCache.bayes()} is run in parallel!}
+\item{mlik}{The marginal log-likelihood of the child-parent combination.}
+\item{error.code}{The error code returned by \code{inla()}.}
+\item{hessian.accuracy}{The accuracy of the Hessian matrix returned by \code{inla()}.}
+\item{used.INLA}{A logical value indicating whether \code{inla()} was used to fit the model.}
+}
+
+A list that will be passed to \code{\link{buildScoreCache.mle}}.
 }
 \description{
 Iterates over all valid parent combinations - subject to ban, retain, and \code{max.parent} limits - for each node, or a subset of nodes, and computes a cache of scores (AIC, BIC, log marginal likelihood).
@@ -185,12 +224,14 @@ comprising of all nodes (in the same order as the columns in \code{data.df}) bef
 
 This function is used to calculate all individual information-theoretic node scores. The possible information-theoretic based network scores computed in \code{buildScoreCache} are the maximum likelihood (mlik, called marginal likelihood in this context as it is computed node wise),
 the Akaike Information Criteria (aic), the Bayesian Information Criteria (bic) and the Minimum distance Length (mdl). The classical definitions of those metrics are given in Kratzer and Furrer (2018). This function computes a cache that can be fed into a model search algorithm.
-The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \href{http://r-bayesian-networks.org/}{r-bayesian-networks.org} of the \pkg{abn} website for more details.
+The numerical routines used here are identical to those in \code{\link{fitAbn}} and see that help page for further details and also the quality assurance section on the \href{https://r-bayesian-networks.org/}{r-bayesian-networks.org} of the \pkg{abn} website for more details.
 }
 }
 \section{Functions}{
 \itemize{
 \item \code{buildScoreCache.bayes()}: Fit a given DAG to data with method="bayes".
+
+\item \code{forLoopContentBayes()}: Internal function called by \code{buildScoreCache.bayes()}.
 
 \item \code{forLoopContent()}: Internal function called by \code{buildScoreCache.mle()}.
 
@@ -198,7 +239,50 @@ The numerical routines used here are identical to those in \code{\link{fitAbn}} 
 
 }}
 \examples{
+## Simple example
+# Generate data
+N <- 1e6
+mydists <- list(a="gaussian",
+                b="gaussian",
+                c="gaussian")
+a <- rnorm(n = N, mean = 0, sd = 1)
+b <- 1 + 2*rnorm(n = N, mean = 5, sd = 1)
+c <- 2 + 1*a + 2*b + rnorm(n = N, mean = 2, sd = 1)
+mydf <- data.frame("a" = scale(a),
+                   "b" = scale(b),
+                   "c" = scale(c))
+
+# ABN with MLE
+mycache.mle <- buildScoreCache(data.df = mydf,
+                               data.dists = mydists,
+                               method = "mle",
+                            max.parents = 2)
+dag.mle <- mostProbable(score.cache = mycache.mle,
+                        max.parents = 2)
+myfit.mle <- fitAbn(object = dag.mle,
+                    method = "mle",
+                    max.parents = 2)
+plot(myfit.mle)
+
 \dontrun{
+# ABN with Bayes
+if(requireNamespace("INLA", quietly = TRUE)){
+  # Run only if INLA is available
+  mycache.bayes <- buildScoreCache(data.df = mydf,
+                                   data.dists = mydists,
+                                   method = "bayes",
+                                   max.parents = 2)
+  dag.bayes <- mostProbable(score.cache = mycache.bayes,
+                            max.parents = 2)
+  myfit.bayes <- fitAbn(object = dag.bayes,
+                        method = "bayes",
+                        max.parents = 2)
+  plot(myfit.bayes)
+}
+# Compare MLE and Bayes with lm
+mymod.lm <- lm(c ~ a + b, data = mydf)
+summary(mymod.lm)
+
 ##################################################################################################
 ## Example 1 - "mle" vs. "bayes" and the later with using the internal C routine compared to INLA
 ##################################################################################################
@@ -320,7 +404,7 @@ Kratzer, G., and Furrer, R., (2018). "Information-Theoretic Scoring Rules to Lea
 
 Lewis, F. I., and McCormick, B. J. J. (2012). "Revealing the complexity of health determinants in resource poor settings". \emph{American Journal Of Epidemiology}. doi:10.1093/aje/KWS183).
 
-Further information about \pkg{abn} can be found at: \href{http://r-bayesian-networks.org/}{r-bayesian-networks.org}.
+Further information about \pkg{abn} can be found at: \href{https://r-bayesian-networks.org/}{r-bayesian-networks.org}.
 }
 \seealso{
 \code{\link{fitAbn}}
@@ -329,8 +413,8 @@ Other buildScoreCache:
 \code{\link{build.control}()}
 
 Other Bayes: 
-\code{\link{calc.node.inla.glmm}()},
 \code{\link{calc.node.inla.glm}()},
+\code{\link{calc.node.inla.glmm}()},
 \code{\link{fitAbn}()},
 \code{\link{getmarginals}()}
 }
@@ -343,4 +427,5 @@ Other Bayes:
 \keyword{calc.node.inla.glmm}
 \keyword{fitAbn.bayes}
 \keyword{fitAbn.mle}
+\keyword{internal}
 \keyword{models}
