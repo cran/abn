@@ -1,7 +1,7 @@
 Package: abn
 Title: Modelling Multivariate Data with Additive Bayesian Networks
-Version: 3.1.1
-Date: 2024-05-22
+Version: 3.1.7
+Date: 2025-06-06
 Authors@R: c(
     person("Matteo", "Delucchi", , "matteo.delucchi@math.uzh.ch", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9327-1496")),
@@ -41,27 +41,30 @@ BugReports: https://github.com/furrer-lab/abn/issues
 Depends: R (>= 4.0.0)
 Imports: doParallel, foreach, graph, lme4, mclogit, methods, nnet,
         Rcpp, Rgraphviz, rjags, stringi
-Suggests: bookdown, boot, brglm, devtools (>= 2.4.5), entropy, ggplot2,
-        gridExtra, INLA, knitr, Matrix (>= 1.6.3), MatrixModels (>=
-        0.5.3), microbenchmark, moments, R.rsp, RhpcBLASctl, rmarkdown,
-        testthat (>= 3.0.0)
+Suggests: bookdown, boot, brglm, devtools (>= 2.4.5), ggplot2,
+        gridExtra, INLA, knitr, Matrix, MatrixModels (>= 0.5.3),
+        microbenchmark, R.rsp, RhpcBLASctl, rmarkdown, testthat (>=
+        3.0.0), entropy, moments, R6
 LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr
 Additional_repositories: https://inla.r-inla-download.org/R/stable/
 Config/testthat/edition: 3
 Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.3.1
-SystemRequirements: Gnu Scientific Library version >= 1.12
+LazyData: TRUE
+RoxygenNote: 7.3.2
+SystemRequirements: pkg-config, cmake, gsl, jpeg, gdal, geos, proj,
+        udunits-2, openssl, libcurl, jags
 NeedsCompilation: yes
-Packaged: 2024-05-22 13:26:41 UTC; root
-Author: Matteo Delucchi [aut, cre] (<https://orcid.org/0000-0002-9327-1496>),
-  Reinhard Furrer [aut] (<https://orcid.org/0000-0002-6319-2332>),
-  Gilles Kratzer [aut] (<https://orcid.org/0000-0002-5929-8935>),
-  Fraser Iain Lewis [aut] (<https://orcid.org/0000-0003-4580-2712>),
-  Jonas I. Liechti [ctb] (<https://orcid.org/0000-0003-3447-3060>),
-  Marta Pittavino [ctb] (<https://orcid.org/0000-0002-1232-1034>),
+Packaged: 2025-06-06 07:06:25 UTC; root
+Author: Matteo Delucchi [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-9327-1496>),
+  Reinhard Furrer [aut] (ORCID: <https://orcid.org/0000-0002-6319-2332>),
+  Gilles Kratzer [aut] (ORCID: <https://orcid.org/0000-0002-5929-8935>),
+  Fraser Iain Lewis [aut] (ORCID:
+    <https://orcid.org/0000-0003-4580-2712>),
+  Jonas I. Liechti [ctb] (ORCID: <https://orcid.org/0000-0003-3447-3060>),
+  Marta Pittavino [ctb] (ORCID: <https://orcid.org/0000-0002-1232-1034>),
   Kalina Cherneva [ctb]
 Maintainer: Matteo Delucchi <matteo.delucchi@math.uzh.ch>
 Repository: CRAN
-Date/Publication: 2024-05-30 20:10:14 UTC
+Date/Publication: 2025-06-06 13:30:05 UTC

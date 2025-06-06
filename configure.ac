@@ -1,4 +1,4 @@
-AC_INIT([abn],[3.1.1])
+AC_INIT([abn],[3.1.7])
 
 ## Use gsl-config to find arguments for compiler and linker flags
 ##
@@ -17,5 +17,21 @@ fi
 AC_SUBST(GSL_CFLAGS)
 AC_SUBST(GSL_LIBS)
 
+## Check for non-standard programs: JAGS
+AC_PATH_PROG([JAGS], [jags])
+if test "${JAGS}" = ""; then
+    AC_MSG_ERROR([jags not found, is JAGS installed?])
+fi
+
 AC_CONFIG_FILES([src/Makevars])
 AC_OUTPUT
+
+echo "
+  --------------------------------------------------
+  Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
+
+    cppflags: ${CPPFLAGS} ${PKG_CPPFLAGS}
+    libs:     ${PKG_LIBS}
+
+  --------------------------------------------------
+"

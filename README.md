@@ -2,9 +2,11 @@
 # abn: Additive Bayesian Networks <a href="https://r-bayesian-networks.org/"><img src="man/figures/logo.png" align="right" height="139" /></a>
 
 <!-- badges: start -->
-[![status](https://joss.theoj.org/papers/1bbc43a2be86f5d3f831cedb5cf81812/status.svg)](https://joss.theoj.org/papers/1bbc43a2be86f5d3f831cedb5cf81812)
-[![On Label CRAN Checks](https://github.com/furrer-lab/abn/actions/workflows/onlabel_CRAN_checks.yml/badge.svg)](https://github.com/furrer-lab/abn/actions/workflows/onlabel_CRAN_checks.yml)
-![Codecov](https://img.shields.io/codecov/c/github/furrer-lab/abn)
+<!-- WARNING: -->
+<!-- The ?branch=release-x.y.y is updated automatically by the initiate_version_release workflow -->
+[![status](https://joss.theoj.org/papers/1bbc43a2be86f5d3f831cedb5cf81812/status.svg)](https://joss.theoj.org/papers/10.21105/joss.06822)
+[![On Label CRAN Checks](https://github.com/furrer-lab/abn/actions/workflows/onlabel_CRAN_checks.yml/badge.svg?branch=release-3.1.7)](https://github.com/furrer-lab/abn/actions/workflows/onlabel_CRAN_checks.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/furrer-lab/abn)](https://app.codecov.io/gh/furrer-lab/abn)
 [![GitHub R package version](https://img.shields.io/github/r-package/v/furrer-lab/abn)](https://github.com/furrer-lab/abn/tags)
 ![cran](https://www.r-pkg.org/badges/version-ago/abn) 
 ![downloads](https://cranlogs.r-pkg.org/badges/grand-total/abn) 
@@ -16,47 +18,360 @@ It derives a directed acyclic graph (DAG) from empirical data that describes the
 The package provides routines for structure learning and parameter estimation of additive Bayesian network models.  
 
 # Installation
+[![Ubuntu Install](https://github.com/furrer-lab/abn/actions/workflows/Ubuntu_setup.yml/badge.svg?branch=main)](https://github.com/furrer-lab/abn/actions/workflows/Ubuntu_setup.yml)
+[![Fedora Install](https://github.com/furrer-lab/abn/actions/workflows/Fedora_setup.yml/badge.svg?branch=main)](https://github.com/furrer-lab/abn/actions/workflows/Fedora_setup.yml)
+[![MacOS Install](https://github.com/furrer-lab/abn/actions/workflows/Macos_setup.yml/badge.svg?branch=main)](https://github.com/furrer-lab/abn/actions/workflows/Macos_setup.yml)
+[![Windows Install](https://github.com/furrer-lab/abn/actions/workflows/Windows_setup.yml/badge.svg?branch=main)](https://github.com/furrer-lab/abn/actions/workflows/Windows_setup.yml)
 
-The most recent development version is available from [Github](https://github.com/furrer-lab/abn) and can be installed with:
+`abn` and its installation process relies on various software that might, or might not, be present in your system.
 
-```r
-devtools::install_github("furrer-lab/abn")
+## Prior to installing
+
+In order for `abn` to work correctly on your system some dependencies need to be installed.
+If you are on a Linux based system (most of) these dependencies are installed automatically for you when following the [pak](https://pak.r-lib.org/)-based installation procedure described in the [Installing from GitHub](#installing-from-github-recommended) section.
+
+For MacOS and Windows based system some more preparatory steps are required.
+
+The following paragraphs provide detailed instructions for the most common operating systems on the steps that need to be carried out prior to installing `abn`.
+
+<details>
+<summary><b><i>Ubuntu</i></b></summary>
+
+You presumably have R installed already, if not, open a terminal and type:
+
+```bash
+apt-get install r-base
 ```
 
-It is recommended to install `abn` within a virtual environment, e.g., using [renv](https://rstudio.github.io/renv/articles/renv.html) which can be done with:
+_**Note:** You might need to prepend `sudo ` to this command._
 
-```r
-renv::install("bioc::graph")
-renv::install("bioc::Rgraphviz")
-renv::install("abn", dependencies = c("Depends", "Imports", "LinkingTo", "Suggests"))
+All you need for the installation is to have the R-package [pak](https://pak.r-lib.org/) installed.
+`pak` is installed like any other R-package, however, it relies on `curl` being present on your system, so we make sure it is there:
+
+  ```bash
+  apt-get install libcurl4-openssl-dev
+  ```
+  Now, to install `pak` we start an R session and write:
+
+  ```R
+  install.packages('pak', repos=c(CRAN="https://cran.r-project.org"))
+  ```
+
+  With that you should be ready to [install `abn` from GitHub](#installing-from-github-recommended).
+
+</details>
+
+<details>
+<summary><b><i>Fedora</i></b></summary>
+
+  You presumably have R installed already, if not, open a terminal and type:
+ 
+  ```bash
+  dnf install R
+  ```
+
+  _**Note:** You might need to prepend `sudo ` to this command._
+
+  For the installation you need to have the R-package [pak](https://pak.r-lib.org/) installed.
+  `pak` is installed like any other R-package, however, it relies on `curl` being installed on your system, so we make sure it is there:
+
+  ```bash
+  dnf install libcurl-devel 
+  ```
+  Now, to install `pak` we start an R session and write:
+
+  ```R
+  install.packages('pak', repos=c(CRAN="https://cran.r-project.org"))
+  ```
+
+  There is one more thing we need to do before we can install `abn`:
+
+  **Install JAGS from source**
+
+  [JAGS](https://mcmc-jags.sourceforge.io/), _Just Another Gibbs Sampler_, is a program for analyzing Bayesian hierarchical models using Markov Chain Monte Carlo (MCMC) simulation. [rjags](https://cran.r-project.org/package=rjags) is R's interface to the `JAGS` library.
+  `JAGS` is required in some simulations `abn` can perform.
+
+  The steps needed to install `JAGS 4.3.2` are:
+  
+  ```bash
+  wget -O /tmp/jags.tar.gz https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Source/JAGS-4.3.2.tar.gz/download
+  cd /tmp
+  tar -xf jags.tar.gz
+  cd /tmp/JAGS-4.3.2 
+  ./configure --libdir=/usr/local/lib64
+  make
+  sudo make install
+  ```
+  
+  _**Note:**_
+  _If you are on a 64bit system (you likely are) mind the `--libdir=/usr/local/lib64` argument when launching `./configure`.)_
+  _Omitting this argument will lead to `rjags` "not seeing" `jags`._
+  
+  On Fedora `rjags` might need some special configuration for it to link properly to the `JAGS` library.
+  Also, it might be needed to add the path to the `JAGS` library to the linker path (see [rjags INSTALL file](https://github.com/cran/rjags/blob/master/INSTALL) for further details).
+  
+  In order to add the `JAGS` library to the linker path, run the following commands:
+  
+  ```bash
+  sudo echo "/usr/local/lib64" > /etc/ld.so.conf.d/jags.conf
+  sudo /sbin/ldconfig
+  ``` 
+
+  _**Note:**_
+  _These commands might not be needed, you might first try to install the R-package `rjags` and only run them if you encounter a `configure: error: Runtime link error`._
+
+  With that you should be ready to [install `abn` from GitHub](#installing-from-github-recommended).
+  
+</details>
+
+<details>
+<summary><b><i>MacOS</i></b></summary>
+
+  Most likely you have R installed already but if not run:
+ 
+  ```bash
+  brew install R
+  ```
+
+  For the installation you need to have the R-package [pak](https://pak.r-lib.org/) installed.
+  `pak` is installed like any other R-package, we start an R session and write:
+
+  ```R
+  install.packages('pak', repos=c(CRAN="https://cran.r-project.org"))
+  ```
+
+  We will install the system dependencies with [Homebrew](https://brew.sh/).
+  Head over to their site to see the installation process or simply open a terminal and run:
+
+  ```bash
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  ```
+
+  To correctly link to installed libraries and to build them, we need `pkg-config` and `automake`:
+ 
+  ```bash
+  brew install pkg-config
+  brew install automake  # needed to run autoconf
+  ```
+  
+  We will use `wget` to download `JAGS` later, as well as, the development headers `openssl`:
+ 
+  ```bash
+  brew install wget
+  brew install openssl@1.1
+  ```
+
+  <ins>**Dependencies**</ins>
+  
+  On MacOS we need to install some system dependencies separately:
+  
+  
+  - **GSL**
+  
+    [GSL](https://www.gnu.org/software/gsl/), the _GNU Scientific Library_, is a numerical library for C/C++.
+    It is required to compile `abn`'s C/C++ code.
+  
+    With Homebrew you can install the `GSL` binaries directly:
+    
+    ```
+    brew install gsl
+    ```
+  
+  - **JAGS & rjags**
+    
+    [JAGS](https://mcmc-jags.sourceforge.io/), _Just Another Gibbs Sampler_, is a program for analyzing Bayesian hierarchical models using Markov Chain Monte Carlo (MCMC) simulation. [rjags](https://cran.r-project.org/package=rjags) is R's interface to the `JAGS` library.
+    `JAGS` is required in some simulations `abn` can perform.
+  
+    With Homebrew you can install the `JAGS` binaries directly:
+    
+    ```
+    brew install jags
+    ```
+    
+    And now to install `rjags`, open an R session and type:
+    
+    ```R
+    install.packages("rjags", type="source", repos=c(CRAN="https://cran.r-project.org"))
+    library("rjags")
+    ```
+  
+  - **INLA**
+  
+    [INLA](https://www.r-inla.org/) is an R package that is not hosted on CRAN and thus needs to be installed separately.
+    `abn` uses `INLA` to fit some models. 
+    
+    `INLA` relies on various other R packages and C/C++ libraries.
+    It thus needs some additional installation steps:
+    
+    ```bash
+    brew install udunits 
+    brew install gdal  # installs also geos as dependency
+    brew install proj
+    ```
+  
+    Now, to install `INLA` itself, simply start an R session and run:
+    
+    ```R
+    install.packages("INLA", repos = c(getOption("repos"), INLA = "https://inla.r-inla-download.org/R/stable"), dep = TRUE)
+    ```
+    
+    If you run into trouble, please see also [INLA's installation instructions](https://www.r-inla.org/download-install) for further details.
+
+</details>
+
+<details>
+<summary><b><i>Windows</i></b></summary>
+
+  For the installation you need to have the R-package [pak](https://pak.r-lib.org/) installed.
+  `pak` is installed like any other R-package, we start an R session and write:
+
+  ```R
+  install.packages('pak', repos=c(CRAN="https://cran.r-project.org"))
+  ```
+
+
+  <ins>**Dependencies**</ins>
+
+  On Windows we need to install some system dependencies separately:
+
+
+  - **GSL**
+  
+    [GSL](https://www.gnu.org/software/gsl/), the _GNU Scientific Library_, is a numerical library for C/C++.
+    It is required to compile `abn`'s C/C++ code.
+  
+    In Windows `GSL` is available a.o. through [cygwin](https://cygwin.com/index.html), which has a straight forward installation process.
+    Either head over to the website, download and install the `setup-x86_64.exe` file or use PowerShell:
+    
+    ```powershell
+    Import-Module bitstransfer
+    New-Item -ItemType Directory -Force -Path "C:\Program Files\cygwin"
+    start-bitstransfer -source https://cygwin.com/setup-x86_64.exe "C:\Program Files\cygwin\setup-x86_64.exe"
+    Start-Process -Wait -FilePath "C:\Program Files\cygwin\setup-x86_64.exe" -ArgumentList "/S" -PassThru
+    ```
+  
+  - **JAGS & rjags**
+    
+    [JAGS](https://mcmc-jags.sourceforge.io/), _Just Another Gibbs Sampler_, is a program for analyzing Bayesian hierarchical models using Markov Chain Monte Carlo (MCMC) simulation. [rjags](https://cran.r-project.org/package=rjags) is R's interface to the `JAGS` library.
+    `JAGS` is required in some simulations `abn` can perform.
+  
+    
+    You can either head over to the [JAGS download page](https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Windows/), download and execute the installable, or use PowerShell.
+    The following instructions will download and install `JAGS 4.3.1` in PowerShell:
+    
+    ```powershell
+    Import-Module bitstransfer
+    New-Item -ItemType Directory -Force -Path "C:\Program Files\JAGS\JAGS-4.3.1"
+    start-bitstransfer -source https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Windows/JAGS-4.3.1.exe/download  "C:\Program Files\JAGS\JAGS-4.3.1\JAGS-4.3.1.exe"
+    Start-Process -Wait -FilePath "C:\Program Files\JAGS\JAGS-4.3.1\JAGS-4.3.1.exe" -ArgumentList "/S" -PassThru
+    ```
+    
+    In order to make sure `rjags` finds `JAGS` we set the environment variable `JAGS_HOME` before installing `rjags`.
+    To do so, open your R session and type:
+    
+    ```R
+    Sys.setenv(JAGS_HOME="C:/Program Files/JAGS/JAGS-4.3.1")
+    install.packages("rjags", repos=c(CRAN="https://cran.r-project.org"))
+    library("rjags")
+    ```
+  
+  - **INLA**
+  
+    [INLA](https://www.r-inla.org/) is an R package that is not hosted on CRAN and thus needs to be installed separately.
+    `abn` uses `INLA` to fit some models. 
+    
+    The installation is straight forward, simply start an R session and run:
+    
+    ```R
+    install.packages("INLA", repos = c(getOption("repos"), INLA = "https://inla.r-inla-download.org/R/stable"), dep = TRUE)
+    ```
+    
+    If you run into trouble, please see also [INLA's installation instructions](https://www.r-inla.org/download-install) for further details.
+  
+</details>
+
+_Click on your operating system to see the specific installation instructions_
+
+## R version support
+
+Officially supported is R version >= 4.4
+
+## Installing from GitHub (recommended)
+
+From GitHub you can install any version and/or state of the `abn` repository you want.
+We recommend to not directly install `main`, but to a specific version.
+Head over to our [version list](https://github.com/furrer-lab/abn/releases) to see which one is the latest version.
+Here we assume the version is `3.1.2`.
+
+We use [pak](https://pak.r-lib.org/) for the installation process.
+If you followed the [Prior to installing](#prior-to-installing) section `pak` should already be installed.
+<details><summary>If not, install it first.</summary> Open an R session and type:
+
+```R
+install.packages('pak', repos=c(CRAN="https://cran.r-project.org"))
 ```
+</details>
 
-Please note that the `abn` package is currently unavailable on CRAN. 
-We are dedicated to providing a robust and reliable package, and we appreciate your understanding as we work towards making `abn` available on CRAN soon. [^1]
+To install `abn` run in your R session:
 
-[^1]: The `abn` package includes certain features, such as multiprocessing and integration with the INLA package, which are limited or available only on specific CRAN flavors. 
+```R
+pak::repo_add(INLA = "https://inla.r-inla-download.org/R/stable/")
+pak::pkg_install("furrer-lab/abn@3.1.2", dependencies=TRUE)
+```
+_**Note:** The first command can be skipped on MacOS or Windows._
+
+## Installing from CRAN
+
+> [!NOTE]
+> When installing from CRAN you might not get the latest version of `abn`.
+> If you want the latest version follow the instructions from [Installing from GitHub](#installing-from-github-recommended).
+
+In order to install the `abn` version on CRAN, open an R session and type:
+
+```R
+pak::repo_add(INLA = "https://inla.r-inla-download.org/R/stable/")
+pak::pkg_install("abn", dependencies=TRUE)
+```
+_**Note:** The first command can be skipped on MacOS or Windows._
+
+`abn` has several dependencies that are not available on CRAN.
+This is why we rely on [pak](https://pak.r-lib.org/) for the installation and the [Prior to installing](#prior-to-installing) section should be followed through before installing `abn` from CRAN. [^1]
+
+[^1]: The `abn` package includes certain features, such as multiprocessing and integration with the `INLA` package, which are limited or available only on specific CRAN flavors. 
 While it is possible to relax the testing process by, e.g., excluding tests of these functionalities, we believe that rigorous testing is important for reliable software development, especially for a package like `abn` that includes complex functionalities. 
 We have implemented a rigorous testing framework similar to CRAN's to validate these functionalities in our development process. 
 Our aim is to maximize the reliability of the `abn` package under various conditions, and we are dedicated to providing a robust and reliable package. 
 We appreciate your understanding as we work towards making `abn` available on CRAN soon.
 
-## Additional libraries
+## Installing from source
 
-The following additional libraries are recommended to best profit from the [abn](https://cran.r-project.org/package=abn) features.
+It is also possible to clone this repository and install `abn` from source.
 
-- [INLA](https://www.r-inla.org/), which is an R package used for model fitting. It is hosted separately from CRAN and is easy to install on common platforms (see instructions on the INLA website). 
-```r
-install.packages("INLA", repos = c(getOption("repos"), INLA = "https://inla.r-inla-download.org/R/stable"), dep = TRUE)
-```
+> [!NOTE]
+> Also in this case you need to first prepare your system by following the [Prior to installing](#prior-to-installing) section.
 
-- [Rgraphviz](https://www.bioconductor.org//packages/release/bioc/html/Rgraphviz.html) is used to produce plots of network graphs and is hosted on [Bioconductor](https://www.bioconductor.org/).
-```r
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install("Rgraphviz", version = "3.8")
-```
+Installing from source is done with the following steps:
 
-- [JAGS](https://mcmc-jags.sourceforge.io/) is a program for analyzing Bayesian hierarchical models using Markov Chain Monte Carlo (MCMC) simulation. Its installation is platform-dependent and is, therefore, not covered here.
+1. Clone the repository and go to the root directory of the repo:
+
+   ```bash
+   git clone https://github.com/furrer-lab/abn
+   cd abn
+   ```
+
+2. Deactivate `abn`'s development environment (a [renv](https://rstudio.github.io/renv/articles/renv.html) virtual environment):
+
+   ```R
+   renv::deactivate()
+   ```
+
+3. Build and install the local content with dependencies:
+
+   ```R
+   pak::repo_add(INLA = "https://inla.r-inla-download.org/R/stable/")
+   pak::local_install(dependencies=TRUE)
+   ```
+  _**Note:** The first command can be skipped on MacOS or Windows._
 
 # Quickstart
 
@@ -132,9 +447,9 @@ The particular type of Bayesian network models considered here are **additive Ba
 These are rather different, mathematically speaking, from the standard form of Bayesian network models (for binary or categorical data) presented in the academic literature, which typically use an analytically elegant but arguably interpretation-wise opaque contingency table parametrization. 
 An additive Bayesian network model is simply a **multidimensional regression model**, e.g., directly analogous to generalized linear modeling but with all variables potentially dependent. 
 
-An example can be found in the [American Journal of Epidemiology](https://academic.oup.com/aje/article-abstract/176/11/1051/178588), where this approach was used to investigate risk factors for child diarrhea. 
-A special issue of [Preventive Veterinary Medicine](http://www.sciencedirect.com/science/journal/01675877/110/1) on graphical modeling features several articles that use [abn](https://CRAN.R-project.org/package=abn) to fit epidemiological data. 
-Introductions to this methodology can be found in [Emerging Themes in Epidemiology](https://link.springer.com/journal/12982) and in [Computers in Biology and Medicine](https://www.sciencedirect.com/science/article/pii/S0010482522005133) where it is compared to other approaches.
+An example can be found in the [American Journal of Epidemiology](https://doi.org/10.1093/aje/kws183), where this approach was used to investigate risk factors for child diarrhea. 
+A special issue of **Preventive Veterinary Medicine** on graphical modeling features several articles that use [abn](https://CRAN.R-project.org/package=abn) to fit epidemiological data (e.g., [Ludwig et al., 2013](https://doi.org/10.1016/j.prevetmed.2013.02.005)). 
+Introductions to this methodology can be found in [Emerging Themes in Epidemiology](https://link.springer.com/journal/12982) and in [Computers in Biology and Medicine](https://doi.org/10.1016/j.compbiomed.2022.105740) where it is compared to other approaches.
 
 ## What is an additive Bayesian network?
 
@@ -365,20 +680,22 @@ If you use `abn` in your research, please cite it as follows:
 
 ``` r
 > citation("abn")
+To cite the software implementation of the R package 'abn' use:
+
+  Delucchi M, Furrer R, Kratzer G, Lewis F, Liechti J, Pittavino M, Cherneva K (2024). _abn: Modelling Multivariate Data with Additive Bayesian Networks_. R package version 3.1.3, <https://CRAN.R-project.org/package=abn>.
+
 To cite the methodology of the R package 'abn' use:
 
-  Kratzer G, Lewis F, Comin A, Pittavino M, Furrer R (2023). “Additive Bayesian Network Modeling with the R Package abn.” _Journal of Statistical Software_,
-  *105*(8), 1-41. doi:10.18637/jss.v105.i08 <https://doi.org/10.18637/jss.v105.i08>.
+  Kratzer G, Lewis F, Comin A, Pittavino M, Furrer R (2023). “Additive Bayesian Network Modeling with the R Package abn.” _Journal of Statistical Software_, *105*(8), 1-41. doi:10.18637/jss.v105.i08 <https://doi.org/10.18637/jss.v105.i08>.
+
+To cite the application of mixed-effects ABN use:
+
+  Delucchi M, Liechti J, Spinner G, Furrer R (2024). “abn: Additive Bayesian Networks.” _Journal of Open Source Software_, *9*(101), 6822. R package version 3.1.3, <https://doi.org/10.21105/joss.06822>.
 
 To cite an example of a typical ABN analysis use:
 
-  Kratzer, G., Lewis, F.I., Willi, B., Meli, M.L., Boretti, F.S., Hofmann-Lehmann, R., Torgerson, P., Furrer, R. and Hartnack, S. (2020). Bayesian Network
-  Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Frontiers in Veterinary Science, 7, 73
-
-To cite the software implementation of the R package 'abn' use:
-
-  Furrer, R., Kratzer, G. and Lewis, F.I. (2023). abn: Modelling Multivariate Data with Additive Bayesian Networks. R package version 2.7-2.
-  https://CRAN.R-project.org/package=abn
+  Kratzer, G., Lewis, F.I., Willi, B., Meli, M.L., Boretti, F.S., Hofmann-Lehmann, R., Torgerson, P., Furrer, R. and Hartnack, S. (2020). Bayesian Network Modeling Applied to Feline Calicivirus Infection Among Cats in Switzerland. Frontiers
+  in Veterinary Science, 7, 73
 ```
 
 # License
@@ -394,6 +711,8 @@ Please note that the `abn` project is released with a [Contributor Code of Condu
 The [abn website](https://r-bayesian-networks.org/) provides a comprehensive set of documented case studies, numerical accuracy/quality assurance exercises, and additional documentation.
 
 ## Technical articles
+
+- Delucchi et al. (2024): [Additive Bayesian Networks. Journal of Open Source Software, 9(101), 6822](https://doi.org/10.21105/joss.06822)
 
 - Kratzer et al. (2023): [Additive Bayesian Network Modeling with the R Package abn](https://doi.org/10.18637/jss.v105.i08)
 
