@@ -1,4 +1,4 @@
-c6cd03d017bc35b7598eeebc33193054 *DESCRIPTION
+68824a0fd72e4760177ccbe6587270f9 *DESCRIPTION
 821b178cfaf45e3e5681b797a20d8a1c *NAMESPACE
 23b20a161c0fa5a4acd15ce8c9d606d7 *R/RcppExports.R
 e472792ee541b8ad69a9d8bf13015068 *R/abn-infotheo.R
@@ -25,11 +25,11 @@ ebf9ffebc35ef6e0aa0e98bd06f20eb5 *R/search_hillclimber.R
 d0e185067b1c242e06d6d1748ce01dc9 *R/simulateabn.R
 4950d7356893d416058ec13628f354df *R/tographviz.R
 73370866315abbaa6df386ef987275ad *R/validation.R
-876bd0951a423a021c59b7337a7e6149 *README.md
+9f35dd643bf285138a88340806b3def7 *README.md
 46f904a15b734740b340e9922515335b *build/vignette.rds
 8ea0326a4c940e9db9e2915e8aa46dc1 *cleanup
-57b5bfb33a1bc72ac0780cc9453b3bfa *configure
-3024af9caec62dbe3165a50c5fcec74d *configure.ac
+945f55e6b8f3dcf38495ec25737559c7 *configure
+ea310e8a524b33005dc4846ff1722c09 *configure.ac
 966c3335a71d04e37d831342e7f5399c *data/FCV.RData
 398ac268f9c8ad7d13a07775fbdfcfba *data/adg.RData
 f9c85e489e6b25eb1e6fd939c590614c *data/ex0data.RData
@@ -49,7 +49,7 @@ e4e91b7c5b70f11c08389e24d1cb3f86 *data/ex7data.RData
 fd08b3cb976d7e5135ff33c1dfc7fde9 *inst/doc/data_simulation.html
 37f4e6899a3e86daa297c02e94ec747a *inst/doc/mixed_effect_BN_model.R
 f980955d1d656c4042ab3ff4ec643e32 *inst/doc/mixed_effect_BN_model.Rmd
-fa1a1e440d40ba73faa8506aef845120 *inst/doc/mixed_effect_BN_model.html
+0c04b6ae62ca200cbacd81ee9f0efa7b *inst/doc/mixed_effect_BN_model.html
 8b14d11f5cd34e5d6baf74af6e4ad2bc *inst/doc/model_specification.R
 574d404667748a5569a179961270b25b *inst/doc/model_specification.Rmd
 90a58b5ef076218424a3b0ee3d586507 *inst/doc/model_specification.html
@@ -267,7 +267,7 @@ f3a78447e2b41334bad0c3ec61ff9b33 *src/structs.h
 d847147c1c520da31fd0d64e84a3a430 *src/utility.c
 55115b631bd67070f8e4f0cc765d01f1 *src/utility.h
 ec9c5d3f3cb863c8282e69d6aa54996f *tests/Examples/abn-Ex.Rout
-b210d0290fdc1c45e501db859a1c3d2a *tests/testthat.R
+db50a849da1afe8fdf71c4aafc58ba88 *tests/testthat.R
 e015f7d3532e3f5fcdaddf76e41adbe5 *tests/testthat/Rplots.pdf
 7de99677e111ea9bca47512f0f81ea47 *tests/testthat/_snaps/plot-abn.md
 563cd5cb5dba3c51e167e19435e3bb70 *tests/testthat/_snaps/tographviz/graph.dot
@@ -275,7 +275,7 @@ e015f7d3532e3f5fcdaddf76e41adbe5 *tests/testthat/Rplots.pdf
 f5bdd9acac75647dc54268712014bc05 *tests/testthat/_snaps/tographviz/graph_group.dot
 a6e01aa2b7b44a395ebc0349652eb792 *tests/testthat/test-Coutput.R
 0dce05b80535c944c583b58e2ec6827f *tests/testthat/test-abn-infotheo.R
-785cf3dfbb8c28a6d4b76ebbfdb6f38e *tests/testthat/test-abn-internal.R
+2c95c6cde4e7eb73acbf98491d508cf5 *tests/testthat/test-abn-internal.R
 e99c7441a62347a8fad4a2de5ffb376e *tests/testthat/test-abn-methods.R
 954c5c2dda0225ddec2465a861a3de15 *tests/testthat/test-abn-toolbox.R
 b9c8d722a450bef639e1cc33026bc6de *tests/testthat/test-build_score_cache.R
