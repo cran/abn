@@ -1,7 +1,7 @@
 Package: abn
 Title: Modelling Multivariate Data with Additive Bayesian Networks
-Version: 3.1.12
-Date: 2025-11-18
+Version: 3.1.13
+Date: 2025-12-18
 Authors@R: c(
     person("Matteo", "Delucchi", , "matteo.delucchi@math.uzh.ch", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9327-1496")),
@@ -55,7 +55,7 @@ RoxygenNote: 7.3.3
 SystemRequirements: pkg-config, cmake, gsl, jpeg, gdal, geos, proj,
         udunits-2, openssl, libcurl, jags
 NeedsCompilation: yes
-Packaged: 2025-11-25 09:06:48 UTC; matteo
+Packaged: 2025-12-18 14:21:40 UTC; matteo
 Author: Matteo Delucchi [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-9327-1496>),
   Reinhard Furrer [aut] (ORCID: <https://orcid.org/0000-0002-6319-2332>),
@@ -67,4 +67,4 @@ Author: Matteo Delucchi [aut, cre] (ORCID:
   Kalina Cherneva [ctb]
 Maintainer: Matteo Delucchi <matteo.delucchi@math.uzh.ch>
 Repository: CRAN
-Date/Publication: 2025-11-25 11:20:09 UTC
+Date/Publication: 2025-12-19 10:20:26 UTC

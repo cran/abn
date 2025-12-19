@@ -1,4 +1,4 @@
-8ca098ff5e43c786ea238b602ad4f1a5 *DESCRIPTION
+27e23a46a083ddb99e98251f7ccd2991 *DESCRIPTION
 62184b407d81cf3912fd5598c642f0e1 *NAMESPACE
 aa32ba83b817137f3a934615e773bc59 *R/RcppExports.R
 e472792ee541b8ad69a9d8bf13015068 *R/abn-infotheo.R
@@ -26,11 +26,11 @@ ebf9ffebc35ef6e0aa0e98bd06f20eb5 *R/search_hillclimber.R
 d0e185067b1c242e06d6d1748ce01dc9 *R/simulateabn.R
 4950d7356893d416058ec13628f354df *R/tographviz.R
 73370866315abbaa6df386ef987275ad *R/validation.R
-d3f55c1a970bd66a61be4c51c3c82024 *README.md
+fb9fbeafd96d1cb8c9fce2bd91597354 *README.md
 a525604386a1a86f9354b9a9d01dbc66 *build/vignette.rds
 8ea0326a4c940e9db9e2915e8aa46dc1 *cleanup
-80b3f73dc6cbb7b9d91b986602c4fd86 *configure
-26f34e8e6f894111f44c7ae158b73ce7 *configure.ac
+64db6507662003f989fac3ac1c498af4 *configure
+e684372b651ed7559d08ab7bff448363 *configure.ac
 966c3335a71d04e37d831342e7f5399c *data/FCV.RData
 398ac268f9c8ad7d13a07775fbdfcfba *data/adg.RData
 f9c85e489e6b25eb1e6fd939c590614c *data/ex0data.RData
@@ -50,7 +50,7 @@ fff11ae446bdc48672a362af078a9dfa *inst/doc/data_simulation.Rmd
 958612c426fe57a7210257da8e93ac95 *inst/doc/data_simulation.html
 37f4e6899a3e86daa297c02e94ec747a *inst/doc/mixed_effect_BN_model.R
 f980955d1d656c4042ab3ff4ec643e32 *inst/doc/mixed_effect_BN_model.Rmd
-63c02b2cd744a19d6e98b0a4d6ae6685 *inst/doc/mixed_effect_BN_model.html
+08b60946981ecc8316430887faec753f *inst/doc/mixed_effect_BN_model.html
 8b14d11f5cd34e5d6baf74af6e4ad2bc *inst/doc/model_specification.R
 574d404667748a5569a179961270b25b *inst/doc/model_specification.Rmd
 c25c5da096e3b6767e2e95e62bd170c7 *inst/doc/model_specification.html
@@ -238,7 +238,7 @@ d41d8cd98f00b204e9800998ecf8427e *src/irls_multinomial.cpp
 e7d1d3937774824d6ee331ad845db753 *src/mi.cpp
 bcc01ae8c17227fe3b97f082d8b9d994 *src/mobius.c
 8cf1430fd00296d57e99f7b9af10bec6 *src/mobius.h
-ffc9082e124eb3cc1307052ed969a12d *src/mostprobable.c
+b1e35652ec86d61b128b797608bac0e4 *src/mostprobable.c
 5d9635011850b79ec2335b7298e39e11 *src/node_binomial.c
 09ca547384c2f76b4c239ac2c3adf37f *src/node_binomial.h
 f6df862ac648309500b7135cea7bb16e *src/node_binomial_marginals_rv.c
